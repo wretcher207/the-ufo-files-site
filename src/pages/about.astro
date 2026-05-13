@@ -1,193 +1,333 @@
 ---
 /**
- * About (LIGHT mode). Phase 6.
+ * About (LIGHT mode). Phase 6 identity pass.
  *
- * Single column, max-width 68ch. Instrument Serif h1/h2, Schibsted body.
- * Four sections: The Question, Why this archive exists, Methodology,
- * About the Archivist. Voice profile mandatory. No em dashes. No filler.
+ * Single-column long form. Section anchor up top. Big-numeral stats
+ * block in place of the old bulleted list. Inline links in body where
+ * cases or threads are named. No em dashes, no filler.
  */
 import Base from '../layouts/Base.astro';
 import SocialsStrip from '../components/SocialsStrip.astro';
-import { getRenderableCases } from '../lib/case-utils';
+import { getArchiveStats } from '../lib/archive-stats';
 
-const all = await getRenderableCases();
-const fbiCount = all.filter((c) => (c.collection as string) === 'fbiCases').length;
-const pursueCount = all.filter((c) => (c.collection as string) === 'pursueCases').length;
+const stats = await getArchiveStats();
 ---
 <Base
   title="About"
   description="Why this archive exists, how it was assembled, and who built it."
   section="ABOUT"
 >
-  <article class="about prose">
-    <header class="about__head">
-      <span class="about__eyebrow">ABOUT THE ARCHIVE</span>
-      <h1 class="about__h1">The file you can read all the way through.</h1>
+  <main class="about-main" id="main">
+
+    <a class="ufo-section-anchor about-anchor" href="/">
+      <span class="ufo-section-anchor__num">01</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">About the archive</span>
+        <span class="ufo-section-anchor__sublabel">Why it exists &nbsp;/&nbsp; How it was assembled &nbsp;/&nbsp; Who built it</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Open archive</span>
+    </a>
+
+    <header class="about-head">
+      <h1 class="about-title">The file you can read all the way through.</h1>
+      <p class="about-lede">
+        FBI 62-HQ-83894 came up in pieces. The PURSUE release came up in
+        pieces. This site stitches them back into one navigable corpus.
+      </p>
     </header>
 
-    <h2>The question</h2>
-    <p>
-      I was eight years old when my uncle told me about Roswell in a kitchen
-      in northern Maine. He said the words like he believed them and he said
-      them like he didn't. I remember the linoleum, the smell of cigarette
-      smoke in the curtain over the sink, the sound of a Ford F-150 idling in
-      the dooryard. I remember asking what flying saucers were and getting
-      back an answer that was half a story and half a shrug.
-    </p>
-    <p>
-      I am thirty-eight now. The question never closed. It sat in the
-      background of every other thing I did. Then on May 8, 2026, the
-      Department of War unsealed the file and the question had a place to
-      live.
-    </p>
+    <article class="about-body">
 
-    <h2>Why this archive exists</h2>
-    <p>
-      The PURSUE release dumped 162 records into the public domain. The same
-      day, war.gov published a full OCR copy of FBI 62-HQ-83894, the flying
-      discs case file from 1944 to 1973. Both of these went up in pieces,
-      across separate file trees, under separate URLs, with separate
-      metadata schemas. The cable news cycle wrote four headlines and moved
-      on. The interesting cases were not the headlines.
-    </p>
-    <p>
-      This site exists to be a single place where every page is reachable
-      from every other page, every claim links back to the document that
-      grounds it, and the four cases that survived AARO's evidentiary
-      filter sit next to the institutional correspondence that frames them.
-      No opinions in the metadata. No verdicts on top of the files. The
-      files do the work. The archive just gets out of the way.
-    </p>
+      <h2>The question</h2>
+      <p>
+        I was eight years old when my uncle told me about Roswell in a kitchen
+        in northern Maine. He said the words like he believed them and he said
+        them like he didn't. I remember the linoleum, the smell of cigarette
+        smoke in the curtain over the sink, the sound of a Ford F-150 idling
+        in the dooryard. I remember asking what flying saucers were and getting
+        back an answer that was half a story and half a shrug.
+      </p>
+      <p>
+        I am thirty-eight now. The question never closed. It sat in the
+        background of every other thing I did. Then on May 8, 2026, the
+        Department of War unsealed the file and the question had a place to
+        live.
+      </p>
 
-    <h2>Methodology</h2>
-    <p>
-      Source rules are simple. Every case page cites the page it came from.
-      The original PDF at war.gov is one click from any dossier. The
-      OCR'd transcripts under <code>content/archive/</code> are the same
-      transcripts war.gov is serving. Frontmatter on every file carries a
-      <code>source.officialUrl</code>, a <code>source.releaseDate</code>,
-      a build-injected <code>archiveCommit</code>, and a
-      <code>retrievedDate</code>.
-    </p>
-    <p>
-      Redactions are rendered as crisp solid bars inline, the way the file
-      was released. Classification stamps are reproduced as the file
-      reproduces them, not interpreted. Confidence labels on cross-references
-      are conservative: a relationship is marked <em>high</em> only when
-      both files name each other or when a third-party document ties them
-      together by date and location.
-    </p>
-    <p>
-      The verification chain runs in one direction. From any case dossier
-      you can reach the source paragraph in the underlying file. From any
-      claim you can reach the file. From the file you can reach the
-      original war.gov PDF. The site does not cite the site. It cites
-      backwards to the file every time.
-    </p>
-    <p>
-      The PURSUE Release 01 inventory mirrors AARO's metadata exactly.
-      Where AARO and the news cycle disagreed about which cases mattered,
-      this archive sides with the metadata. The FBI file was mined in
-      passes between May 8 and May 10, 2026. The cases that survived the
-      filter survived because the evidentiary structure warranted a second
-      look, not because anyone was hiding aliens.
-    </p>
+      <h2>Why this archive exists</h2>
+      <p>
+        The
+        <a href="/thread/pursue-2026">PURSUE release</a>
+        dumped 162 records into the public domain. The same day, war.gov
+        published a full OCR copy of FBI 62-HQ-83894, the flying discs case
+        file from 1944 to 1973. Both went up in pieces, across separate file
+        trees, under separate URLs, with separate metadata schemas. The cable
+        news cycle wrote four headlines and moved on. The interesting cases
+        were not the headlines.
+      </p>
+      <p>
+        This site exists to be a single place where every page is reachable
+        from every other page, every claim links back to the document that
+        grounds it, and the
+        <a href="/thread/pursue-2026">four cases that survived AARO's evidentiary filter</a>
+        sit next to the institutional correspondence that frames them. No
+        opinions in the metadata. No verdicts on top of the files. The files
+        do the work. The archive just gets out of the way.
+      </p>
 
-    <h3>What the site does not do</h3>
-    <ul>
-      <li>It does not edit the source files.</li>
-      <li>It does not redact further than the government redacted.</li>
-      <li>It does not assign verdicts.</li>
-      <li>It does not place memo correspondence on the map. Only cases with
-      coordinates land on the map.</li>
-      <li>It does not graceful-degrade when a field is missing. A missing
-      required field fails the build.</li>
-    </ul>
+      <h2>Methodology</h2>
+      <p>
+        Source rules are simple. Every case page cites the page it came from.
+        The original PDF at war.gov is one click from any dossier. The OCR'd
+        transcripts under <code>content/archive/</code> are the same
+        transcripts war.gov is serving. Frontmatter on every file carries a
+        <code>source.officialUrl</code>, a <code>source.releaseDate</code>,
+        a build-injected <code>archiveCommit</code>, and a
+        <code>retrievedDate</code>.
+      </p>
+      <p>
+        Redactions are rendered as crisp solid bars inline, the way the file
+        was released. Classification stamps are reproduced as the file
+        reproduces them, not interpreted. Confidence labels on cross-references
+        are conservative: a relationship is marked <em>high</em> only when both
+        files name each other or when a third-party document ties them together
+        by date and location.
+      </p>
+      <p>
+        The verification chain runs in one direction. From any case dossier
+        you can reach the source paragraph in the underlying file. From any
+        claim you can reach the file. From the file you can reach the original
+        war.gov PDF. The site does not cite the site. It cites backwards to
+        the file every time.
+      </p>
+      <p>
+        The PURSUE Release 01 inventory mirrors AARO's metadata exactly. Where
+        AARO and the news cycle disagreed about which cases mattered, this
+        archive sides with the metadata. The FBI file was mined in passes
+        between May 8 and May 10, 2026. The cases that survived the filter
+        survived because the evidentiary structure warranted a second look,
+        not because anyone was hiding aliens.
+      </p>
 
-    <h3>Sourcing</h3>
-    <p>
-      US government records, including FBI files, AARO documents, State
-      Department cables, and war.gov-hosted PDFs, are in the public domain
-      in the United States. Case writeups and analysis on this site are
-      released under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener external">CC BY 4.0</a>.
-      Quote freely. Link back when you do.
-    </p>
-    <p>
-      The source archive is at
-      <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">github.com/wretcher207/the-ufo-files</a>.
-      Original PDFs and videos live at
-      <a href="https://www.war.gov/UFO/" rel="noopener external">war.gov/UFO</a>.
-    </p>
+      <h3>What the site does not do</h3>
+      <ul>
+        <li>It does not edit the source files.</li>
+        <li>It does not redact further than the government redacted.</li>
+        <li>It does not assign verdicts.</li>
+        <li>It does not place memo correspondence on the
+          <a href="/map">map</a>.
+          Only cases with coordinates land there.</li>
+        <li>It does not graceful-degrade when a field is missing. A missing
+          required field fails the build.</li>
+      </ul>
 
-    <h3>Stats</h3>
-    <ul>
-      <li>{fbiCount} cases from FBI 62-HQ-83894.</li>
-      <li>{pursueCount} cases from PURSUE Release 01.</li>
-      <li>One repository, two file trees, one navigation surface.</li>
-    </ul>
+      <h3>Sourcing</h3>
+      <p>
+        US government records, including FBI files, AARO documents, State
+        Department cables, and war.gov-hosted PDFs, are in the public domain
+        in the United States. Case writeups and analysis on this site are
+        released under
+        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener external">CC BY 4.0</a>.
+        Quote freely. Link back when you do.
+      </p>
+      <p>
+        The source archive is at
+        <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">github.com/wretcher207/the-ufo-files</a>.
+        Original PDFs and videos live at
+        <a href="https://www.war.gov/UFO/" rel="noopener external">war.gov/UFO</a>.
+      </p>
+    </article>
 
-    <h2>About the archivist</h2>
-    <p>
-      My name is David Russell. I run Dead Pixel Design out of Houlton,
-      Maine. I grew up in Aroostook County. I have built websites, written
-      audio plugins, lost custody, found custody, been to jail, gotten
-      sober, gotten weird, kept going. I read the file because the file is
-      there to be read. I built the site because someone had to put every
-      page in one place and nobody was doing it.
-    </p>
+    <section class="about-stats" aria-label="Archive at a glance">
+      <a class="about-stats__cell" href="/timeline">
+        <span class="about-stats__num">{stats.totalCases}</span>
+        <span class="about-stats__label">Files indexed</span>
+        <span class="about-stats__sub">↗ Timeline</span>
+      </a>
+      <a class="about-stats__cell" href="/threads">
+        <span class="about-stats__num">{String(stats.threadCount).padStart(2, '0')}</span>
+        <span class="about-stats__label">Narrative threads</span>
+        <span class="about-stats__sub">↗ Threads</span>
+      </a>
+      <a class="about-stats__cell" href="/timeline">
+        <span class="about-stats__num">{stats.fbiCount}</span>
+        <span class="about-stats__label">FBI 62-HQ-83894</span>
+        <span class="about-stats__sub">1944 → 1973</span>
+      </a>
+      <a class="about-stats__cell" href="/thread/pursue-2026">
+        <span class="about-stats__num">{stats.pursueCount}</span>
+        <span class="about-stats__label">PURSUE Release 01</span>
+        <span class="about-stats__sub">↗ Pentagon disclosure</span>
+      </a>
+    </section>
 
-    <SocialsStrip align="left" />
-  </article>
+    <article class="about-body">
+      <h2>About the archivist</h2>
+      <p>
+        My name is David Russell. I run
+        <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>
+        out of Houlton, Maine. I grew up in Aroostook County. I have built
+        websites, written audio plugins, lost custody, found custody, been to
+        jail, gotten sober, gotten weird, kept going. I read the file because
+        the file is there to be read. I built the site because someone had to
+        put every page in one place and nobody was doing it.
+      </p>
+
+      <SocialsStrip align="left" />
+    </article>
+
+  </main>
 </Base>
 
 <style>
-  .about {
-    max-width: 68ch;
+  .about-main {
+    max-width: 1100px;
     margin: 0 auto;
-    padding-top: var(--sp-6);
+    padding: 80px 32px 120px;
   }
-  .about__head {
-    margin-bottom: var(--sp-7);
-    padding-bottom: var(--sp-5);
-    border-bottom: 1px solid var(--rule);
+  @media (max-width: 720px) {
+    .about-main { padding: 48px 16px 80px; }
   }
-  .about__eyebrow {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-widest);
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: var(--sp-3);
+
+  .about-anchor { margin-bottom: 56px; }
+  @media (max-width: 720px) {
+    .about-anchor { margin-bottom: 40px; }
   }
-  .about__h1 {
+
+  .about-head { max-width: 68ch; margin: 0 0 64px; }
+  .about-title {
     font-family: var(--font-display);
-    font-weight: var(--weight-display);
-    font-size: var(--fs-3xl);
-    line-height: var(--lh-tight);
-    letter-spacing: var(--tracking-tight);
-    margin: 0;
-    color: var(--ink-primary);
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 80px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
     max-width: 22ch;
   }
-  @media (max-width: 640px) {
-    .about__h1 { font-size: var(--fs-2xl); }
+  .about-lede {
+    font-family: var(--font-body);
+    font-size: clamp(18px, 1.6vw, 22px);
+    line-height: 1.5;
+    color: var(--fg-mid);
+    max-width: 60ch;
+    margin: 0;
   }
-  .about :global(p),
-  .about :global(li) {
+
+  .about-body {
+    max-width: 68ch;
+    font-family: var(--font-body);
     font-size: 18px;
     line-height: 1.7;
+    color: var(--fg);
   }
-  .about :global(h2) {
+  .about-body h2 {
     font-family: var(--font-display);
-    font-size: var(--fs-2xl);
-    margin-top: var(--sp-8);
-    margin-bottom: var(--sp-3);
+    font-weight: 500;
+    font-size: clamp(32px, 3.6vw, 48px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+    margin: 64px 0 16px;
   }
-  .about :global(h3) {
+  .about-body h2:first-child { margin-top: 0; }
+  .about-body h3 {
     font-family: var(--font-display);
-    font-size: var(--fs-xl);
-    margin-top: var(--sp-7);
-    margin-bottom: var(--sp-3);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.2;
+    color: var(--fg);
+    margin: 40px 0 12px;
+  }
+  .about-body p { margin: 0 0 16px; }
+  .about-body ul {
+    padding-left: 24px;
+    margin: 12px 0 16px;
+    list-style: disc;
+  }
+  .about-body li { margin: 6px 0; }
+  .about-body a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--fg-dim);
+    text-underline-offset: 4px;
+  }
+  .about-body a:hover,
+  .about-body a:focus-visible {
+    text-decoration-color: var(--fg);
+  }
+  .about-body code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: transparent;
+    padding: 0 4px;
+    border: 1px solid var(--rule);
+    color: var(--fg);
+  }
+  .about-body em { font-style: italic; }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin: 80px 0;
+    padding: 32px 0;
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--fg);
+  }
+  @media (max-width: 720px) {
+    .about-stats { grid-template-columns: repeat(2, 1fr); margin: 48px 0; }
+  }
+  .about-stats__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+    border-left: 1px solid var(--rule);
+    transition: background-color var(--dur-quick) linear,
+                color var(--dur-quick) linear;
+  }
+  .about-stats__cell:first-child { border-left: none; }
+  @media (max-width: 720px) {
+    .about-stats__cell:nth-child(3) { border-left: none; }
+  }
+  .about-stats__cell:hover,
+  .about-stats__cell:focus-visible {
+    background: var(--fg);
+    color: var(--bg);
+    outline: none;
+  }
+  .about-stats__cell:hover .about-stats__label,
+  .about-stats__cell:focus-visible .about-stats__label,
+  .about-stats__cell:hover .about-stats__sub,
+  .about-stats__cell:focus-visible .about-stats__sub {
+    color: var(--bg);
+  }
+  .about-stats__num {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+    font-feature-settings: "tnum";
+  }
+  .about-stats__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+    margin-top: 4px;
+  }
+  .about-stats__sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
   }
 </style>

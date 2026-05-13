@@ -1,6 +1,9 @@
 ---
 /**
- * 404 (DARK mode). Phase 6. Voice profile. No em dashes.
+ * 404 (DARK mode). Phase 6 identity pass.
+ *
+ * Single block, no card. Big number for "404," small mono label
+ * underneath. Two recovery actions: timeline and search trigger.
  */
 import Base from '../layouts/Base.astro';
 const path = Astro.url?.pathname ?? '';
@@ -10,104 +13,176 @@ const path = Astro.url?.pathname ?? '';
   description="The requested page is not in the archive."
   section="404"
 >
-  <section class="nf">
-    <p class="nf__eyebrow">STATUS 404 · NOT IN THE ARCHIVE</p>
-    <h1 class="nf__title">This page is not in the archive.</h1>
-    <p class="nf__lede">
-      Either the case got renamed, you followed a stale link, or it never
-      existed. Try the board, the timeline, or hit Cmd-K to search.
-    </p>
-    {path && (
-      <p class="nf__path">Requested: <code>{path}</code></p>
-    )}
-    <div class="nf__actions">
-      <a class="nf__btn" href="/board">Open the Board</a>
-      <button class="nf__btn" type="button" data-search-trigger>Search the archive</button>
-    </div>
-  </section>
+  <main class="nf-main" id="main">
+
+    <a class="ufo-section-anchor nf-anchor" href="/">
+      <span class="ufo-section-anchor__num">404</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Not in the archive</span>
+        <span class="ufo-section-anchor__sublabel">Status 404 &nbsp;/&nbsp; Page not found</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Open archive</span>
+    </a>
+
+    <section class="nf">
+      <h1 class="nf__title">This page is not in the archive.</h1>
+      <p class="nf__lede">
+        Either the case got renamed, you followed a stale link, or it never
+        existed. Try the timeline, read by thread, or search the corpus by
+        pressing the forward slash.
+      </p>
+      {path && (
+        <p class="nf__path">
+          REQUESTED &nbsp;/&nbsp; <code>{path}</code>
+        </p>
+      )}
+
+      <ul class="nf__actions">
+        <li><a class="nf__action" href="/timeline">
+          <span class="nf__action-icon">↗</span>
+          <span>
+            <span class="nf__action-title">Open the timeline</span>
+            <span class="nf__action-sub">All 63 files, 1944 → 2026</span>
+          </span>
+        </a></li>
+        <li><a class="nf__action" href="/threads">
+          <span class="nf__action-icon">↗</span>
+          <span>
+            <span class="nf__action-title">Read by thread</span>
+            <span class="nf__action-sub">Six spines through the archive</span>
+          </span>
+        </a></li>
+        <li><button class="nf__action nf__action--btn" type="button" data-search-trigger>
+          <span class="nf__action-icon">/</span>
+          <span>
+            <span class="nf__action-title">Search the corpus</span>
+            <span class="nf__action-sub">63 pages, full-text Pagefind index</span>
+          </span>
+        </button></li>
+      </ul>
+    </section>
+
+  </main>
 </Base>
 
 <script>
-  // Hook the "Search the archive" button into the ⌘K search trigger.
   document.querySelectorAll('[data-search-trigger]').forEach((el) => {
     el.addEventListener('click', () => {
-      const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+      const evt = new KeyboardEvent('keydown', { key: '/', bubbles: true });
       document.dispatchEvent(evt);
     });
   });
 </script>
 
 <style>
-  .nf {
-    max-width: 64ch;
+  .nf-main {
+    max-width: 1100px;
     margin: 0 auto;
-    padding: var(--sp-9) 0;
+    padding: 80px 32px 120px;
   }
-  .nf__eyebrow {
-    font-family: var(--font-mono);
-    font-weight: var(--weight-mono-md);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-widest);
-    text-transform: uppercase;
-    color: var(--accent-amber);
-    margin: 0 0 var(--sp-5);
+  @media (max-width: 720px) {
+    .nf-main { padding: 48px 16px 80px; }
   }
+
+  .nf-anchor { margin-bottom: 64px; }
+  @media (max-width: 720px) {
+    .nf-anchor { margin-bottom: 40px; }
+  }
+
+  .nf { max-width: 64ch; }
+
   .nf__title {
     font-family: var(--font-display);
-    font-weight: var(--weight-display);
-    font-size: var(--fs-2xl);
-    line-height: var(--lh-tight);
-    letter-spacing: var(--tracking-tight);
-    color: var(--ink-primary);
-    margin: 0 0 var(--sp-5);
-  }
-  @media (max-width: 640px) {
-    .nf__title { font-size: var(--fs-xl); }
+    font-weight: 400;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
   }
   .nf__lede {
     font-family: var(--font-body);
-    font-size: var(--fs-md);
-    line-height: var(--lh-loose);
-    color: var(--ink-secondary);
-    margin: 0 0 var(--sp-4);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--fg-mid);
+    margin: 0 0 32px;
+    max-width: 56ch;
   }
   .nf__path {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    color: var(--ink-muted);
-    margin: 0 0 var(--sp-6);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 0 0 48px;
+    word-break: break-all;
   }
   .nf__path code {
-    background: var(--bg-raised);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg);
+    background: transparent;
     padding: 2px 8px;
     border: 1px solid var(--rule);
-    color: var(--ink-primary);
   }
+
   .nf__actions {
-    display: flex;
-    gap: var(--sp-3);
-    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--fg);
   }
-  .nf__btn {
-    display: inline-flex;
+  .nf__action {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 18px;
     align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono);
-    font-weight: var(--weight-mono-md);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    color: var(--accent-amber);
-    background: transparent;
+    width: 100%;
+    padding: 18px 16px;
+    margin: 0 -16px;
     text-decoration: none;
-    padding: 10px var(--sp-4);
-    border: 1px solid var(--accent-amber);
-    border-radius: var(--radius-1);
+    color: inherit;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    font: inherit;
+    text-align: left;
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+    transition: background-color var(--dur-quick) linear,
+                color var(--dur-quick) linear;
   }
-  .nf__btn:hover {
-    background: var(--accent-amber);
-    color: var(--bg-base);
+  .nf__action:hover,
+  .nf__action:focus-visible {
+    background: var(--fg);
+    color: var(--bg);
+    outline: none;
   }
+  .nf__action-icon {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--fg);
+    text-align: center;
+  }
+  .nf__action:hover .nf__action-icon,
+  .nf__action:focus-visible .nf__action-icon { color: var(--bg); }
+  .nf__action-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.2;
+    color: var(--fg);
+  }
+  .nf__action:hover .nf__action-title,
+  .nf__action:focus-visible .nf__action-title { color: var(--bg); }
+  .nf__action-sub {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin-top: 4px;
+  }
+  .nf__action:hover .nf__action-sub,
+  .nf__action:focus-visible .nf__action-sub { color: var(--bg); }
 </style>
