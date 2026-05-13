@@ -2,7 +2,14 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { getAllEntities } from '../../lib/entities';
-import { archiveOf, caseUrl, headlineDate, threadOf, tidyTitle } from '../../lib/case-utils';
+import {
+  archiveOf,
+  caseUrl,
+  headlineDate,
+  threadOf,
+  tidyTitle,
+} from '../../lib/case-utils';
+import { entityImage } from '../../lib/case-images';
 
 export async function getStaticPaths() {
   const all = await getAllEntities();
@@ -19,167 +26,268 @@ const cases = entity.cases.slice().sort((a, b) => {
   const db = headlineDate(b) ?? '';
   return da.localeCompare(db);
 });
+
+const img = entityImage(entity.slug);
+const caseCount = cases.length;
 ---
 <Base
   title={entity.display}
-  description={`${entity.cases.length} case${entity.cases.length === 1 ? '' : 's'} in the archive reference ${entity.display}.`}
-  serial="ENTITY"
+  description={`${caseCount} case${caseCount === 1 ? '' : 's'} in the archive reference ${entity.display}.`}
   section={entity.display.toUpperCase()}
 >
-  <header class="entity-hero">
-    <div class="entity-hero__breadcrumb">
-      <a href="/">Case board</a>
-      <span aria-hidden="true">/</span>
-      <span>Context</span>
-      <span aria-hidden="true">/</span>
-      <span class="entity-hero__breadcrumb-current">{entity.display}</span>
-    </div>
-    <p class="entity-hero__eyebrow">Entity reference</p>
-    <h1 class="entity-hero__title">{entity.display}</h1>
-    <p class="entity-hero__count">
-      Referenced in {entity.cases.length} case{entity.cases.length === 1 ? '' : 's'} across the archive.
-    </p>
-  </header>
+  <main class="entity-main" id="main">
 
-  <div class="entity-layout">
-    <div class="entity-body prose">
-      {Content && <Content />}
-      {!Content && (
-        <p class="entity-body__stub">
-          No standalone context page for this entity yet. Below is every case in
-          the archive that references it. The archive's source content lives at{' '}
-          <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">
-            github.com/wretcher207/the-ufo-files
-          </a>.
-        </p>
-      )}
+    <a class="ufo-section-anchor entity-anchor" href="/">
+      <span class="ufo-section-anchor__num">{caseCount}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Entity reference</span>
+        <span class="ufo-section-anchor__sublabel">Case{caseCount === 1 ? '' : 's'} that name {entity.display}</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Open archive</span>
+    </a>
+
+    <header class="entity-hero">
+      <h1 class="entity-hero__title">{entity.display}.</h1>
+      <p class="entity-hero__meta">
+        <a href="/timeline">Across the archive</a>
+        &nbsp;/&nbsp;
+        Referenced in {caseCount} case{caseCount === 1 ? '' : 's'}
+      </p>
+    </header>
+
+    {img && (
+      <a class="ufo-figure-link entity-hero__figure-link" href={`/dossier/${cases[0]?.id ?? ''}`} aria-label={`Open the first case that references ${entity.display}`}>
+        <figure class="entity-hero__figure">
+          <img src={img.src} alt={img.alt} loading="eager" fetchpriority="high" />
+          <figcaption>{img.caption}</figcaption>
+        </figure>
+      </a>
+    )}
+
+    <div class="entity-plate">
+      <article class="entity-body">
+        {Content && <Content />}
+        {!Content && (
+          <p class="entity-body__stub">
+            No standalone context page for this entity yet. Below is every case
+            in the archive that names {entity.display}. The source corpus is at
+            <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">
+              github.com/wretcher207/the-ufo-files</a>.
+          </p>
+        )}
+      </article>
+
+      <aside class="entity-rail" aria-labelledby="entity-cases-h">
+        <header class="entity-rail__head">
+          <h2 id="entity-cases-h" class="entity-rail__title">Where this entity appears</h2>
+          <span class="entity-rail__count">{caseCount} {caseCount === 1 ? 'case' : 'cases'}</span>
+        </header>
+        {caseCount === 0 ? (
+          <p class="entity-rail__empty">No cases reference this entity yet.</p>
+        ) : (
+          <ol class="entity-cases">
+            {cases.map((c, i) => {
+              const thread = threadOf(c);
+              const sig = String(c.data.significance ?? 'medium').toLowerCase();
+              return (
+                <li class="entity-case">
+                  <a href={caseUrl(c)} class="entity-case__link ufo-row-link">
+                    <span class="entity-case__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
+                    <span class="entity-case__body">
+                      <span class="entity-case__title ufo-row-link__fg">{tidyTitle(c.data.title)}</span>
+                      <span class="entity-case__chrome ufo-row-link__dim">
+                        <span class="entity-case__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+                        <span aria-hidden="true">·</span>
+                        <span class="entity-case__date">{headlineDate(c) ?? '----'}</span>
+                        {thread && <>
+                          <span aria-hidden="true">·</span>
+                          <span class="entity-case__thread">{thread.title}</span>
+                        </>}
+                        {sig === 'high' && <>
+                          <span aria-hidden="true">·</span>
+                          <span class="entity-case__sig">HEADLINE</span>
+                        </>}
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </aside>
     </div>
 
-    <aside class="entity-rail">
-      <header class="entity-rail__head">
-        <span class="entity-rail__label">Cases</span>
-        <h2 class="entity-rail__title">Where this entity appears</h2>
-      </header>
-      {cases.length === 0 && (
-        <p class="entity-rail__empty">No cases reference this entity yet.</p>
-      )}
-      <ul class="case-list">
-        {cases.map((c) => {
-          const sig = c.data.significance ?? 'medium';
-          const thread = threadOf(c);
-          return (
-            <li class="case-list__item">
-              <a href={caseUrl(c)} class="case-list__link">
-                <div class="case-list__chrome">
-                  <span class="case-list__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
-                  <span class="case-list__date">{headlineDate(c) ?? '—'}</span>
-                  <span class={`case-list__sig case-list__sig--${sig}`}>{sig.toUpperCase()}</span>
-                </div>
-                <span class="case-list__title">{tidyTitle(c.data.title)}</span>
-                {thread && (
-                  <span class="case-list__thread">{thread.title}</span>
-                )}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </aside>
-  </div>
+  </main>
 </Base>
 
 <style is:global>
-  .entity-hero {
-    border-top: 1px solid var(--border);
-    padding: var(--sp-5) 0 var(--sp-7);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: var(--sp-7);
+  .entity-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
   }
-  .entity-hero__breadcrumb {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wide);
-    color: var(--fg-3);
-    display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;
-    margin-bottom: var(--sp-5);
-  }
-  .entity-hero__breadcrumb a { color: var(--fg-2); }
-  .entity-hero__breadcrumb-current { color: var(--fg-3); }
-  .entity-hero__eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    color: var(--fg-3);
-    margin: 0 0 var(--sp-3);
-  }
-  .entity-hero__title {
-    font-family: var(--font-display);
-    font-size: var(--fs-3xl);
-    line-height: var(--lh-tight);
-    letter-spacing: var(--tracking-tight);
-    color: var(--fg-1);
-    font-weight: 500;
-    margin: 0 0 var(--sp-3);
-    max-width: 22ch;
-  }
-  @media (max-width: 640px) { .entity-hero__title { font-size: var(--fs-2xl); } }
-  .entity-hero__count {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    color: var(--fg-3);
-    letter-spacing: var(--tracking-wide);
-    margin: 0;
+  @media (max-width: 720px) {
+    .entity-main { padding: 48px 16px 80px; }
   }
 
-  .entity-layout {
+  .entity-anchor { margin-bottom: 56px; }
+  @media (max-width: 720px) {
+    .entity-anchor { margin-bottom: 40px; }
+  }
+
+  .entity-hero { margin: 0 0 32px; max-width: 60ch; }
+  .entity-hero__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
+    max-width: 22ch;
+  }
+  .entity-hero__meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 0;
+  }
+  .entity-hero__meta a {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .entity-hero__meta a:hover,
+  .entity-hero__meta a:focus-visible {
+    border-bottom-color: var(--fg);
+  }
+
+  .entity-hero__figure-link {
+    margin: 0 0 56px;
+    max-width: 720px;
+  }
+  .entity-hero__figure { margin: 0; }
+  .entity-hero__figure img {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+    display: block;
+    filter: grayscale(1) contrast(1.05);
+  }
+
+  .entity-plate {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
-    gap: var(--sp-7);
+    gap: 64px;
     align-items: start;
   }
   @media (max-width: 960px) {
-    .entity-layout { grid-template-columns: 1fr; gap: var(--sp-5); }
+    .entity-plate { grid-template-columns: 1fr; gap: 40px; }
   }
 
+  .entity-body {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--fg);
+    max-width: 64ch;
+  }
+  .entity-body h2, .entity-body h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: var(--fg);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .entity-body h2 { font-size: 36px; margin: 48px 0 16px; }
+  .entity-body h3 { font-size: 24px; margin: 32px 0 12px; }
+  .entity-body h2:first-child, .entity-body h3:first-child { margin-top: 0; }
+  .entity-body p { margin: 12px 0 16px; }
+  .entity-body a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--fg-dim);
+    text-underline-offset: 4px;
+  }
+  .entity-body a:hover, .entity-body a:focus-visible {
+    text-decoration-color: var(--fg);
+  }
   .entity-body__stub {
-    font-family: var(--font-ui);
-    font-size: var(--fs-base);
-    color: var(--fg-2);
-    line-height: var(--lh-loose);
-    margin: 0 0 var(--sp-5);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--fg-mid);
   }
 
-  .entity-rail__head { display: flex; flex-direction: column; gap: var(--sp-2); margin-bottom: var(--sp-4); }
-  .entity-rail__label {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    color: var(--fg-3);
+  .entity-rail__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--fg);
+    margin-bottom: 0;
   }
   .entity-rail__title {
-    font-family: var(--font-display);
-    font-size: var(--fs-lg);
-    color: var(--fg-1);
-    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
     font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0;
+  }
+  .entity-rail__count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
   }
   .entity-rail__empty {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    color: var(--fg-3);
-    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 24px 0 0;
   }
 
-  .case-list__thread {
-    grid-column: 2;
+  .entity-cases { margin: 0; padding: 0; list-style: none; }
+  .entity-case { border-bottom: 1px solid var(--rule); }
+  .entity-case__link {
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .entity-case__num {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wide);
-    color: var(--fg-3);
+    font-size: 11px;
+    letter-spacing: 0.16em;
   }
-  @media (max-width: 640px) {
-    .case-list__thread { grid-column: 1; }
+  .entity-case__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
+  .entity-case__title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.25;
+  }
+  .entity-case__chrome {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+  }
+  .entity-case__sig { color: inherit; }
 </style>

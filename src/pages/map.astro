@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { caseImage } from '../lib/case-images';
 
 const LOCATIONS = [
   { slug: 'kenneth-arnold-cascade-1947',  label: 'Kenneth Arnold sighting',  lat: 46.8523,  lng: -121.7603, year: 1947, archive: 'fbi',    sig: 'high' },
@@ -24,58 +25,256 @@ const LOCATIONS = [
 ];
 
 const geocoded = LOCATIONS.length;
+const sortedLocations = [...LOCATIONS].sort((a, b) => a.year - b.year);
 ---
 <Base
   title="Map"
   description="Geographic distribution of headline cases."
-  serial="MAP"
   section="WORLD VIEW"
 >
-  <header class="mp-hero">
-    <div class="mp-hero__breadcrumb"><a href="/">Case board</a> <span aria-hidden="true">/</span> <span>Map</span></div>
-    <p class="mp-hero__eyebrow">{geocoded} headline cases located</p>
-    <h1 class="mp-hero__title">Where the file went down.</h1>
-    <p class="mp-hero__lede">
-      A starting geographic view: every high-signal case from the FBI file and PURSUE Release 01 whose location we could responsibly place. Many cases are policy memos or correspondence patterns and do not have a point on a map.
-    </p>
-  </header>
+  <main class="mp-main" id="main">
 
-  <div id="ufo-map" class="mp-map" role="region" aria-label="Map of cases">
-    <div class="mp-map__fallback"><p>Map view requires JavaScript. The cases below are the full geocoded set.</p></div>
-  </div>
+    <a class="ufo-section-anchor mp-anchor" href="/timeline">
+      <span class="ufo-section-anchor__num">{geocoded}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Located cases</span>
+        <span class="ufo-section-anchor__sublabel">Headline incidents we could responsibly place</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Timeline</span>
+    </a>
 
-  <section class="mp-list" aria-labelledby="mp-list-h">
-    <h2 id="mp-list-h" class="mp-list__title">Located cases</h2>
-    <ul class="case-list">
-      {LOCATIONS.map((loc) => (
-        <li class="case-list__item">
-          <a href={'/dossier/' + loc.slug} class="case-list__link">
-            <div class="case-list__chrome">
-              <span class="case-list__archive">{loc.archive === 'pursue' ? 'PURSUE' : 'FBI'}</span>
-              <span class="case-list__date">{loc.year}</span>
-              <span class={'case-list__sig case-list__sig--' + loc.sig}>{loc.sig.toUpperCase()}</span>
-            </div>
-            <span class="case-list__title">{loc.label}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </section>
+    <header class="mp-hero">
+      <h1 class="mp-hero__title">Where the file went down.</h1>
+      <p class="mp-hero__lede">
+        Every high-signal case from FBI 62-HQ-83894 and PURSUE Release 01 with a
+        location we could responsibly place. Memo correspondence and policy
+        cases stay off the map. See the
+        <a href="/timeline">timeline</a> for the complete sequence.
+      </p>
+    </header>
+
+    <div id="ufo-map" class="mp-map" role="region" aria-label="Map of cases">
+      <div class="mp-map__fallback">
+        <p>Map view requires JavaScript. The cases below are the full geocoded set.</p>
+      </div>
+    </div>
+
+    <section class="mp-list" aria-labelledby="mp-list-h">
+      <header class="mp-list__head">
+        <h2 id="mp-list-h" class="mp-list__title">Located cases &nbsp;/&nbsp; chronological</h2>
+        <span class="mp-list__count">{geocoded}</span>
+      </header>
+      <ol class="mp-locations">
+        {sortedLocations.map((loc, i) => {
+          const img = caseImage(loc.slug);
+          return (
+            <li class="mp-location">
+              <a href={'/dossier/' + loc.slug} class="mp-location__link ufo-row-link">
+                <span class="mp-location__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
+                <span class="mp-location__thumb">
+                  {img && <img src={img.src} alt="" width="80" height="56" loading="lazy" />}
+                </span>
+                <span class="mp-location__year ufo-row-link__mid">{loc.year}</span>
+                <span class="mp-location__title ufo-row-link__fg">{loc.label}</span>
+                <span class={'mp-location__sig mp-location__sig--' + loc.sig + ' ufo-row-link__dim'}>
+                  {loc.sig === 'high' ? 'HEADLINE' : 'MEDIUM'}
+                </span>
+                <span class="mp-location__agency ufo-row-link__dim">
+                  {loc.archive === 'pursue' ? 'PURSUE' : 'FBI'}
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+
+  </main>
 </Base>
 
 <style>
-  .mp-hero { padding: var(--sp-5) 0 var(--sp-6); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--sp-6); }
-  .mp-hero__breadcrumb { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wide); color: var(--fg-3); display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4); }
-  .mp-hero__breadcrumb a { color: var(--fg-2); }
-  .mp-hero__eyebrow { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-3); }
-  .mp-hero__title { font-family: var(--font-display); font-size: var(--fs-3xl); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; max-width: 22ch; }
-  @media (max-width: 640px) { .mp-hero__title { font-size: var(--fs-2xl); } }
-  .mp-hero__lede { font-family: var(--font-ui); font-size: var(--fs-md); line-height: var(--lh-loose); color: var(--fg-2); max-width: 70ch; margin: 0; }
-  .mp-map { width: 100%; height: 520px; background: var(--bg-1); border: 1px solid var(--border); position: relative; margin-bottom: var(--sp-7); }
-  .mp-map__fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); color: var(--fg-3); font-size: var(--fs-sm); padding: var(--sp-5); text-align: center; pointer-events: none; }
+  .mp-main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+  @media (max-width: 720px) {
+    .mp-main { padding: 48px 16px 80px; }
+  }
+
+  .mp-anchor { margin-bottom: 56px; }
+  @media (max-width: 720px) {
+    .mp-anchor { margin-bottom: 40px; }
+  }
+
+  .mp-hero { max-width: 70ch; margin: 0 0 48px; }
+  .mp-hero__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
+    max-width: 22ch;
+  }
+  .mp-hero__lede {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--fg-mid);
+    margin: 0;
+  }
+  .mp-hero__lede a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--fg-dim);
+    text-underline-offset: 4px;
+  }
+  .mp-hero__lede a:hover, .mp-hero__lede a:focus-visible {
+    text-decoration-color: var(--fg);
+  }
+
+  .mp-map {
+    width: 100%;
+    height: 560px;
+    background: var(--bg);
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--fg);
+    position: relative;
+    margin-bottom: 64px;
+  }
+  .mp-map__fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    color: var(--fg-dim);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 24px;
+    text-align: center;
+    pointer-events: none;
+  }
   .mp-map.is-live .mp-map__fallback { display: none; }
-  .mp-list { margin-bottom: var(--sp-7); }
-  .mp-list__title { font-family: var(--font-display); font-size: var(--fs-xl); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; border-bottom: 1px solid var(--border); padding-bottom: var(--sp-3); }
+  @media (max-width: 720px) {
+    .mp-map { height: 440px; }
+  }
+
+  .mp-list { margin: 0 0 32px; }
+  .mp-list__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--fg);
+    margin-bottom: 0;
+  }
+  .mp-list__title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0;
+  }
+  .mp-list__count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+    font-feature-settings: "tnum";
+  }
+  .mp-locations { margin: 0; padding: 0; list-style: none; }
+  .mp-location { border-bottom: 1px solid var(--rule); }
+  .mp-location__link {
+    grid-template-columns: 40px 96px 80px 1fr 100px 70px;
+    gap: 18px;
+    align-items: center;
+  }
+  .mp-location__num,
+  .mp-location__year,
+  .mp-location__sig,
+  .mp-location__agency {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .mp-location__agency { text-align: right; }
+  .mp-location__title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    line-height: 1.25;
+  }
+  .mp-location__thumb {
+    display: block;
+    width: 96px;
+    height: 64px;
+    overflow: hidden;
+  }
+  .mp-location__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+  }
+  .mp-location__link:hover .mp-location__thumb img,
+  .mp-location__link:focus-visible .mp-location__thumb img {
+    filter: grayscale(1) contrast(1.05) invert(1);
+  }
+  @media (max-width: 720px) {
+    .mp-location__link {
+      grid-template-columns: 32px 64px 1fr;
+      gap: 12px;
+    }
+    .mp-location__year,
+    .mp-location__sig,
+    .mp-location__agency { display: none; }
+    .mp-location__thumb { width: 64px; height: 44px; }
+    .mp-location__title { font-size: 15px; }
+  }
+
+  /* MapLibre popup overrides for monochrome system */
+  :global(.maplibregl-popup-content) {
+    background: var(--bg) !important;
+    color: var(--fg) !important;
+    border: 1px solid var(--fg) !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    font-family: var(--font-mono) !important;
+  }
+  :global(.maplibregl-popup-tip) { display: none !important; }
+  :global(.maplibregl-ctrl-group) {
+    background: var(--bg) !important;
+    border: 1px solid var(--fg) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  :global(.maplibregl-ctrl-group button) {
+    color: var(--fg) !important;
+    background: transparent !important;
+  }
+  :global(.maplibregl-ctrl-group button:hover) {
+    background: var(--fg) !important;
+    color: var(--bg) !important;
+  }
+  :global(.maplibregl-ctrl-group button + button) {
+    border-top: 1px solid var(--rule) !important;
+  }
+  :global(.maplibregl-ctrl-attrib) {
+    background: rgba(0,0,0,0.6) !important;
+    color: var(--fg-dim) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+    letter-spacing: 0.1em !important;
+  }
+  :global(.maplibregl-ctrl-attrib a) { color: var(--fg-mid) !important; }
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
@@ -106,14 +305,13 @@ const geocoded = LOCATIONS.length;
           },
         },
         layers: [
-          { id: "bg", type: "background", paint: { "background-color": "#030506" } },
-          { id: "carto", type: "raster", source: "carto", paint: { "raster-saturation": -1, "raster-brightness-min": 0.15, "raster-brightness-max": 1.0, "raster-contrast": 0.15 } },
+          { id: "bg", type: "background", paint: { "background-color": "#000000" } },
+          { id: "carto", type: "raster", source: "carto", paint: { "raster-saturation": -1, "raster-brightness-min": 0.05, "raster-brightness-max": 0.7, "raster-contrast": 0.2 } },
         ],
       },
       center: [-95, 40],
       zoom: 2.2,
     });
-    // Auto-frame to cover all markers with padding
     const lats = locations.map((l) => l.lat);
     const lngs = locations.map((l) => l.lng);
     const bounds = [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]];
@@ -121,18 +319,19 @@ const geocoded = LOCATIONS.length;
       map.resize();
       map.fitBounds(bounds, { padding: { top: 60, bottom: 60, left: 60, right: 60 }, duration: 0, maxZoom: 4 });
     });
-    // Also resize after a beat in case container measured wrong initially
     requestAnimationFrame(() => map.resize());
     window.addEventListener('resize', () => map.resize());
     container.classList.add("is-live");
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     for (const loc of locations) {
       const el = document.createElement("div");
-      el.style.width = (loc.sig === "high" ? 16 : 12) + "px";
-      el.style.height = el.style.width;
-      el.style.borderRadius = "50%";
-      el.style.border = "2px solid #030506";
+      const dim = loc.sig === "high" ? 14 : 10;
+      el.style.width = dim + "px";
+      el.style.height = dim + "px";
       el.style.cursor = "pointer";
+      el.style.outline = "1px solid #ffffff";
+      el.style.outlineOffset = "0";
+      el.style.transition = "background-color 90ms linear, outline-width 90ms linear";
       el.setAttribute("role", "button");
       el.setAttribute("tabindex", "0");
       el.setAttribute("aria-label", loc.label + ", " + loc.year + ", " + (loc.archive === "pursue" ? "PURSUE" : "FBI") + ". Press Enter to open dossier.");
@@ -142,14 +341,26 @@ const geocoded = LOCATIONS.length;
           window.location.href = "/dossier/" + loc.slug;
         }
       });
+      // PURSUE = outlined empty dot, FBI = filled white dot.
       if (loc.archive === "pursue") {
-        el.style.background = "#C7F7FF";
-        el.style.boxShadow = "0 0 8px rgba(199, 247, 255, 0.6)";
+        el.style.background = "#000000";
       } else {
-        el.style.background = "#A8B4B8";
+        el.style.background = "#ffffff";
       }
+      el.addEventListener("mouseenter", () => {
+        el.style.background = "#ffffff";
+        el.style.outline = "2px solid #ffffff";
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.background = loc.archive === "pursue" ? "#000000" : "#ffffff";
+        el.style.outline = "1px solid #ffffff";
+      });
       const popup = new maplibregl.Popup({ offset: 14, closeButton: false, className: "ufo-popup" }).setHTML(
-        '<div style="font-family:monospace;font-size:11px;color:#E8F0F2;background:#0D1416;border:1px solid #6F7C80;padding:8px;"><strong>' + loc.label + "</strong><br><span style=\"color:#A8B4B8\">" + loc.year + " . " + (loc.archive === "pursue" ? "PURSUE" : "FBI") + "</span><br><a style=\"color:#C7F7FF\" href=\"/dossier/" + loc.slug + "\">Open dossier</a></div>"
+        '<div style="padding:12px 14px;font-family:inherit;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#ffffff;min-width:200px;">' +
+          '<div style="color:#888;margin-bottom:6px;">' + loc.year + ' &middot; ' + (loc.archive === 'pursue' ? 'PURSUE' : 'FBI') + (loc.sig === 'high' ? ' &middot; HEADLINE' : '') + '</div>' +
+          '<div style="font-family:Fraunces,serif;font-size:15px;letter-spacing:-0.01em;text-transform:none;line-height:1.25;color:#fff;margin-bottom:10px;">' + loc.label + '</div>' +
+          '<a style="color:#fff;text-decoration:underline;text-underline-offset:3px;" href="/dossier/' + loc.slug + '">Open dossier &rarr;</a>' +
+        '</div>'
       );
       new maplibregl.Marker({ element: el }).setLngLat([loc.lng, loc.lat]).setPopup(popup).addTo(map);
     }

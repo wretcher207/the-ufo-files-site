@@ -56,7 +56,8 @@ export async function getAllEntities(): Promise<EntityRecord[]> {
   const slugToOriginal = new Map<string, string>();
 
   for (const c of cases) {
-    if (!c.data.thread) continue;
+    const hasThread = (c.data.threads && c.data.threads.length) || c.data.thread;
+    if (!hasThread) continue;
     for (const raw of c.data.entities_mentioned ?? []) {
       const slug = toSlug(String(raw));
       if (!slug) continue;
