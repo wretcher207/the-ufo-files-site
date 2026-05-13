@@ -7,6 +7,7 @@ import {
   tidyTitle,
 } from '../lib/case-utils';
 import { THREADS } from '../lib/threads';
+import { caseImage } from '../lib/case-images';
 
 const renderable = await getRenderableCases();
 const fbiCount = renderable.filter((c) => archiveOf(c) === 'fbi').length;
@@ -26,8 +27,11 @@ function dateKey(c: typeof renderable[number]) {
 // Latest entries: just by date, most recent first.
 const latest = [...renderable].sort((a, b) => dateKey(b) - dateKey(a)).slice(0, 18);
 
-// One featured case for the masthead pull.
-const featured = renderable.find((c) => c.id === 'apollo-17-vm6') ?? renderable[0];
+// Featured case for the pull. Kenneth Arnold's Cascade narrative,
+// the case that started the public record.
+const featured = renderable.find((c) => c.id === 'kenneth-arnold-sighting-narrative-cascade-june-1947')
+  ?? renderable.find((c) => c.id === 'guy-hottel-three-saucers-new-mexico-1950')
+  ?? renderable[0];
 
 const countByThread = new Map<string, number>();
 for (const c of renderable) {
@@ -41,34 +45,86 @@ const totalCases = renderable.length;
 <Base title="The UFO Files">
 
   <section class="masthead">
-    <p class="masthead__eyebrow">RELEASED 2026-05-08 · {totalCases} CASES INDEXED</p>
-    <h1 class="masthead__title">
-      The files,<br />in one place.
-    </h1>
-    <p class="masthead__lede">
-      FBI 62-HQ-83894 and the May 8, 2026 PURSUE release. Witnesses, agencies,
-      and contradictions threaded through both. Every claim links back to the
-      page it came from.
-    </p>
-    <p class="masthead__links">
-      <a href="/threads">Read by thread</a>
-      <span class="masthead__sep">·</span>
-      <a href={`/dossier/${featured?.id}`}>Open a case</a>
-      <span class="masthead__sep">·</span>
-      <a href="/board">Open the board</a>
-    </p>
+    <div class="masthead__grid">
+      <figure class="masthead__figure">
+        <img
+          src="/img/archive/hottel-memo-1950.jpg"
+          alt="FBI memorandum from Guy Hottel to J. Edgar Hoover, March 22, 1950, reporting three flying saucers recovered in New Mexico."
+          width="1200"
+          height="1554"
+          fetchpriority="high"
+        />
+        <figcaption>
+          GUY HOTTEL TO HOOVER &nbsp;/&nbsp; 22 MARCH 1950 &nbsp;/&nbsp; FBI 62-83894
+        </figcaption>
+      </figure>
+      <div class="masthead__text">
+        <p class="masthead__eyebrow">RELEASED 2026-05-08 &nbsp;/&nbsp; {totalCases} CASES INDEXED</p>
+        <h1 class="masthead__title">
+          The files,<br />in one place.
+        </h1>
+        <p class="masthead__lede">
+          FBI 62-HQ-83894 and the May 8, 2026 PURSUE release. Witnesses, agencies,
+          and contradictions threaded through both. Every claim links back to the
+          page it came from.
+        </p>
+        <p class="masthead__links">
+          <a href="/threads">Read by thread</a>
+          <span class="masthead__sep">·</span>
+          <a href={`/dossier/${featured?.id}`}>Open a case</a>
+          <span class="masthead__sep">·</span>
+          <a href="/board">Open the board</a>
+        </p>
+      </div>
+    </div>
   </section>
 
   <section class="pull">
-    <p class="pull__case-id">{(featured?.data as any)?.caseId ?? featured?.id}</p>
-    <a href={`/dossier/${featured?.id}`} class="pull__title-link">
-      <h2 class="pull__title">{tidyTitle(featured?.data.title)}</h2>
-    </a>
-    <p class="pull__excerpt">
-      {(featured?.data as any)?.excerpt ?? (featured?.data as any)?.summary ?? ''}
-    </p>
-    <p class="pull__meta">
-      {(featured?.data as any)?.agency ?? 'FBI'} · {caseDate(featured)} · CONFIDENCE {String((featured?.data as any)?.confidence ?? 'low').toUpperCase()}
+    <div class="pull__grid">
+      <figure class="pull__figure">
+        <img
+          src="/img/archive/arnold-aaf-document.jpg"
+          alt="Kenneth Arnold's hand-drawn sketch from his July 12, 1947 Army Air Forces intelligence report, showing the nine objects he observed near Mount Rainier."
+          width="700"
+          height="900"
+          loading="lazy"
+        />
+        <figcaption>
+          ARNOLD AAF REPORT &nbsp;/&nbsp; 12 JULY 1947
+        </figcaption>
+      </figure>
+      <div class="pull__text">
+        <p class="pull__case-id">{(featured?.data as any)?.caseId ?? featured?.id}</p>
+        <a href={`/dossier/${featured?.id}`} class="pull__title-link">
+          <h2 class="pull__title">{tidyTitle(featured?.data.title)}</h2>
+        </a>
+        <p class="pull__excerpt">
+          {(featured?.data as any)?.excerpt ?? (featured?.data as any)?.summary ?? ''}
+        </p>
+        <p class="pull__meta">
+          {(featured?.data as any)?.agency ?? 'FBI'} &nbsp;/&nbsp; {caseDate(featured)} &nbsp;/&nbsp; CONFIDENCE {String((featured?.data as any)?.confidence ?? 'low').toUpperCase()}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="frontpage">
+    <p class="frontpage__eyebrow">ONE PAGE FROM THE RECORD</p>
+    <figure class="frontpage__figure">
+      <img
+        src="/img/archive/roswell-daily-record-july-8-1947.jpg"
+        alt="Front page of the Roswell Daily Record, July 8, 1947, with the headline 'RAAF Captures Flying Saucer On Ranch in Roswell Region.'"
+        width="1600"
+        height="900"
+        loading="lazy"
+      />
+      <figcaption>
+        ROSWELL DAILY RECORD &nbsp;/&nbsp; 8 JULY 1947 &nbsp;/&nbsp; PUBLIC DOMAIN
+      </figcaption>
+    </figure>
+    <p class="frontpage__note">
+      The headline ran one day. The retraction ran the next. Both pages are in
+      the file. So is the press release the RAAF issued before the retraction.
     </p>
   </section>
 
@@ -78,16 +134,24 @@ const totalCases = renderable.length;
       <p class="index__meta">{latest.length} of {totalCases}</p>
     </header>
     <ol class="index__list">
-      {latest.map((c, i) => (
-        <li class="index-row">
-          <a href={`/dossier/${c.id}`} class="index-row__link">
-            <span class="index-row__num">{String(i + 1).padStart(2, '0')}</span>
-            <span class="index-row__date">{caseDate(c) || '----'}</span>
-            <span class="index-row__title">{tidyTitle(c.data.title)}</span>
-            <span class="index-row__agency">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
-          </a>
-        </li>
-      ))}
+      {latest.map((c, i) => {
+        const img = caseImage(c.id);
+        return (
+          <li class="index-row" data-has-image={img ? 'true' : undefined}>
+            <a href={`/dossier/${c.id}`} class="index-row__link">
+              <span class="index-row__num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="index-row__thumb">
+                {img && (
+                  <img src={img.src} alt="" width="80" height="56" loading="lazy" />
+                )}
+              </span>
+              <span class="index-row__date">{caseDate(c) || '----'}</span>
+              <span class="index-row__title">{tidyTitle(c.data.title)}</span>
+              <span class="index-row__agency">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+            </a>
+          </li>
+        );
+      })}
     </ol>
     <p class="index__more">
       <a href="/timeline">View all on the timeline</a>
@@ -148,35 +212,78 @@ const totalCases = renderable.length;
 
   /* ── MASTHEAD ─────────────────────────────────────────── */
   .masthead {
-    padding-top: 120px;
-    padding-bottom: 80px;
+    padding-top: 80px;
+    padding-bottom: 96px;
   }
   @media (max-width: 720px) {
-    .masthead { padding-top: 56px; padding-bottom: 48px; }
+    .masthead { padding-top: 40px; padding-bottom: 56px; }
+  }
+  .masthead__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .masthead__grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+  .masthead__figure {
+    margin: 0;
+    position: relative;
+  }
+  .masthead__figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: grayscale(1) contrast(1.08);
+    background: var(--fg);
+  }
+  .masthead__figure figcaption {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+  @media (max-width: 900px) {
+    .masthead__figure { max-height: 70vh; overflow: hidden; }
+    .masthead__figure img { max-height: 70vh; object-fit: cover; object-position: top center; }
+  }
+  .masthead__text {
+    position: sticky;
+    top: 64px;
+    align-self: start;
+  }
+  @media (max-width: 900px) {
+    .masthead__text { position: static; }
   }
   .masthead__eyebrow {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.22em;
     color: var(--fg-dim);
-    margin: 0 0 56px;
+    margin: 0 0 40px;
   }
   .masthead__title {
     font-family: var(--font-display);
     font-weight: 300;
-    font-size: clamp(64px, 12vw, 184px);
+    font-size: clamp(56px, 9vw, 144px);
     line-height: 0.92;
-    letter-spacing: -0.035em;
-    margin: 0 0 48px;
+    letter-spacing: -0.03em;
+    margin: 0 0 40px;
     color: var(--fg);
   }
   .masthead__lede {
     font-family: var(--font-body);
-    font-size: clamp(18px, 1.8vw, 22px);
+    font-size: clamp(17px, 1.5vw, 20px);
     line-height: 1.45;
     color: var(--fg-mid);
-    max-width: 56ch;
-    margin: 0 0 56px;
+    max-width: 52ch;
+    margin: 0 0 48px;
   }
   .masthead__links {
     font-family: var(--font-mono);
@@ -209,13 +316,43 @@ const totalCases = renderable.length;
   @media (max-width: 720px) {
     .pull { padding: 56px 16px; }
   }
+  .pull__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    gap: 56px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .pull__grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+  .pull__figure { margin: 0; }
+  .pull__figure img {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+    filter: grayscale(1) contrast(1.1) invert(1);
+    background: var(--bg);
+  }
+  .pull__figure figcaption {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+    margin-top: 10px;
+    text-transform: uppercase;
+    max-width: 480px;
+  }
   .pull__case-id {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin: 0 0 24px;
+    margin: 0 0 20px;
   }
   .pull__title-link {
     text-decoration: none;
@@ -225,25 +362,24 @@ const totalCases = renderable.length;
   .pull__title {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(36px, 5vw, 64px);
+    font-size: clamp(32px, 4vw, 56px);
     line-height: 1.05;
     letter-spacing: -0.02em;
     color: var(--fg);
-    margin: 0 0 32px;
+    margin: 0 0 24px;
     max-width: 22ch;
   }
   .pull__title-link:hover .pull__title {
     text-decoration: underline;
     text-decoration-thickness: 1px;
-    text-underline-offset: 8px;
+    text-underline-offset: 6px;
   }
   .pull__excerpt {
     font-family: var(--font-body);
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.55;
     color: var(--fg-mid);
-    max-width: 64ch;
-    margin: 0 0 32px;
+    margin: 0 0 24px;
   }
   .pull__meta {
     font-family: var(--font-mono);
@@ -251,6 +387,52 @@ const totalCases = renderable.length;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
+    margin: 0;
+  }
+
+  /* ── FRONT PAGE ───────────────────────────────────────── */
+  .frontpage {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 96px 32px;
+  }
+  @media (max-width: 720px) {
+    .frontpage { padding: 56px 16px; }
+  }
+  .frontpage__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    margin: 0 0 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .frontpage__figure {
+    margin: 0 0 32px;
+  }
+  .frontpage__figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: grayscale(1) contrast(1.05);
+    background: var(--fg);
+  }
+  .frontpage__figure figcaption {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+    margin-top: 14px;
+    text-transform: uppercase;
+  }
+  .frontpage__note {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(20px, 2vw, 26px);
+    line-height: 1.35;
+    color: var(--fg);
+    max-width: 40ch;
     margin: 0;
   }
 
@@ -291,10 +473,10 @@ const totalCases = renderable.length;
   .index-row { border-bottom: 1px solid var(--rule); }
   .index-row__link {
     display: grid;
-    grid-template-columns: 56px 120px 1fr 80px;
+    grid-template-columns: 48px 96px 110px 1fr 70px;
     gap: 20px;
-    align-items: baseline;
-    padding: 18px 0;
+    align-items: center;
+    padding: 12px 0;
     text-decoration: none;
     color: inherit;
   }
@@ -317,18 +499,34 @@ const totalCases = renderable.length;
   .index-row__title {
     font-family: var(--font-display);
     font-size: 20px;
-    line-height: 1.2;
+    line-height: 1.25;
     color: var(--fg);
+  }
+  .index-row__thumb {
+    display: block;
+    width: 96px;
+    height: 64px;
+    overflow: hidden;
+    background: transparent;
+  }
+  .index-row__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: grayscale(1) contrast(1.05);
+    display: block;
   }
   @media (max-width: 720px) {
     .index-row__link {
-      grid-template-columns: 36px 1fr;
+      grid-template-columns: 32px 64px 1fr;
       gap: 12px;
-      padding: 14px 0;
+      padding: 12px 0;
     }
     .index-row__date,
     .index-row__agency { display: none; }
-    .index-row__title { font-size: 17px; }
+    .index-row__thumb { width: 64px; height: 44px; }
+    .index-row__title { font-size: 16px; }
   }
   .index__more {
     margin: 32px 0 0;

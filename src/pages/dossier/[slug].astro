@@ -1,12 +1,12 @@
 ---
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import TopPlate from '../../components/TopPlate.astro';
 import CaseActions from '../../components/CaseActions.astro';
 import EntityRail from '../../components/EntityRail.astro';
 import RelatedCases from '../../components/RelatedCases.astro';
 import ProvenanceFooter from '../../components/ProvenanceFooter.astro';
-import { archiveOf, getRenderableCases, threadOf, tidyTitle } from '../../lib/case-utils';
+import { archiveOf, getRenderableCases, headlineDate, threadOf, tidyTitle } from '../../lib/case-utils';
+import { caseImage } from '../../lib/case-images';
 
 export async function getStaticPaths() {
   const cases = await getRenderableCases();
@@ -21,127 +21,173 @@ const { Content } = await render(entry);
 
 const archive = archiveOf(entry);
 const thread = threadOf(entry);
-// `serial` not surfaced by current Base.astro props. Kept here in case
-// Agent 7's Base rev re-introduces it.
-const _serial = archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
-void _serial;
-const sectionLabel = thread?.title.toUpperCase() ?? 'DOSSIER';
+const sectionLabel = thread?.title ?? 'Dossier';
 const headline = tidyTitle(entry.data.title);
+const data = entry.data;
+const date = headlineDate(entry);
+const caseId =
+  (typeof data.caseId === 'string' && data.caseId) ||
+  `${archive === 'pursue' ? 'PURSUE' : 'FBI-62HQ-83894'}/${entry.id}`;
+const agency =
+  (typeof data.agency === 'string' && data.agency) ||
+  (typeof data.publisher === 'string' && data.publisher) ||
+  (archive === 'pursue' ? 'WAR.GOV / PURSUE' : 'FBI');
+const classification =
+  (typeof data.classification === 'string' && data.classification) || 'PUBLIC RELEASE';
+const confidence = String((data as any).confidence ?? 'low').toUpperCase();
+const excerpt = (data as any).excerpt ?? (data as any).summary ?? '';
 
-// Page URL for citations + sharing.
+const img = caseImage(entry.id);
+
 const pageUrl = Astro.site
   ? new URL(Astro.url.pathname, Astro.site).toString()
   : Astro.url.pathname;
 
-// Raw body for the export .md download. `entry.body` exists on glob loader
-// entries. Type-narrowed via any-cast since the type isn't surfaced.
 const body: string = (entry as unknown as { body?: string }).body ?? '';
 ---
 <Base title={headline} section={sectionLabel}>
   <article class="dossier" data-pagefind-body>
-    {/* TOP PLATE — exploded composition, 60vh. */}
-    <TopPlate entry={entry} />
 
-    {/* CASE ACTIONS — sticky horizontal bar, collapses past hero. */}
+    <header class="dossier__masthead">
+      <p class="dossier__eyebrow">
+        {caseId}
+        {date && <> &nbsp;/&nbsp; {date}</>}
+        {agency && <> &nbsp;/&nbsp; {agency}</>}
+      </p>
+      <h1 class="dossier__title">{headline}</h1>
+      {excerpt && <p class="dossier__lede">{excerpt}</p>}
+      <p class="dossier__meta">
+        CLASSIFICATION {classification.toUpperCase()}
+        &nbsp;/&nbsp; CONFIDENCE {confidence}
+        {thread && <> &nbsp;/&nbsp; <a href={`/thread/${thread.id}`}>{thread.title}</a></>}
+      </p>
+    </header>
+
+    {img && (
+      <figure class="dossier__hero">
+        <img src={img.src} alt={img.alt} loading="eager" fetchpriority="high" />
+        <figcaption>{img.caption}</figcaption>
+      </figure>
+    )}
+
     <CaseActions entry={entry} pageUrl={pageUrl} body={body} />
 
-    {/* READING PLATE — single column, max 68ch, with right rail on desktop. */}
     <div class="dossier__plate">
       <div class="dossier__body prose">
         <Content />
       </div>
-
       <aside class="dossier__rail" aria-label="Case context">
         <EntityRail entry={entry} />
       </aside>
     </div>
 
     <RelatedCases current={entry} all={all} />
-
     <ProvenanceFooter entry={entry} />
   </article>
 </Base>
 
 <style is:global>
-  .dossier { display: block; }
+  .dossier {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+  @media (max-width: 720px) {
+    .dossier { padding: 48px 16px 80px; }
+  }
 
+  /* MASTHEAD */
+  .dossier__masthead { margin-bottom: 48px; max-width: 60ch; }
+  .dossier__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 0 0 24px;
+  }
+  .dossier__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 5.5vw, 80px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    margin: 0 0 24px;
+    color: var(--fg);
+  }
+  .dossier__lede {
+    font-family: var(--font-body);
+    font-size: clamp(17px, 1.5vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-mid);
+    margin: 0 0 24px;
+    max-width: 56ch;
+  }
+  .dossier__meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 0;
+  }
+  .dossier__meta a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--fg-dim); text-underline-offset: 4px; }
+  .dossier__meta a:hover { text-decoration-color: var(--fg); }
+
+  /* HERO IMAGE */
+  .dossier__hero {
+    margin: 0 0 56px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 40px 0;
+  }
+  .dossier__hero img {
+    width: 100%;
+    max-height: 80vh;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    filter: grayscale(1) contrast(1.05);
+  }
+  [data-mode="light"] .dossier__hero img { filter: grayscale(1) contrast(1.05); }
+  .dossier__hero figcaption {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin-top: 14px;
+  }
+
+  /* PLATE */
   .dossier__plate {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
-    gap: var(--sp-7);
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 64px;
     align-items: start;
-    margin-top: var(--sp-6);
+    margin-top: 48px;
   }
   @media (max-width: 960px) {
-    .dossier__plate {
-      grid-template-columns: 1fr;
-      gap: var(--sp-5);
-    }
+    .dossier__plate { grid-template-columns: 1fr; gap: 40px; }
   }
   .dossier__rail {
     position: sticky;
-    top: calc(56px + 80px);
+    top: 80px;
     display: flex;
     flex-direction: column;
-    gap: var(--sp-4);
+    gap: 24px;
   }
   @media (max-width: 960px) {
     .dossier__rail { position: static; }
   }
-
-  /* Reading plate prose, scoped to the dossier. Tightens .prose to the
-     plan-spec values: max 68ch, line-height 1.7, h3 in Schibsted 600. */
-  .dossier .prose { max-width: 68ch; }
-  .dossier .prose h2 {
-    font-family: var(--font-display);
-    font-size: var(--fs-xl);
-    font-weight: var(--weight-display);
-    line-height: var(--lh-snug);
-    letter-spacing: var(--tracking-tight);
-    margin: var(--sp-8) 0 var(--sp-4);
-  }
-  .dossier .prose h3 {
-    font-family: var(--font-body);
-    font-weight: var(--weight-body-sb);
-    font-size: var(--fs-lg);
-    line-height: var(--lh-snug);
-    margin: var(--sp-6) 0 var(--sp-3);
-  }
-  .dossier .prose p {
-    margin: var(--sp-3) 0 var(--sp-4);
-    line-height: var(--lh-loose);
-  }
-  .dossier .prose blockquote {
-    margin: var(--sp-5) 0;
-    padding: var(--sp-2) var(--sp-5);
-    border-left: 2px solid var(--accent-verdigris);
-    color: var(--ink-primary);
-    font-style: italic;
-    font-family: var(--font-display);
-    font-size: var(--fs-lg);
-    line-height: var(--lh-snug);
-  }
-
-  /* Inline case IDs, coordinates, dates render mono. */
-  .dossier .prose code {
-    font-family: var(--font-mono);
-    font-size: 0.92em;
-    background: var(--bg-raised);
-    padding: 1px 6px;
-    border: 1px solid var(--rule);
-    color: var(--ink-primary);
-  }
-
-  /* Crisp solid-black redaction bar. No font trickery, no scanlines. */
-  .dossier .redaction,
-  .dossier .prose .redaction {
+  .dossier .prose { max-width: 64ch; }
+  .dossier .redaction {
     display: inline-block;
-    background: #000;
+    background: var(--fg);
     color: transparent;
     user-select: none;
-    padding: 0 0.4em;
-    border-radius: 1px;
-    line-height: 1;
-    vertical-align: baseline;
+    padding: 0 0.5em;
+    line-height: 1.1;
   }
 </style>
