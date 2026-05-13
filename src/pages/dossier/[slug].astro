@@ -63,12 +63,19 @@ const body: string = (entry as unknown as { body?: string }).body ?? '';
       </p>
     </header>
 
-    {img && (
+    {img && (entry.data.origin_url ? (
+      <a class="ufo-figure-link dossier__hero-link" href={`/evidence/${entry.id}`} aria-label="Open the source document for this case">
+        <figure class="dossier__hero">
+          <img src={img.src} alt={img.alt} loading="eager" fetchpriority="high" />
+          <figcaption>{img.caption}</figcaption>
+        </figure>
+      </a>
+    ) : (
       <figure class="dossier__hero">
         <img src={img.src} alt={img.alt} loading="eager" fetchpriority="high" />
         <figcaption>{img.caption}</figcaption>
       </figure>
-    )}
+    ))}
 
     <CaseActions entry={entry} pageUrl={pageUrl} body={body} />
 
