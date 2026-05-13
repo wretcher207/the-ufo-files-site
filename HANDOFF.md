@@ -212,7 +212,7 @@ and the homepage section anchors and stats grid.
   (`npm run preview` after `npm run build`) is fine and is what David
   should use to verify board/atlas changes locally. Has been there for at
   least the entire current branch.
-- **Hero images on most cases**: 21 archival images mapped, 39 of 63
+- **Hero images on most cases**: 23 archival images mapped, 37 of 63
   cases still have no hero. Adding more is the highest-leverage next
   move on visual richness without changing layout.
 
@@ -278,7 +278,7 @@ Mode is set per route on `<html data-mode="...">` by `resolveMode()` in
   3. Homepage index list, dossier hero, and entity hero pick it up
      automatically.
 
-### Currently mapped (24 cases, 3 entities)
+### Currently mapped (26 cases, 3 entities)
 
 Hottel, three Arnold variants, Maury Island, Brown-Davidson, Mantell
 (crash-site marker, not the generic F-51D), Rhodes, Apollo 17 VM6,
@@ -289,8 +289,10 @@ Cabell AFOIC (Cabell USAF portrait), Muroc CIC affidavits (1947 P-80),
 Peyerl 1944 German aircraft (Horten Ho 229 V3), Phoenix-Blythe 509th
 Bomb Group (Sacramento Bee Roswell coverage), Frank Scully communist
 teletype (Scully portrait), civilian-correspondence-hoover-pattern
-(Hoover portrait). Entities: J. Edgar Hoover, Kenneth Arnold, Department
-of War (shares the Pentagon image with USPER).
+(Hoover portrait), Stanfield-La Paz Holloman (Alamogordo Post HQ),
+fbi-intelligence-coordination protocol (J. Edgar Hoover Building).
+Entities: J. Edgar Hoover, Kenneth Arnold, Department of War (shares
+the Pentagon image with USPER).
 
 ### Sourcing more images
 

@@ -131,6 +131,16 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'J. Edgar Hoover, Director of the FBI, addressee of the 1949-1950 civilian UFO correspondence covered in this case.',
     caption: 'J. Edgar Hoover / Library of Congress / FBI Director',
   },
+  'stanfield-lapaz-holloman-february-1950': {
+    src: '/img/archive/alamogordo-post-headquarters.jpg',
+    alt: 'Post headquarters at the Alamogordo Army Airfield, renamed Holloman Air Force Base in January 1948, the site cited in the Stanfield and La Paz reports.',
+    caption: 'Alamogordo AAF / Post Headquarters / pre-Holloman',
+  },
+  'fbi-intelligence-coordination-ufo-protocol-1950': {
+    src: '/img/archive/fbi-hq-building.jpg',
+    alt: 'The J. Edgar Hoover FBI Building on Pennsylvania Avenue, Washington D.C., headquarters of the Federal Bureau of Investigation.',
+    caption: 'J. Edgar Hoover FBI Building / Washington D.C.',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {
