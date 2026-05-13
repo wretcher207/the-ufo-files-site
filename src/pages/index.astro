@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import ThreadCard from '../components/ThreadCard.astro';
+import ThreadDrawer from '../components/ThreadDrawer.astro';
+import PriorityCasePanel from '../components/PriorityCasePanel.astro';
+import InvestigationMode from '../components/InvestigationMode.astro';
 import { THREADS, type ThreadId } from '../lib/threads';
 import { archiveOf, caseUrl, getRenderableCases, headlineDate, threadOf, tidyTitle } from '../lib/case-utils';
 
@@ -12,221 +14,325 @@ for (const c of allCases) {
   countsByThread.set(t, (countsByThread.get(t) ?? 0) + 1);
 }
 
-const high = allCases.filter((c) => c.data.significance === 'high');
-const pursueFeatured = high
-  .filter((c) => archiveOf(c) === 'pursue')
-  .sort((a, b) => (headlineDate(a) ?? '').localeCompare(headlineDate(b) ?? ''));
-const fbiFeatured = high
-  .filter((c) => archiveOf(c) === 'fbi')
-  .sort((a, b) => (headlineDate(a) ?? '').localeCompare(headlineDate(b) ?? ''))
-  .slice(0, 6);
+const byId = new Map(allCases.map((c) => [c.id, c]));
+const survivorSlugs = ['apollo-17-vm6', 'orbs-launching-orbs', 'bronze-ellipsoid', 'usper-statement'];
+const survivors = survivorSlugs
+  .map((slug) => allCases.find((c) => c.id.endsWith(slug) || c.id === slug))
+  .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+const survivorMeta: Record<string, { variant: 'lead' | 'side-a' | 'side-b' | 'side-c'; summary: string; chips: string[] }> = {
+  'apollo-17-vm6': {
+    variant: 'lead',
+    summary:
+      'Closest thing to a smoking gun in PURSUE Release 01. Three dots in triangular formation on the Apollo 17 lunar sky. AARO has formally opened a re-analysis case and retrieved the original film.',
+    chips: ['NASA', 'Re-analysis open', 'Triangular formation', 'Lunar 1972'],
+  },
+  'orbs-launching-orbs': {
+    variant: 'side-a',
+    summary:
+      'Western US cluster. Multiple witnesses, multi-domain sensor coverage, and the most uncomfortable PURSUE phrase: orbs that launch smaller orbs. AARO has not closed.',
+    chips: ['Multi-witness', 'Sensor data', 'Open case'],
+  },
+  'bronze-ellipsoid': {
+    variant: 'side-c',
+    summary:
+      'September 2023. A bronze-colored ellipsoid logged at low altitude, captured on military FLIR. Geometry and flight envelope do not match any prosaic candidate the report could rule in.',
+    chips: ['FLIR', 'Sept 2023', 'Geometry anomaly'],
+  },
+  'usper-statement': {
+    variant: 'side-b',
+    summary:
+      'USPER super-hot orb pursued by a US Army helicopter. The witness chain is intact. The thermal signature exceeds prosaic explanation. AARO did not classify it solved.',
+    chips: ['Helicopter pursuit', 'Thermal exceedance', 'USPER witness'],
+  },
+};
 
 const totalDocs = 120;
 const totalVideos = 28;
 const totalImages = 14;
 const totalCases = allCases.length;
+const ocrPages = 1262;
 const lastUpdated = '2026-05-13';
+
+// Latest additions surface (most recent ingestion dates).
+const recentCases = [...allCases]
+  .sort((a, b) => String(b.data.date_ingested ?? '').localeCompare(String(a.data.date_ingested ?? '')))
+  .slice(0, 3);
 ---
 <Base
   title="The UFO Files"
-  description="A reading guide to the May 2026 PURSUE release and FBI 62-HQ-83894. Sourced. Cross-referenced. Honest about what's actually there."
-  serial="ARCHIVE://OPEN"
+  description="The Unsealed Archive. A searchable evidence atlas of unresolved UAP records. Built from public government releases, FBI case files, source PDFs, OCR transcripts, and investigative cross-references."
+  serial="ARCHIVE/INDEX-00"
   section="CASE BOARD"
 >
-  <section class="hero">
-    <p class="hero__eyebrow">An archive by Dead Pixel Design</p>
-    <h1 class="hero__title">A reading guide to the declassified UFO record.</h1>
-    <p class="hero__lede">
-      On May 8, 2026, the Department of War published 162 records under PURSUE. Most coverage
-      missed the four cases that mattered. This site organizes them by what the documents
-      actually say, alongside the FBI's flying-discs case file from 1944 to 1973.
-    </p>
+  <!-- ───────────────────────── ARCHIVE WAKE ───────────────────────── -->
+  <section class="wake" aria-labelledby="wake-title">
+    <div class="wake__main">
+      <div class="wake__chrome">
+        <span class="wake__chrome-tag">UAS · v1</span>
+        <span class="wake__chrome-sep">/</span>
+        <span>The Unsealed Archive System</span>
+        <span class="wake__chrome-sep">/</span>
+        <span class="wake__chrome-ts">Last revision {lastUpdated}</span>
+      </div>
 
-    <div class="hero__stats" aria-label="Archive statistics">
-      <div class="hero__stat">
-        <span class="hero__stat-value">{totalDocs}</span>
-        <span class="hero__stat-label">PDF documents</span>
-      </div>
-      <div class="hero__stat">
-        <span class="hero__stat-value">{totalVideos}</span>
-        <span class="hero__stat-label">Videos</span>
-      </div>
-      <div class="hero__stat">
-        <span class="hero__stat-value">{totalImages}</span>
-        <span class="hero__stat-label">Images</span>
-      </div>
-      <div class="hero__stat">
-        <span class="hero__stat-value">{totalCases}</span>
-        <span class="hero__stat-label">Cases curated</span>
-      </div>
-      <div class="hero__stat">
-        <span class="hero__stat-value">{lastUpdated}</span>
-        <span class="hero__stat-label">Updated</span>
+      <h1 class="wake__title" id="wake-title">
+        <span class="wake__title-mark">The UFO Files · Reading Room</span>
+        A searchable evidence atlas of unresolved UAP records.
+      </h1>
+
+      <p class="wake__lede">
+        Built from public government releases, FBI case files, source PDFs, OCR transcripts,
+        and investigative cross-references. <strong>62 curated cases. 120 PDFs. 1,262 OCR pages.</strong>
+        Coverage missed four of them. This archive doesn't.
+      </p>
+
+      <div class="wake__actions">
+        <a class="btn btn--primary" href="#survivors">
+          Begin investigation
+          <span class="btn__chevron" aria-hidden="true">→</span>
+        </a>
+        <button class="btn" type="button" data-search-trigger>
+          <span aria-hidden="true">⌘K</span>
+          Search archive
+        </button>
+        <a class="btn" href="/about">Read the methodology</a>
       </div>
     </div>
+
+    <aside class="wake__aside" aria-label="Archive inventory">
+      <span class="wake__aside-label">Archive inventory</span>
+      <dl class="wake__inventory">
+        <dt>Cases</dt><dd>{totalCases.toString().padStart(3, '0')}<span class="wake__inv-unit">curated</span></dd>
+        <dt>PDFs</dt><dd>{totalDocs}<span class="wake__inv-unit">documents</span></dd>
+        <dt>OCR</dt><dd>{ocrPages.toLocaleString()}<span class="wake__inv-unit">FBI pages</span></dd>
+        <dt>Video</dt><dd>{totalVideos}<span class="wake__inv-unit">clips</span></dd>
+        <dt>Stills</dt><dd>{totalImages}<span class="wake__inv-unit">images</span></dd>
+        <dt>Updated</dt><dd>{lastUpdated}</dd>
+      </dl>
+      <div class="wake__status">
+        <span class="wake__status-dot" aria-hidden="true"></span>
+        <span>Archive active. New material under review.</span>
+      </div>
+    </aside>
   </section>
 
-  <section class="section" aria-labelledby="featured-heading">
+  <!-- ─────────────── THE FOUR THAT SURVIVED THE FILTER ────────────── -->
+  <section class="section" aria-labelledby="survivors-heading" id="survivors">
     <header class="section__head">
-      <h2 id="featured-heading" class="section__title">If you only read these</h2>
-      <span class="section__meta">Headline cases</span>
+      <div class="section__title-block">
+        <span class="section__eyebrow">PURSUE Release 01 · Filtered for signal</span>
+        <h2 id="survivors-heading" class="section__title">The four that survived the filter</h2>
+      </div>
+      <span class="section__meta">
+        <span>162 records reviewed</span>
+        <span>4 cases retained</span>
+      </span>
     </header>
 
-    <div class="featured-group">
-      <header class="featured-group__head">
-        <span class="featured-group__label">PURSUE Release 01</span>
-        <span class="featured-group__count">{pursueFeatured.length} headline case{pursueFeatured.length === 1 ? '' : 's'}</span>
-      </header>
-      <ul class="featured-grid">
-        {pursueFeatured.map((c) => {
-          const date = headlineDate(c);
-          const thread = threadOf(c);
-          return (
-            <li class="featured-card">
-              <a class="featured-card__link" href={caseUrl(c)}>
-                <div class="featured-card__chrome">
-                  <span class="featured-card__archive">PURSUE</span>
-                  <span class="featured-card__date">{date}</span>
-                </div>
-                <h3 class="featured-card__title">{tidyTitle(c.data.title)}</h3>
-                {thread && <p class="featured-card__thread">{thread.title}</p>}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-
-    <div class="featured-group">
-      <header class="featured-group__head">
-        <span class="featured-group__label">FBI 62-HQ-83894 — marquee</span>
-        <span class="featured-group__count">{fbiFeatured.length} of {high.filter(c => archiveOf(c) === 'fbi').length} high-signal cases shown</span>
-      </header>
-      <ul class="featured-grid">
-        {fbiFeatured.map((c) => {
-          const date = headlineDate(c);
-          const thread = threadOf(c);
-          return (
-            <li class="featured-card">
-              <a class="featured-card__link" href={caseUrl(c)}>
-                <div class="featured-card__chrome">
-                  <span class="featured-card__archive">FBI</span>
-                  <span class="featured-card__date">{date}</span>
-                </div>
-                <h3 class="featured-card__title">{tidyTitle(c.data.title)}</h3>
-                {thread && <p class="featured-card__thread">{thread.title}</p>}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+    <div class="survivors">
+      {survivors.map((c) => {
+        const meta = survivorMeta[c.id] ?? survivorMeta['apollo-17-vm6'];
+        const thread = threadOf(c);
+        return (
+          <PriorityCasePanel
+            variant={meta.variant}
+            href={caseUrl(c)}
+            archive={archiveOf(c)}
+            caseId={c.id}
+            date={headlineDate(c) ?? undefined}
+            signal={c.data.significance}
+            title={tidyTitle(c.data.title)}
+            summary={meta.summary}
+            chips={meta.chips}
+            thread={thread?.title}
+          />
+        );
+      })}
     </div>
   </section>
 
+  <!-- ─────────────── HOW DO YOU WANT TO ENTER THE FILE? ───────────── -->
+  <section class="section" aria-labelledby="modes-heading">
+    <header class="section__head">
+      <div class="section__title-block">
+        <span class="section__eyebrow">Investigation modes</span>
+        <h2 id="modes-heading" class="section__title">How do you want to enter the file?</h2>
+      </div>
+      <span class="section__meta">Pick a vector</span>
+    </header>
+
+    <div class="instruments">
+      <InvestigationMode
+        id="MOD-01"
+        href="#survivors"
+        icon="board"
+        title="Headline cases"
+        desc="Start with the four that didn't get prosaic-explained away. Curated entry points to the strongest material."
+        meta="4 cases"
+      />
+      <InvestigationMode
+        id="MOD-02"
+        href="/timeline"
+        icon="timeline"
+        title="Chronology"
+        desc="1947 onward. Watch the institutional response form in real time. Mantell, Twinkle, Hottel, AARO, PURSUE."
+        meta="62 events"
+      />
+      <InvestigationMode
+        id="MOD-03"
+        href="/map"
+        icon="map"
+        title="Geography"
+        desc="Incidents placed on the ground. Atomic installations, military bases, witness chains. Memo correspondence is excluded by policy."
+        meta="Geolocated"
+      />
+      <InvestigationMode
+        id="MOD-04"
+        href="/graph"
+        icon="graph"
+        title="Entity network"
+        desc="Follow the people, agencies, programs, and places. Edge strength encodes co-occurrence across sources."
+        meta="Connected"
+      />
+      <InvestigationMode
+        id="MOD-05"
+        href="/atlas"
+        icon="atlas"
+        title="Evidence Atlas"
+        desc="The unified research interface. Filter by source, thread, signal, evidence type, witness count. Live preview drawer."
+        meta="Phase 3"
+        disabled={true}
+      />
+      <InvestigationMode
+        id="MOD-06"
+        href="/vault"
+        icon="vault"
+        title="Source Vault"
+        desc="Browse original source material directly. PDFs, FBI 302s, OCR transcripts, AARO sheets. Filter by agency and release."
+        meta="Phase 4"
+        disabled={true}
+      />
+    </div>
+  </section>
+
+  <!-- ─────────────────── THE FIVE THREADS (DRAWERS) ─────────────────── -->
   <section class="section" aria-labelledby="threads-heading">
     <header class="section__head">
-      <h2 id="threads-heading" class="section__title">The five threads</h2>
-      <span class="section__meta">Pinned dossiers</span>
+      <div class="section__title-block">
+        <span class="section__eyebrow">The Unsealed Archive · Filed records</span>
+        <h2 id="threads-heading" class="section__title">The five threads</h2>
+      </div>
+      <span class="section__meta">{allCases.length} cases across {THREADS.length} drawers</span>
     </header>
 
-    <div class="thread-grid">
-      {THREADS.map((thread) => (
-        <ThreadCard thread={thread} caseCount={countsByThread.get(thread.id) ?? 0} />
+    <div class="drawers">
+      {THREADS.map((thread, i) => (
+        <ThreadDrawer thread={thread} index={i} caseCount={countsByThread.get(thread.id) ?? 0} />
       ))}
     </div>
   </section>
 
-  <section class="section" aria-labelledby="orientation-heading">
+  <!-- ───────────────────── ATLAS + VAULT PREVIEW ───────────────────── -->
+  <section class="section" aria-labelledby="preview-heading">
     <header class="section__head">
-      <h2 id="orientation-heading" class="section__title">Orientation</h2>
-      <span class="section__meta">How to read this</span>
+      <div class="section__title-block">
+        <span class="section__eyebrow">Coming next</span>
+        <h2 id="preview-heading" class="section__title">Atlas and Vault</h2>
+      </div>
+      <span class="section__meta">Phases 3 + 4</span>
     </header>
-    <div class="orientation">
-      <p class="orientation__lede">
-        This is not a "they're hiding aliens" archive. AARO openly identifies mundane causes
-        inside the unresolved tranche. This is also not a debunk site. Several cases have
-        evidentiary structure that would warrant follow-up in any other domain.
-      </p>
-      <p class="orientation__lede">
-        Read the cases. The files are the government's. The voice and analysis are
-        <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>'s.
-      </p>
+
+    <div class="preview-strip">
+      <a class="preview-card" href="/atlas">
+        <span class="preview-card__eyebrow">Evidence Atlas · MOD-05</span>
+        <h3 class="preview-card__title">A single research surface for the whole archive.</h3>
+        <p class="preview-card__body">
+          One screen with case list, chronology, geography, and network views. Side drawer preview.
+          Filters across source, thread, signal, evidence type, entity, and location.
+        </p>
+        <span class="preview-card__footer">Preview the build →</span>
+      </a>
+      <a class="preview-card" href="/vault">
+        <span class="preview-card__eyebrow">Source Vault · MOD-06</span>
+        <h3 class="preview-card__title">Direct access to the original material.</h3>
+        <p class="preview-card__body">
+          Every PDF, FBI 302, AARO sheet, OCR transcript, video, and image. Filter by agency,
+          release, OCR status, and whether the source has a curated dossier yet.
+        </p>
+        <span class="preview-card__footer">Preview the build →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ─────────────────────── TRUST CONTRACT ─────────────────────── -->
+  <section class="section" aria-labelledby="trust-heading">
+    <header class="section__head">
+      <div class="section__title-block">
+        <span class="section__eyebrow">Methodology</span>
+        <h2 id="trust-heading" class="section__title">The trust contract</h2>
+      </div>
+      <span class="section__meta">Read this first</span>
+    </header>
+
+    <div class="trust-contract">
+      <div class="trust-contract__head">
+        <span class="trust-contract__eyebrow">What this is</span>
+        <h3 class="trust-contract__title">A reading guide, not a verdict.</h3>
+        <p class="trust-contract__lede">
+          This is not a "they're hiding aliens" archive. AARO openly identifies mundane causes
+          inside the unresolved tranche. This is also not a debunk site. Several cases have
+          evidentiary structure that would warrant follow-up in any other domain. Read the cases.
+          Verify the sources. Decide for yourself.
+        </p>
+        <p class="trust-contract__lede" style="margin-top: var(--sp-3);">
+          Files are the government's. Voice and analysis are <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>'s.
+        </p>
+      </div>
+      <ul class="trust-contract__list" aria-label="Editorial commitments">
+        <li>Every claim links back to a primary source.</li>
+        <li>Cases were selected on evidentiary structure, not narrative payoff.</li>
+        <li>What is missing is named, not hidden.</li>
+        <li>Memo correspondence is not placed on the map.</li>
+        <li>Corrections page is open and dated.</li>
+        <li>You are encouraged to disagree with the framing.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────────────────── MINING STATUS ─────────────────────── -->
+  <section class="section" aria-labelledby="mining-heading">
+    <header class="section__head">
+      <div class="section__title-block">
+        <span class="section__eyebrow">Status</span>
+        <h2 id="mining-heading" class="section__title">Latest additions</h2>
+      </div>
+      <span class="section__meta">Updated {lastUpdated}</span>
+    </header>
+
+    <div class="mining">
+      <span class="mining__pulse">
+        <span class="mining__pulse-dot" aria-hidden="true"></span>
+        Mining active
+      </span>
+      <ul class="mining__list">
+        {recentCases.map((c) => (
+          <li>
+            <strong>{tidyTitle(c.data.title)}</strong> · {archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}
+          </li>
+        ))}
+      </ul>
+      <a class="mining__more" href="/timeline">Full chronology →</a>
     </div>
   </section>
 </Base>
 
-<style>
-  .orientation { display: flex; flex-direction: column; gap: var(--sp-4); max-width: 70ch; }
-  .orientation__lede {
-    font-family: var(--font-ui);
-    font-size: var(--fs-md);
-    line-height: var(--lh-loose);
-    color: var(--fg-2);
-    margin: 0;
-  }
-
-
-  .featured-group { margin-top: var(--sp-6); }
-  .featured-group:first-of-type { margin-top: 0; }
-  .featured-group__head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--sp-4);
-    margin-bottom: var(--sp-4);
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-  }
-  .featured-group__label { color: var(--fg-2); }
-  .featured-group__count { color: var(--fg-3); }
-  .featured-grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--sp-1);
-    background: var(--border-subtle);
-  }
-  .featured-card { display: flex; }
-  .featured-card__link {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
-    padding: var(--sp-5);
-    background: var(--bg-1);
-    width: 100%;
-    border-top: 1px solid var(--border);
-    text-decoration: none;
-    color: var(--fg-1);
-    transition: background var(--dur-fast) var(--ease-out);
-  }
-  .featured-card__link:hover { background: var(--bg-2); }
-  .featured-card__chrome {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    color: var(--fg-3);
-  }
-  .featured-card__archive { color: var(--fg-2); }
-  .featured-card__title {
-    font-family: var(--font-display);
-    font-size: var(--fs-lg);
-    line-height: var(--lh-snug);
-    color: var(--fg-1);
-    margin: 0;
-    font-weight: 500;
-  }
-  .featured-card__thread {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    color: var(--fg-3);
-    letter-spacing: var(--tracking-wide);
-    margin: 0;
-  }
-</style>
+<script>
+  // Hook the "Search archive" button to the existing SearchHUD trigger.
+  document.querySelectorAll('[data-search-trigger]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+      document.dispatchEvent(evt);
+    });
+  });
+</script>

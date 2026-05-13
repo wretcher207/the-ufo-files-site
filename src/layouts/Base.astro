@@ -20,13 +20,14 @@ const {
 
 const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : Astro.url.pathname;
+const pathname = Astro.url.pathname;
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#030506" />
+    <meta name="theme-color" content="#030504" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={fullTitle} />
@@ -37,31 +38,48 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString(
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=Special+Elite&display=swap"
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <ClientRouter />
   </head>
   <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="atmosphere__grain"></div>
+      <div class="atmosphere__scan"></div>
+      <div class="atmosphere__vignette"></div>
+    </div>
+
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="page-shell">
-      <OperatorChrome serial={serial} section={section} status={status} />
+      <OperatorChrome serial={serial} section={section} status={status} pathname={pathname} />
       <main id="main" class="page-main">
         <slot />
       </main>
       <footer class="page-footer">
         <div class="page-footer__inner">
-          <span>
-            An archive by{' '}
-            <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>
-          </span>
-          <span>
-            Source content:{' '}
-            <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">github.com/wretcher207/the-ufo-files</a>
-          </span>
-          <span>
-            Originals at{' '}
-            <a href="https://www.war.gov/UFO/" rel="noopener external">war.gov/UFO</a>
-          </span>
+          <div class="page-footer__col">
+            <span class="page-footer__label">The Unsealed Archive</span>
+            <span>
+              An archive by{' '}
+              <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>.
+            </span>
+            <span>Originals at <a href="https://www.war.gov/UFO/" rel="noopener external">war.gov/UFO</a>.</span>
+          </div>
+          <div class="page-footer__col">
+            <span class="page-footer__label">Source</span>
+            <span>
+              <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">github.com/wretcher207/the-ufo-files</a>
+            </span>
+            <span>FBI 62-HQ-83894 // PURSUE Release 01.</span>
+          </div>
+          <div class="page-footer__col">
+            <span class="page-footer__label">Trust contract</span>
+            <span><a href="/about">Methodology</a></span>
+            <span>Read the cases. Verify the sources. Decide for yourself.</span>
+          </div>
         </div>
       </footer>
     </div>
@@ -70,19 +88,17 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString(
         position: absolute;
         top: -100px;
         left: var(--sp-4);
-        background: var(--bg-2);
-        color: var(--fg-1);
+        background: var(--bg-raised);
+        color: var(--text-main);
         padding: var(--sp-2) var(--sp-4);
         font-family: var(--font-mono);
         font-size: var(--fs-xs);
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
         z-index: 100;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-hot);
       }
-      .skip-link:focus {
-        top: var(--sp-3);
-      }
+      .skip-link:focus { top: var(--sp-3); }
     </style>
   </body>
 </html>

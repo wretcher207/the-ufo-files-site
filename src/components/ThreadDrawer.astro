@@ -1,0 +1,24 @@
+---
+import type { Thread } from '../lib/threads';
+
+interface Props {
+  thread: Thread;
+  index: number;
+  caseCount: number;
+}
+const { thread, index, caseCount } = Astro.props;
+const num = String(index + 1).padStart(2, '0');
+---
+<a class="drawer" data-archive={thread.archive} href={`/thread/${thread.id}`}>
+  <div class="drawer__number">{num}</div>
+  <div class="drawer__meta">
+    <span class="drawer__serial">{thread.serial}</span>
+    <h3 class="drawer__title">{thread.title}</h3>
+    <span class="drawer__span">{thread.span}</span>
+  </div>
+  <p class="drawer__blurb">{thread.blurb}</p>
+  <div class="drawer__action">
+    <span class="drawer__count">{caseCount} case{caseCount === 1 ? '' : 's'}</span>
+    <span class="drawer__open">Unseal →</span>
+  </div>
+</a>
