@@ -133,6 +133,15 @@ const geocoded = LOCATIONS.length;
       el.style.borderRadius = "50%";
       el.style.border = "2px solid #030506";
       el.style.cursor = "pointer";
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      el.setAttribute("aria-label", loc.label + ", " + loc.year + ", " + (loc.archive === "pursue" ? "PURSUE" : "FBI") + ". Press Enter to open dossier.");
+      el.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          window.location.href = "/dossier/" + loc.slug;
+        }
+      });
       if (loc.archive === "pursue") {
         el.style.background = "#C7F7FF";
         el.style.boxShadow = "0 0 8px rgba(199, 247, 255, 0.6)";
