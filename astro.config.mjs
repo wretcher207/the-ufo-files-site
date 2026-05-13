@@ -5,7 +5,7 @@ import { rewriteMdLinks } from './src/lib/rewrite-md-links.ts';
 
 export default defineConfig({
   site: 'https://theufofiles.com',
-  integrations: [mdx()],
+  integrations: [mdx({ rehypePlugins: [rewriteMdLinks] })],
   vite: {
     plugins: [tailwindcss()],
     build: {
@@ -16,12 +16,7 @@ export default defineConfig({
   },
   markdown: {
     rehypePlugins: [rewriteMdLinks],
-    shikiConfig: {
-      theme: 'github-dark-default',
-      wrap: true,
-    },
+    shikiConfig: { theme: 'github-dark-default', wrap: true },
   },
-  devToolbar: {
-    enabled: false,
-  },
+  devToolbar: { enabled: false },
 });

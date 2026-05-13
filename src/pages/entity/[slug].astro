@@ -1,0 +1,185 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getAllEntities } from '../../lib/entities';
+import { archiveOf, caseUrl, headlineDate, threadOf, tidyTitle } from '../../lib/case-utils';
+
+export async function getStaticPaths() {
+  const all = await getAllEntities();
+  return all.map((entity) => ({
+    params: { slug: entity.slug },
+    props: { entity },
+  }));
+}
+
+const { entity } = Astro.props;
+const Content = entity.context ? (await render(entity.context)).Content : null;
+const cases = entity.cases.slice().sort((a, b) => {
+  const da = headlineDate(a) ?? '';
+  const db = headlineDate(b) ?? '';
+  return da.localeCompare(db);
+});
+---
+<Base
+  title={entity.display}
+  description={`${entity.cases.length} case${entity.cases.length === 1 ? '' : 's'} in the archive reference ${entity.display}.`}
+  serial="ENTITY"
+  section={entity.display.toUpperCase()}
+>
+  <header class="entity-hero">
+    <div class="entity-hero__breadcrumb">
+      <a href="/">Case board</a>
+      <span aria-hidden="true">/</span>
+      <span>Context</span>
+      <span aria-hidden="true">/</span>
+      <span class="entity-hero__breadcrumb-current">{entity.display}</span>
+    </div>
+    <p class="entity-hero__eyebrow">Entity reference</p>
+    <h1 class="entity-hero__title">{entity.display}</h1>
+    <p class="entity-hero__count">
+      Referenced in {entity.cases.length} case{entity.cases.length === 1 ? '' : 's'} across the archive.
+    </p>
+  </header>
+
+  <div class="entity-layout">
+    <div class="entity-body prose">
+      {Content && <Content />}
+      {!Content && (
+        <p class="entity-body__stub">
+          No standalone context page for this entity yet. Below is every case in
+          the archive that references it. The archive's source content lives at{' '}
+          <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">
+            github.com/wretcher207/the-ufo-files
+          </a>.
+        </p>
+      )}
+    </div>
+
+    <aside class="entity-rail">
+      <header class="entity-rail__head">
+        <span class="entity-rail__label">Cases</span>
+        <h2 class="entity-rail__title">Where this entity appears</h2>
+      </header>
+      {cases.length === 0 && (
+        <p class="entity-rail__empty">No cases reference this entity yet.</p>
+      )}
+      <ul class="case-list">
+        {cases.map((c) => {
+          const sig = c.data.significance ?? 'medium';
+          const thread = threadOf(c);
+          return (
+            <li class="case-list__item">
+              <a href={caseUrl(c)} class="case-list__link">
+                <div class="case-list__chrome">
+                  <span class="case-list__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+                  <span class="case-list__date">{headlineDate(c) ?? '—'}</span>
+                  <span class={`case-list__sig case-list__sig--${sig}`}>{sig.toUpperCase()}</span>
+                </div>
+                <span class="case-list__title">{tidyTitle(c.data.title)}</span>
+                {thread && (
+                  <span class="case-list__thread">{thread.title}</span>
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </aside>
+  </div>
+</Base>
+
+<style is:global>
+  .entity-hero {
+    border-top: 1px solid var(--border);
+    padding: var(--sp-5) 0 var(--sp-7);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--sp-7);
+  }
+  .entity-hero__breadcrumb {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-3);
+    display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center;
+    margin-bottom: var(--sp-5);
+  }
+  .entity-hero__breadcrumb a { color: var(--fg-2); }
+  .entity-hero__breadcrumb-current { color: var(--fg-3); }
+  .entity-hero__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin: 0 0 var(--sp-3);
+  }
+  .entity-hero__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-3xl);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg-1);
+    font-weight: 500;
+    margin: 0 0 var(--sp-3);
+    max-width: 22ch;
+  }
+  @media (max-width: 640px) { .entity-hero__title { font-size: var(--fs-2xl); } }
+  .entity-hero__count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--fg-3);
+    letter-spacing: var(--tracking-wide);
+    margin: 0;
+  }
+
+  .entity-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+    gap: var(--sp-7);
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    .entity-layout { grid-template-columns: 1fr; gap: var(--sp-5); }
+  }
+
+  .entity-body__stub {
+    font-family: var(--font-ui);
+    font-size: var(--fs-base);
+    color: var(--fg-2);
+    line-height: var(--lh-loose);
+    margin: 0 0 var(--sp-5);
+  }
+
+  .entity-rail__head { display: flex; flex-direction: column; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+  .entity-rail__label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .entity-rail__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--fg-1);
+    margin: 0;
+    font-weight: 500;
+  }
+  .entity-rail__empty {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--fg-3);
+    margin: 0;
+  }
+
+  .case-list__thread {
+    grid-column: 2;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-3);
+  }
+  @media (max-width: 640px) {
+    .case-list__thread { grid-column: 1; }
+  }
+</style>

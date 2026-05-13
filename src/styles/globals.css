@@ -234,3 +234,162 @@
 @media (max-width: 800px) {
   .thread-grid { grid-template-columns: 1fr; }
 }
+
+/* Prose — shared by dossier bodies, entity bodies, about page. */
+.prose {
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  color: var(--fg-2);
+  max-width: 72ch;
+}
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-family: var(--font-display);
+  color: var(--fg-1);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  margin: var(--sp-7) 0 var(--sp-4);
+}
+.prose h2 { font-size: var(--fs-xl); }
+.prose h3 { font-size: var(--fs-lg); }
+.prose h4 {
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-top: var(--sp-5);
+}
+.prose p { margin: var(--sp-3) 0 var(--sp-4); }
+.prose strong { color: var(--fg-1); font-weight: 600; }
+.prose em { color: var(--fg-1); font-style: italic; }
+.prose a {
+  color: var(--fg-1);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+  transition: color var(--dur-fast) var(--ease-out), text-decoration-color var(--dur-fast) var(--ease-out);
+}
+.prose a:hover {
+  color: var(--crt-glow);
+  text-decoration-color: var(--crt-glow);
+}
+.prose ul, .prose ol {
+  padding-left: var(--sp-5);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.prose li { margin: var(--sp-2) 0; }
+.prose blockquote {
+  margin: var(--sp-5) 0;
+  padding: var(--sp-3) var(--sp-5);
+  border-left: 2px solid var(--crt-glow);
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-style: italic;
+}
+.prose blockquote p { margin: var(--sp-2) 0; }
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--bg-2);
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  color: var(--fg-1);
+}
+.prose pre {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  padding: var(--sp-4);
+  overflow-x: auto;
+  font-size: var(--fs-sm);
+}
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-7) 0;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--sp-4) 0;
+  font-size: var(--fs-sm);
+}
+.prose th, .prose td {
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  color: var(--fg-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* Case-list — used in thread pages and entity rails. */
+.case-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.case-list__item { border-top: 1px solid var(--border-subtle); }
+.case-list__item:last-child { border-bottom: 1px solid var(--border-subtle); }
+.case-list__link {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  text-decoration: none;
+  color: var(--fg-1);
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.case-list__link:hover {
+  color: var(--crt-glow);
+  background: rgba(199, 247, 255, 0.02);
+}
+@media (max-width: 640px) {
+  .case-list__link { grid-template-columns: 1fr; gap: var(--sp-2); }
+}
+.case-list__chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.case-list__archive { color: var(--fg-2); min-width: 48px; }
+.case-list__date { color: var(--fg-3); min-width: 88px; }
+.case-list__sig { color: var(--fg-3); }
+.case-list__sig--high { color: var(--crt-glow); }
+.case-list__sig--medium { color: var(--fg-2); }
+.case-list__sig--low { color: var(--fg-3); }
+.case-list__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  color: inherit;
+  line-height: var(--lh-snug);
+}
+.case-list__thread {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--fg-3);
+}
+@media (max-width: 640px) {
+  .case-list__thread { grid-column: 1; }
+}
+
+/* Compact variant — narrow rails (entity sidebar, dossier rail). */
+.case-list--compact .case-list__link {
+  grid-template-columns: 1fr;
+  gap: var(--sp-1);
+  padding: var(--sp-2) 0;
+}
+.case-list--compact .case-list__title { font-size: var(--fs-sm); }

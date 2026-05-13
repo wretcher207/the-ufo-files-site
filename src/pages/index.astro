@@ -1,24 +1,30 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import ThreadCard from '../components/ThreadCard.astro';
 import { THREADS, type ThreadId } from '../lib/threads';
+import { archiveOf, caseUrl, getRenderableCases, headlineDate, threadOf, tidyTitle } from '../lib/case-utils';
 
-const fbi = await getCollection('fbiCases');
-const pursue = await getCollection('pursueCases');
-const allCases = [...fbi, ...pursue];
+const allCases = await getRenderableCases();
 
 const countsByThread = new Map<ThreadId, number>();
 for (const c of allCases) {
-  const t = c.data.thread;
-  if (!t) continue;
+  const t = c.data.thread!;
   countsByThread.set(t, (countsByThread.get(t) ?? 0) + 1);
 }
+
+const high = allCases.filter((c) => c.data.significance === 'high');
+const pursueFeatured = high
+  .filter((c) => archiveOf(c) === 'pursue')
+  .sort((a, b) => (headlineDate(a) ?? '').localeCompare(headlineDate(b) ?? ''));
+const fbiFeatured = high
+  .filter((c) => archiveOf(c) === 'fbi')
+  .sort((a, b) => (headlineDate(a) ?? '').localeCompare(headlineDate(b) ?? ''))
+  .slice(0, 6);
 
 const totalDocs = 120;
 const totalVideos = 28;
 const totalImages = 14;
-const totalCases = allCases.filter((c) => c.data.thread).length;
+const totalCases = allCases.length;
 const lastUpdated = '2026-05-13';
 ---
 <Base
@@ -60,6 +66,63 @@ const lastUpdated = '2026-05-13';
     </div>
   </section>
 
+  <section class="section" aria-labelledby="featured-heading">
+    <header class="section__head">
+      <h2 id="featured-heading" class="section__title">If you only read these</h2>
+      <span class="section__meta">Headline cases</span>
+    </header>
+
+    <div class="featured-group">
+      <header class="featured-group__head">
+        <span class="featured-group__label">PURSUE Release 01</span>
+        <span class="featured-group__count">{pursueFeatured.length} headline case{pursueFeatured.length === 1 ? '' : 's'}</span>
+      </header>
+      <ul class="featured-grid">
+        {pursueFeatured.map((c) => {
+          const date = headlineDate(c);
+          const thread = threadOf(c);
+          return (
+            <li class="featured-card">
+              <a class="featured-card__link" href={caseUrl(c)}>
+                <div class="featured-card__chrome">
+                  <span class="featured-card__archive">PURSUE</span>
+                  <span class="featured-card__date">{date}</span>
+                </div>
+                <h3 class="featured-card__title">{tidyTitle(c.data.title)}</h3>
+                {thread && <p class="featured-card__thread">{thread.title}</p>}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <div class="featured-group">
+      <header class="featured-group__head">
+        <span class="featured-group__label">FBI 62-HQ-83894 — marquee</span>
+        <span class="featured-group__count">{fbiFeatured.length} of {high.filter(c => archiveOf(c) === 'fbi').length} high-signal cases shown</span>
+      </header>
+      <ul class="featured-grid">
+        {fbiFeatured.map((c) => {
+          const date = headlineDate(c);
+          const thread = threadOf(c);
+          return (
+            <li class="featured-card">
+              <a class="featured-card__link" href={caseUrl(c)}>
+                <div class="featured-card__chrome">
+                  <span class="featured-card__archive">FBI</span>
+                  <span class="featured-card__date">{date}</span>
+                </div>
+                <h3 class="featured-card__title">{tidyTitle(c.data.title)}</h3>
+                {thread && <p class="featured-card__thread">{thread.title}</p>}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+
   <section class="section" aria-labelledby="threads-heading">
     <header class="section__head">
       <h2 id="threads-heading" class="section__title">The five threads</h2>
@@ -93,17 +156,77 @@ const lastUpdated = '2026-05-13';
 </Base>
 
 <style>
-  .orientation {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-4);
-    max-width: 70ch;
-  }
+  .orientation { display: flex; flex-direction: column; gap: var(--sp-4); max-width: 70ch; }
   .orientation__lede {
     font-family: var(--font-ui);
     font-size: var(--fs-md);
     line-height: var(--lh-loose);
     color: var(--fg-2);
+    margin: 0;
+  }
+
+
+  .featured-group { margin-top: var(--sp-6); }
+  .featured-group:first-of-type { margin-top: 0; }
+  .featured-group__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+  .featured-group__label { color: var(--fg-2); }
+  .featured-group__count { color: var(--fg-3); }
+  .featured-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--sp-1);
+    background: var(--border-subtle);
+  }
+  .featured-card { display: flex; }
+  .featured-card__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-5);
+    background: var(--bg-1);
+    width: 100%;
+    border-top: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--fg-1);
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .featured-card__link:hover { background: var(--bg-2); }
+  .featured-card__chrome {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .featured-card__archive { color: var(--fg-2); }
+  .featured-card__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    color: var(--fg-1);
+    margin: 0;
+    font-weight: 500;
+  }
+  .featured-card__thread {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--fg-3);
+    letter-spacing: var(--tracking-wide);
     margin: 0;
   }
 </style>

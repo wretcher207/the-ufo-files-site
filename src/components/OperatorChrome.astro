@@ -4,8 +4,9 @@ import SearchHUD from './SearchHUD.astro';
 interface Props {
   serial?: string;
   section?: string;
+  status?: "ok" | "warn" | "error";
 }
-const { serial = 'ARCHIVE://OPEN', section = '' } = Astro.props;
+const { serial = 'ARCHIVE://OPEN', section = '', status = 'ok' } = Astro.props;
 ---
 <header class="operator-chrome">
   <div class="operator-chrome__inner">
@@ -13,7 +14,7 @@ const { serial = 'ARCHIVE://OPEN', section = '' } = Astro.props;
       The UFO Files
     </a>
 
-    <div class="operator-chrome__serial" role="status" aria-live="polite">
+    <div class="operator-chrome__serial" role="status" aria-live="polite" data-status={status}>
       <span class="operator-chrome__serial-dot" aria-hidden="true"></span>
       <span>{serial}{section ? ` // ${section}` : ''}</span>
     </div>
@@ -29,6 +30,14 @@ const { serial = 'ARCHIVE://OPEN', section = '' } = Astro.props;
 </header>
 
 <style>
+  .operator-chrome__serial[data-status="warn"] .operator-chrome__serial-dot {
+    background: var(--warning-amber);
+    box-shadow: 0 0 6px rgba(215, 180, 106, 0.7);
+  }
+  .operator-chrome__serial[data-status="error"] .operator-chrome__serial-dot {
+    background: var(--error-red);
+    box-shadow: 0 0 6px rgba(218, 62, 86, 0.7);
+  }
   .operator-chrome__right {
     display: flex;
     align-items: center;

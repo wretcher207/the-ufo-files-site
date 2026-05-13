@@ -7,12 +7,14 @@ interface Props {
   description?: string;
   serial?: string;
   section?: string;
+  status?: 'ok' | 'warn' | 'error';
 }
 const {
   title,
   description = 'Interactive investigation site for the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
   serial,
   section,
+  status,
 } = Astro.props;
 
 const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
@@ -37,7 +39,7 @@ const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO File
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="page-shell">
-      <OperatorChrome serial={serial} section={section} />
+      <OperatorChrome serial={serial} section={section} status={status} />
       <main id="main" class="page-main">
         <slot />
       </main>

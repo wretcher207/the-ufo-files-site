@@ -1,0 +1,232 @@
+---
+import Base from '../../layouts/Base.astro';
+import { THREADS, type ThreadId } from '../../lib/threads';
+import { getRenderableCases, archiveOf, caseUrl, headlineDate, tidyTitle } from '../../lib/case-utils';
+
+export async function getStaticPaths() {
+  return THREADS.map((thread) => ({
+    params: { id: thread.id },
+    props: { thread },
+  }));
+}
+
+const { thread } = Astro.props;
+const all = await getRenderableCases();
+const cases = all.filter((c) => c.data.thread === thread.id);
+
+const featured = cases.filter((c) => c.data.significance === 'high');
+const rest = cases.filter((c) => c.data.significance !== 'high');
+
+cases.sort((a, b) => {
+  const da = headlineDate(a) ?? '';
+  const db = headlineDate(b) ?? '';
+  return da.localeCompare(db);
+});
+rest.sort((a, b) => {
+  const da = headlineDate(a) ?? '';
+  const db = headlineDate(b) ?? '';
+  return da.localeCompare(db);
+});
+---
+<Base
+  title={thread.title}
+  description={thread.blurb}
+  serial={thread.serial}
+  section="THREAD"
+>
+  <header class="thread-hero">
+    <div class="thread-hero__breadcrumb">
+      <a href="/">Case board</a>
+      <span aria-hidden="true">/</span>
+      <span class="thread-hero__breadcrumb-current">{thread.title}</span>
+    </div>
+    <p class="thread-hero__eyebrow">{thread.archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-83894'} · Thread</p>
+    <h1 class="thread-hero__title">{thread.title}</h1>
+    <p class="thread-hero__span">{thread.span}</p>
+    <p class="thread-hero__blurb">{thread.blurb}</p>
+    <p class="thread-hero__count">{cases.length} case{cases.length === 1 ? '' : 's'} in this thread.</p>
+  </header>
+
+  {featured.length > 0 && (
+    <section class="thread-section" aria-labelledby="featured-h">
+      <header class="thread-section__head">
+        <h2 id="featured-h" class="thread-section__title">High-signal cases</h2>
+        <span class="thread-section__meta">Headline reads</span>
+      </header>
+      <ul class="case-list">
+        {featured.map((c) => (
+          <li class="case-list__item">
+            <a href={caseUrl(c)} class="case-list__link">
+              <div class="case-list__chrome">
+                <span class="case-list__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+                <span class="case-list__date">{headlineDate(c) ?? '—'}</span>
+                <span class="case-list__sig case-list__sig--high">HIGH</span>
+              </div>
+              <span class="case-list__title">{tidyTitle(c.data.title)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section class="thread-section" aria-labelledby="all-h">
+    <header class="thread-section__head">
+      <h2 id="all-h" class="thread-section__title">All cases in this thread</h2>
+      <span class="thread-section__meta">Chronological</span>
+    </header>
+    <ul class="case-list">
+      {rest.map((c) => {
+        const sig = c.data.significance ?? 'medium';
+        return (
+          <li class="case-list__item">
+            <a href={caseUrl(c)} class="case-list__link">
+              <div class="case-list__chrome">
+                <span class="case-list__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+                <span class="case-list__date">{headlineDate(c) ?? '—'}</span>
+                <span class={`case-list__sig case-list__sig--${sig}`}>{sig.toUpperCase()}</span>
+              </div>
+              <span class="case-list__title">{tidyTitle(c.data.title)}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .thread-hero {
+    border-top: 1px solid var(--border);
+    padding: var(--sp-5) 0 var(--sp-7);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--sp-7);
+  }
+  .thread-hero__breadcrumb {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-3);
+    display: flex; gap: var(--sp-2); align-items: center;
+    margin-bottom: var(--sp-5);
+  }
+  .thread-hero__breadcrumb a { color: var(--fg-2); }
+  .thread-hero__breadcrumb-current { color: var(--fg-3); }
+  .thread-hero__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+    margin: 0 0 var(--sp-3);
+  }
+  .thread-hero__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-3xl);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg-1);
+    font-weight: 500;
+    margin: 0 0 var(--sp-3);
+    max-width: 22ch;
+  }
+  @media (max-width: 640px) { .thread-hero__title { font-size: var(--fs-2xl); } }
+  .thread-hero__span {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-3);
+    margin: 0 0 var(--sp-5);
+  }
+  .thread-hero__blurb {
+    font-family: var(--font-ui);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--fg-2);
+    max-width: 70ch;
+    margin: 0 0 var(--sp-5);
+  }
+  .thread-hero__count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--fg-3);
+    letter-spacing: var(--tracking-wide);
+    margin: 0;
+  }
+
+  .thread-section { margin-top: var(--sp-7); }
+  .thread-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-5);
+    margin-bottom: var(--sp-5);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--sp-3);
+  }
+  .thread-section__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    color: var(--fg-1);
+    margin: 0;
+    font-weight: 500;
+  }
+  .thread-section__meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+
+  .case-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .case-list__item { border-top: 1px solid var(--border-subtle); }
+  .case-list__item:last-child { border-bottom: 1px solid var(--border-subtle); }
+  .case-list__link {
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) 1fr;
+    gap: var(--sp-4);
+    padding: var(--sp-3) 0;
+    text-decoration: none;
+    color: var(--fg-1);
+    transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  }
+  .case-list__link:hover {
+    color: var(--crt-glow);
+    background: rgba(199, 247, 255, 0.02);
+  }
+  @media (max-width: 640px) {
+    .case-list__link {
+      grid-template-columns: 1fr;
+      gap: var(--sp-2);
+    }
+  }
+  .case-list__chrome {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .case-list__archive { color: var(--fg-2); min-width: 48px; }
+  .case-list__date { color: var(--fg-3); min-width: 88px; }
+  .case-list__sig { color: var(--fg-3); }
+  .case-list__sig--high { color: var(--crt-glow); }
+  .case-list__sig--medium { color: var(--fg-2); }
+  .case-list__sig--low { color: var(--fg-3); }
+  .case-list__title {
+    font-family: var(--font-ui);
+    font-size: var(--fs-md);
+    color: inherit;
+    line-height: var(--lh-snug);
+  }
+</style>

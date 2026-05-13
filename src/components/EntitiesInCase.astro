@@ -1,0 +1,97 @@
+---
+import type { AnyCase } from '../lib/case-utils';
+
+interface Props { entry: AnyCase; }
+const { entry } = Astro.props;
+
+const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+function toSlug(raw: string): string | null {
+  if (!raw) return null;
+  if (SLUG_RE.test(raw)) return raw;
+  const slug = raw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return slug.length >= 2 ? slug : null;
+}
+function humanize(slug: string): string {
+  return slug
+    .split('-')
+    .map((p) => (['cic', 'fbi', 'aaro', 'osi', 'sac', 'aaf', 'usaf', 'oni', 'nasa', 'us'].includes(p) ? p.toUpperCase() : p.charAt(0).toUpperCase() + p.slice(1)))
+    .join(' ');
+}
+
+const raws = (entry.data.entities_mentioned ?? []) as Array<string | number | boolean>;
+const entities = Array.from(
+  raws.reduce<Map<string, string>>((m, r) => {
+    const raw = String(r);
+    const slug = toSlug(raw);
+    if (!slug) return m;
+    if (!m.has(slug)) m.set(slug, /[A-Z. ]/.test(raw) ? raw : humanize(slug));
+    return m;
+  }, new Map())
+).map(([slug, label]) => ({ slug, label }));
+
+entities.sort((a, b) => a.label.localeCompare(b.label));
+---
+{entities.length > 0 && (
+  <aside class="ents" aria-labelledby="ents-heading">
+    <header class="ents__head">
+      <span class="ents__label">Named in this case</span>
+      <h2 id="ents-heading" class="ents__title">Entities, people, places</h2>
+    </header>
+    <ul class="ents__list">
+      {entities.map((e) => (
+        <li class="ents__item">
+          <a href={`/entity/${e.slug}`}>{e.label}</a>
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}
+
+<style>
+  .ents {
+    border-top: 1px solid var(--border);
+    padding: var(--sp-5) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+  .ents__head { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .ents__label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .ents__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    color: var(--fg-1);
+    margin: 0;
+    font-weight: 500;
+  }
+  .ents__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  .ents__item a {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-2);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+  .ents__item a:hover {
+    color: var(--crt-glow);
+    border-color: var(--border-strong);
+  }
+</style>

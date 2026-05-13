@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import DossierHeader from '../../components/DossierHeader.astro';
 import ProvenanceCard from '../../components/ProvenanceCard.astro';
 import CrossReferenceRail from '../../components/CrossReferenceRail.astro';
+import EntitiesInCase from '../../components/EntitiesInCase.astro';
 import { archiveOf, getRenderableCases, relatedCases, threadOf, tidyTitle } from '../../lib/case-utils';
 
 export async function getStaticPaths() {
@@ -35,6 +36,7 @@ const headline = tidyTitle(entry.data.title);
 
       <div class="dossier__rail">
         <ProvenanceCard entry={entry} />
+        <EntitiesInCase entry={entry} />
         <CrossReferenceRail current={entry} related={related} />
       </div>
     </div>
