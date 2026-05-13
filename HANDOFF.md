@@ -195,10 +195,9 @@ and the homepage section anchors and stats grid.
   (`npm run preview` after `npm run build`) is fine and is what David
   should use to verify board/atlas changes locally. Has been there for at
   least the entire current branch.
-- **Hero images on most cases**: 19 archival images mapped (20 cases
-  covered via one cross-mapped image), 43 of 63 cases still have no hero.
-  Adding more is the highest-leverage next move on visual richness
-  without changing layout.
+- **Hero images on most cases**: 21 archival images mapped, 39 of 63
+  cases still have no hero. Adding more is the highest-leverage next
+  move on visual richness without changing layout.
 
 ---
 
@@ -262,16 +261,19 @@ Mode is set per route on `<html data-mode="...">` by `resolveMode()` in
   3. Homepage index list, dossier hero, and entity hero pick it up
      automatically.
 
-### Currently mapped (20 cases, 3 entities)
+### Currently mapped (24 cases, 3 entities)
 
 Hottel, three Arnold variants, Maury Island, Brown-Davidson, Mantell
 (crash-site marker, not the generic F-51D), Rhodes, Apollo 17 VM6,
 Hoover-Scully, two pre-Scully rumor cases, Project Grudge, Section 10
 civilian cluster, Chesapeake abduction 1967, Kazakhstan 1994 (Boeing
 747), USPER statement (Pentagon aerial), Oak Ridge gasser (X-10 reactor),
-Cabell AFOIC (Cabell USAF portrait), Muroc CIC affidavits (1947 P-80).
-Entities: J. Edgar Hoover, Kenneth Arnold, Department of War (shares the
-Pentagon image with USPER).
+Cabell AFOIC (Cabell USAF portrait), Muroc CIC affidavits (1947 P-80),
+Peyerl 1944 German aircraft (Horten Ho 229 V3), Phoenix-Blythe 509th
+Bomb Group (Sacramento Bee Roswell coverage), Frank Scully communist
+teletype (Scully portrait), civilian-correspondence-hoover-pattern
+(Hoover portrait). Entities: J. Edgar Hoover, Kenneth Arnold, Department
+of War (shares the Pentagon image with USPER).
 
 ### Sourcing more images
 
@@ -428,16 +430,17 @@ legacy/unused components have been deleted in this branch.
 
 ## Recommended next-session work, in priority order
 
-1. **Source more archival images.** 43 of 63 cases still lack a hero.
+1. **Source more archival images.** 39 of 63 cases still lack a hero.
    Confirmed-good leads not yet pulled: Project Twinkle / green fireball
-   documents (Sandia, Los Alamos era), Horten Ho 229 or Me 262 for the
-   Peyerl 1944 German aircraft case, Edwards Air Force Base aerials for
-   Muroc-adjacent cases, NARA newspaper clippings for the 1947 wave
-   (Portland, Hackensack, Houston), Lincoln La Paz portrait if a PD copy
-   surfaces, Project Blue Book era hangar/lab photos for the Section 10
-   cluster cases. Use Wikimedia Commons + FBI Vault + NARA. Federal works
-   = public domain. Always set `User-Agent:
-   the-ufo-files-archive/1.0 (drjr1021@gmail.com)` on Wikimedia.
+   documents (Sandia, Los Alamos era), Lincoln La Paz portrait if a PD
+   copy surfaces, Edwards Air Force Base aerials, NARA newspaper
+   clippings for the 1947 wave (Portland, Hackensack, Houston), J. Allen
+   Hynek portrait, Project Blue Book era hangar/lab photos for the
+   Section 10 cluster cases, Holloman AFB for the Stanfield-La Paz case,
+   Bockscar / 509th Bomb Group B-29 for other 509th-related cases. Use
+   Wikimedia Commons + FBI Vault + NARA. Federal works = public domain.
+   Always set `User-Agent: the-ufo-files-archive/1.0
+   (drjr1021@gmail.com)` on Wikimedia.
 2. **Investigate Vite dev-server bug**. The
    `vite-react-refresh-wrapper: Missing field 'moduleType'` issue blocks
    dev-mode work on React routes. Likely a version pin issue between
@@ -447,12 +450,6 @@ legacy/unused components have been deleted in this branch.
    strategic full-bleed images between sections would help. Pull-quotes
    set in Fraunces italic at scale would also help break up the dossier
    reading column.
-4. **Pre-existing `astro check` errors.** Fourteen TS errors live in
-   `src/pages/evidence/[slug].astro`, `src/pages/timeline.astro`, and
-   `src/pages/thread/[id].astro` (mostly `string | undefined` not
-   narrowed before passing to `.test()` or `.localeCompare()`). The
-   production build still passes because Astro builds without strict TS.
-   Worth a cleanup pass before any PR review.
 
 ### Things David may bring up
 

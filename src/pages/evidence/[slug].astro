@@ -19,7 +19,8 @@ const thread = threadOf(entry);
 const date = headlineDate(entry);
 const headline = tidyTitle(entry.data.title);
 
-const url = entry.data.origin_url;
+// getStaticPaths filters to cases with origin_url, so this is always defined at runtime.
+const url = entry.data.origin_url!;
 const isImage = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
 const isVideo = /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url);
 const isPdf = /\.pdf(\?|$)/i.test(url);

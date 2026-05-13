@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
-import { THREADS, type ThreadId } from './threads';
+import { THREADS } from './threads';
 
 export type AnyCase = CollectionEntry<'fbiCases'> | CollectionEntry<'pursueCases'>;
 

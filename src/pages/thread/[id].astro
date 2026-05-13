@@ -37,7 +37,6 @@ const prevThread = threadIdx > 0 ? THREADS[threadIdx - 1] : null;
 const nextThread = threadIdx >= 0 && threadIdx < THREADS.length - 1 ? THREADS[threadIdx + 1] : null;
 
 const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
-const archiveHref = thread.archive === 'pursue' ? '/thread/pursue-2026' : '/timeline';
 ---
 <Base
   title={thread.title}

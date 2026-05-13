@@ -28,7 +28,6 @@ const FORCE = process.argv.includes('--force');
 const DRY_RUN = process.argv.includes('--dry-run');
 const MAX_RELS_PER_CASE = 12;
 const DATE_WINDOW_DAYS = 30;
-const MIN_ENTITY_OVERLAP_FOR_EDGE = 1;
 
 interface Relationship {
   target: string;

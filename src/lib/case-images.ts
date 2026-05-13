@@ -111,6 +111,26 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'A pilot in the cockpit of a Lockheed P-80 Shooting Star at Muroc Army Air Field, 1947, the year of the CIC affidavits.',
     caption: 'P-80 Shooting Star / Muroc AAF / 1947',
   },
+  'peyerl-1944-german-aircraft': {
+    src: '/img/archive/horten-ho229-smithsonian.jpg',
+    alt: 'The Horten Ho 229 V3 prototype fuselage preserved at the Smithsonian, a German wartime jet of the type Peyerl described in his 1967 FBI Miami statement.',
+    caption: 'Horten Ho 229 V3 / Smithsonian / wartime German jet',
+  },
+  'phoenix-blythe-radar-intercept-509th-bomb-group-june-1950': {
+    src: '/img/archive/sacramento-bee-1947.jpg',
+    alt: 'Sacramento Bee, July 8, 1947, "Army Reveals It Has Flying Disc Found On Ranch In New Mexico," naming the 509th Bomb Group at Roswell.',
+    caption: 'Sacramento Bee / 8 July 1947 / 509th Bomb Group',
+  },
+  'frank-scully-communist-teletype-october-1950': {
+    src: '/img/archive/scully-portrait.jpg',
+    alt: 'Frank Scully, author of "Behind the Flying Saucers" (1950), the subject of the October 1950 FBI communist-investigation teletype.',
+    caption: 'Frank Scully / author / circa 1957',
+  },
+  'civilian-correspondence-hoover-pattern-1949-1950': {
+    src: '/img/archive/hoover-portrait.jpg',
+    alt: 'J. Edgar Hoover, Director of the FBI, addressee of the 1949-1950 civilian UFO correspondence covered in this case.',
+    caption: 'J. Edgar Hoover / Library of Congress / FBI Director',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {

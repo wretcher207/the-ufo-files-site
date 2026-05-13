@@ -127,16 +127,6 @@ function colorForEdgeType(t: EvidenceRelationship, tokens: ResolvedTokens): stri
   }
 }
 
-// Simple hex mixer for the muted "event" color. Both inputs must be #rrggbb.
-function mix(a: string, b: string, t: number): string {
-  const pa = parseHex(a);
-  const pb = parseHex(b);
-  if (!pa || !pb) return a;
-  const r = Math.round(pa[0] * (1 - t) + pb[0] * t);
-  const g = Math.round(pa[1] * (1 - t) + pb[1] * t);
-  const bl = Math.round(pa[2] * (1 - t) + pb[2] * t);
-  return `#${[r, g, bl].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
-}
 function parseHex(c: string): [number, number, number] | null {
   const m = c.trim().match(/^#?([0-9a-f]{6})$/i);
   if (!m) return null;
