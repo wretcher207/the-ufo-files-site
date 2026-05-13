@@ -1,38 +1,91 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getGraph } from '../graph/data/buildGraph';
+import NetworkAtlas from '../graph/components/NetworkAtlas';
+import AtlasMobile from '../graph/components/AtlasMobile';
+import '../styles/atlas.css';
+import '../graph/components/board.css';
+
+const { nodes, edges } = await getGraph();
 ---
 <Base
   title="Evidence Atlas"
-  description="The unified research surface for The UFO Files archive. Filter, scrub, and cross-reference every case from one screen."
-  serial="ATLAS/PREVIEW"
-  section="EVIDENCE ATLAS"
+  description="The full corpus rendered as a navigable WebGL network. Filter by node type, agency, confidence, date, and thread. Search any case."
+  section="ATLAS"
 >
-  <section class="section" style="margin-top: var(--sp-7);">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">MOD-05 · Investigation mode</span>
-        <h1 class="section__title">Evidence Atlas</h1>
-      </div>
-      <span class="section__meta">Building · Phase 3</span>
-    </header>
-
-    <div class="coming-soon">
-      <span class="coming-soon__label">Under construction</span>
-      <h2 class="coming-soon__title">The unified research surface is being built.</h2>
-      <p class="coming-soon__body">
-        Atlas will combine the case list, chronology, geography, and network into one screen
-        with a side drawer preview. Filters across source, thread, signal, evidence type,
-        media type, date range, entity, and location.
-      </p>
-      <p class="coming-soon__body">
-        For now, enter the archive through Timeline, Map, or Graph from the top nav.
-      </p>
-      <div class="wake__actions" style="margin-top: var(--sp-4);">
-        <a class="btn" href="/timeline">Timeline</a>
-        <a class="btn" href="/map">Map</a>
-        <a class="btn" href="/graph">Entity graph</a>
-        <a class="btn btn--primary" href="/">Back to case board</a>
-      </div>
+  <div class="atlas-page" data-atlas-page>
+    <div class="atlas-page__desktop">
+      <NetworkAtlas client:only="react" nodes={nodes} edges={edges} />
     </div>
-  </section>
+    <div class="atlas-page__mobile">
+      <AtlasMobile client:only="react" nodes={nodes} edges={edges} />
+    </div>
+
+    {/* Hidden accessible mirror of the network, so keyboard and screen-reader
+        users can reach every node without the WebGL canvas. */}
+    <ul class="atlas-sr-mirror" aria-label="All cases in the atlas">
+      {nodes.map((n) => (
+        <li>
+          <a href={n.collection === 'entities' ? `/entity/${n.slug}` : `/dossier/${n.slug}`}>
+            <span>{n.id}</span> <span>{n.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
 </Base>
+
+<script>
+  // The React components consume URL state via the shared graphStore inside
+  // their own effects. This pre-hydration script reads the URL and writes
+  // through the store BEFORE the React entry mounts, so the first render
+  // already reflects deep-linked focus, type filter, and agency filter.
+  import { useGraphStore } from '../graph/store/graphStore';
+  import type { Confidence, EvidenceNodeType } from '../graph/types';
+
+  function parseList(v: string | null): string[] {
+    if (!v) return [];
+    return v.split(',').map((s) => s.trim()).filter(Boolean);
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const focus = params.get('focus');
+  const types = parseList(params.get('type')) as EvidenceNodeType[];
+  const agencies = parseList(params.get('agency'));
+  const confidences = parseList(params.get('confidence')) as Confidence[];
+  const threads = parseList(params.get('thread'));
+
+  const store = useGraphStore.getState();
+  if (focus) store.selectNode(focus);
+  if (types.length) store.setFilter('nodeTypes', new Set(types));
+  if (agencies.length) store.setFilter('agencies', new Set(agencies));
+  if (confidences.length) store.setFilter('confidences', new Set(confidences));
+  if (threads.length) store.setFilter('threads', new Set(threads));
+</script>
+
+<style>
+  .atlas-page {
+    position: relative;
+    /* OperatorChrome is 56px fixed at the top, page-shell pads top by 56px,
+       so the viewport for atlas content is 100vh - 56px. */
+    height: calc(100vh - 56px);
+    width: 100%;
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+  .atlas-page__desktop { display: none; height: 100%; }
+  .atlas-page__mobile  { display: block; height: 100%; }
+  @media (min-width: 768px) {
+    .atlas-page__desktop { display: block; height: 100%; }
+    .atlas-page__mobile  { display: none; }
+  }
+
+  .atlas-sr-mirror {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>

@@ -1,0 +1,337 @@
+/* =========================================================
+   /atlas styles. Network atlas chrome: filters rail, top bar,
+   canvas, search, mobile sheet, and the stub DossierPanel.
+   All colors resolve from Phase 6 brand tokens.
+   ========================================================= */
+
+.atlas-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  background: var(--bg-base);
+}
+
+/* ── Filters rail (desktop). */
+.atlas-filters {
+  position: relative;
+  width: 280px;
+  flex-shrink: 0;
+  height: 100%;
+  border-right: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--bg-raised) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;
+  transition: width var(--dur-base) var(--ease-out);
+}
+.atlas-filters--collapsed {
+  width: 56px;
+  overflow: hidden;
+}
+.atlas-filters__toggle {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-raised);
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+  z-index: 2;
+}
+.atlas-filters__toggle:hover { color: var(--accent-amber); }
+.atlas-filters__body {
+  padding: var(--sp-5) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.atlas-filters__body section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.atlas-filters__body h3 {
+  margin: 0 0 var(--sp-1);
+  color: var(--ink-muted);
+}
+
+/* ── Filter chips. */
+.atlas-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.atlas-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--ink-secondary);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: var(--weight-body-md);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+.atlas-chip:hover {
+  color: var(--ink-primary);
+  border-color: var(--ink-secondary);
+}
+.atlas-chip[data-active="true"] {
+  color: var(--bg-base);
+  background: var(--accent-amber);
+  border-color: var(--accent-amber);
+}
+
+.atlas-select {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-overlay);
+  color: var(--ink-primary);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.atlas-tags {
+  list-style: none;
+  padding: 0;
+  margin: var(--sp-2) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.atlas-tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 8px;
+  background: var(--bg-overlay);
+  color: var(--ink-primary);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+.atlas-tag:hover { border-color: var(--accent-amber); }
+
+.atlas-daterange {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.atlas-daterange input[type="range"] {
+  grid-column: 2;
+  width: 100%;
+  accent-color: var(--accent-amber);
+}
+.atlas-daterange span {
+  color: var(--ink-muted);
+}
+
+.atlas-clear {
+  margin-top: var(--sp-4);
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+}
+.atlas-clear:hover { color: var(--ink-primary); }
+
+/* ── Canvas + topbar. */
+.atlas-canvas-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+}
+.atlas-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-5);
+  background: linear-gradient(to bottom, color-mix(in oklab, var(--bg-base) 88%, transparent) 30%, transparent);
+  pointer-events: none;
+}
+.atlas-topbar > * { pointer-events: auto; }
+
+.atlas-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 1 1 360px;
+  max-width: 480px;
+  padding: 8px 12px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-1);
+}
+.atlas-search:focus-within { border-color: var(--accent-amber); }
+.atlas-search__label { flex-shrink: 0; }
+.atlas-search input[type="search"] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ink-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.atlas-search input[type="search"]::placeholder { color: var(--ink-muted); }
+.atlas-search__count {
+  flex-shrink: 0;
+  color: var(--accent-amber);
+}
+
+.atlas-cross {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-1);
+  color: var(--ink-primary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.atlas-cross:hover {
+  color: var(--accent-amber);
+  border-color: var(--accent-amber);
+}
+
+.atlas-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.atlas-canvas canvas { outline: none; }
+
+/* The shared DossierPanel (built by Agent 4) brings its own CSS via
+   src/graph/components/board.css. atlas.astro imports it. */
+
+/* ── Mobile variant. */
+.atlas-mobile {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+}
+.atlas-mobile__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: color-mix(in oklab, var(--bg-raised) 95%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.atlas-mobile__search {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--bg-overlay);
+  color: var(--ink-primary);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.atlas-mobile__search:focus { outline: none; border-color: var(--accent-amber); }
+.atlas-mobile__filter-btn {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-primary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  border-radius: var(--radius-1);
+}
+.atlas-mobile__canvas {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+.atlas-mobile__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--rule);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  padding: var(--sp-5) var(--sp-4) var(--sp-7);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  animation: sheet-up var(--dur-base) var(--ease-out);
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-mobile__sheet { animation: none; }
+}
+.atlas-mobile__sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.atlas-mobile__sheet-head button {
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-primary);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  border-radius: var(--radius-1);
+  cursor: pointer;
+}
+
+/* Mobile dossier sheet behavior lives in board.css (Agent 4). */
