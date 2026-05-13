@@ -1,0 +1,163 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import DossierHeader from '../../components/DossierHeader.astro';
+import ProvenanceCard from '../../components/ProvenanceCard.astro';
+import CrossReferenceRail from '../../components/CrossReferenceRail.astro';
+import { archiveOf, getRenderableCases, relatedCases, threadOf, tidyTitle } from '../../lib/case-utils';
+
+export async function getStaticPaths() {
+  const cases = await getRenderableCases();
+  return cases.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, all: cases },
+  }));
+}
+
+const { entry, all } = Astro.props;
+const { Content } = await render(entry);
+
+const related = relatedCases(entry, all);
+const archive = archiveOf(entry);
+const thread = threadOf(entry);
+const serial = archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
+const sectionLabel = thread?.title.toUpperCase() ?? 'DOSSIER';
+const headline = tidyTitle(entry.data.title);
+---
+<Base title={headline} serial={serial} section={sectionLabel}>
+  <article class="dossier" data-pagefind-body>
+    <DossierHeader entry={entry} />
+
+    <div class="dossier__layout">
+      <div class="dossier__body prose">
+        <Content />
+      </div>
+
+      <div class="dossier__rail">
+        <ProvenanceCard entry={entry} />
+        <CrossReferenceRail current={entry} related={related} />
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style is:global>
+  .dossier { display: block; }
+  .dossier__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: var(--sp-7);
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    .dossier__layout {
+      grid-template-columns: 1fr;
+      gap: var(--sp-5);
+    }
+  }
+  .dossier__rail {
+    position: sticky;
+    top: calc(var(--sp-8) + 8px);
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 960px) {
+    .dossier__rail { position: static; }
+  }
+
+  .dossier .prose {
+    font-family: var(--font-ui);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--fg-2);
+    max-width: 72ch;
+  }
+  .dossier .prose h1,
+  .dossier .prose h2,
+  .dossier .prose h3,
+  .dossier .prose h4 {
+    font-family: var(--font-display);
+    color: var(--fg-1);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tracking-tight);
+    font-weight: 500;
+    margin: var(--sp-7) 0 var(--sp-4);
+  }
+  .dossier .prose h2 { font-size: var(--fs-xl); }
+  .dossier .prose h3 { font-size: var(--fs-lg); }
+  .dossier .prose h4 {
+    font-family: var(--font-ui);
+    font-size: var(--fs-md);
+    font-weight: 600;
+    margin-top: var(--sp-5);
+  }
+  .dossier .prose p { margin: var(--sp-3) 0 var(--sp-4); }
+  .dossier .prose strong { color: var(--fg-1); font-weight: 600; }
+  .dossier .prose em { color: var(--fg-1); font-style: italic; }
+  .dossier .prose a {
+    color: var(--fg-1);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 3px;
+    transition: color var(--dur-fast) var(--ease-out), text-decoration-color var(--dur-fast) var(--ease-out);
+  }
+  .dossier .prose a:hover {
+    color: var(--crt-glow);
+    text-decoration-color: var(--crt-glow);
+  }
+  .dossier .prose ul,
+  .dossier .prose ol {
+    padding-left: var(--sp-5);
+    margin: var(--sp-3) 0 var(--sp-4);
+  }
+  .dossier .prose li { margin: var(--sp-2) 0; }
+  .dossier .prose blockquote {
+    margin: var(--sp-5) 0;
+    padding: var(--sp-3) var(--sp-5);
+    border-left: 2px solid var(--crt-glow);
+    background: var(--bg-1);
+    color: var(--fg-1);
+    font-style: italic;
+  }
+  .dossier .prose blockquote p { margin: var(--sp-2) 0; }
+  .dossier .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--bg-2);
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    color: var(--fg-1);
+  }
+  .dossier .prose pre {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    padding: var(--sp-4);
+    overflow-x: auto;
+    font-size: var(--fs-sm);
+  }
+  .dossier .prose hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: var(--sp-7) 0;
+  }
+  .dossier .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--sp-4) 0;
+    font-size: var(--fs-sm);
+  }
+  .dossier .prose th,
+  .dossier .prose td {
+    border-bottom: 1px solid var(--border);
+    padding: var(--sp-2) var(--sp-3);
+    text-align: left;
+    vertical-align: top;
+  }
+  .dossier .prose th {
+    color: var(--fg-1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+import type { AnyCase } from '../lib/case-utils';
+import { archiveOf, caseUrl, headlineDate, threadOf, tidyTitle } from '../lib/case-utils';
+
+interface Props {
+  current: AnyCase;
+  related: AnyCase[];
+}
+const { related } = Astro.props;
+---
+<aside class="crossref" aria-labelledby="crossref-heading">
+  <header class="crossref__head">
+    <span class="crossref__label">Cross-references</span>
+    <h2 id="crossref-heading" class="crossref__title">Cases that share entities with this one</h2>
+  </header>
+
+  {related.length === 0 && (
+    <p class="crossref__empty">No shared-entity matches in the indexed archive.</p>
+  )}
+
+  {related.length > 0 && (
+    <ul class="crossref__list">
+      {related.map((c) => {
+        const archive = archiveOf(c);
+        const date = headlineDate(c);
+        const thread = threadOf(c);
+        return (
+          <li class="crossref__item">
+            <a href={caseUrl(c)}>
+              <span class="crossref__item-archive">{archive === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+              <span class="crossref__item-title">{tidyTitle(c.data.title)}</span>
+              <span class="crossref__item-meta">
+                {date}{thread ? ` · ${thread.title}` : ''}
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</aside>
+
+<style>
+  .crossref {
+    border-top: 1px solid var(--border);
+    padding: var(--sp-5) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+  .crossref__head { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .crossref__label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .crossref__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--fg-1);
+    margin: 0;
+    font-weight: 500;
+    line-height: var(--lh-snug);
+  }
+  .crossref__empty {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--fg-3);
+    margin: 0;
+  }
+  .crossref__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .crossref__item {
+    border-top: 1px solid var(--border-subtle);
+  }
+  .crossref__item:last-child {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .crossref__item a {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: var(--sp-2) var(--sp-3);
+    padding: var(--sp-3) 0;
+    text-decoration: none;
+    color: var(--fg-1);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .crossref__item a:hover { color: var(--crt-glow); }
+  .crossref__item-archive {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    color: var(--fg-3);
+    padding-top: 2px;
+  }
+  .crossref__item-title {
+    font-family: var(--font-ui);
+    font-size: var(--fs-sm);
+    color: inherit;
+    line-height: var(--lh-snug);
+  }
+  .crossref__item-meta {
+    grid-column: 2;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-3);
+  }
+</style>

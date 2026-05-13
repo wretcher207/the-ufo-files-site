@@ -1,4 +1,6 @@
 ---
+import SearchHUD from './SearchHUD.astro';
+
 interface Props {
   serial?: string;
   section?: string;
@@ -16,9 +18,20 @@ const { serial = 'ARCHIVE://OPEN', section = '' } = Astro.props;
       <span>{serial}{section ? ` // ${section}` : ''}</span>
     </div>
 
-    <nav class="operator-chrome__nav" aria-label="Primary">
-      <a href="/">Case board</a>
-      <a href="/about">Methodology</a>
-    </nav>
+    <div class="operator-chrome__right">
+      <SearchHUD />
+      <nav class="operator-chrome__nav" aria-label="Primary">
+        <a href="/">Case board</a>
+        <a href="/about">Methodology</a>
+      </nav>
+    </div>
   </div>
 </header>
+
+<style>
+  .operator-chrome__right {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+</style>
