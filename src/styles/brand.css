@@ -1,319 +1,292 @@
 /* =========================================================
-   THE UFO FILES — The Unsealed Archive System
-   A recovered research instrument. Reading-room palette.
-   Phosphor-green CRT accents over near-black panels.
+   THE UFO FILES, Phase 6 brand tokens.
+   Two route-driven modes (DARK cinematic, LIGHT reading).
+   Texture comes from typography, hairline rules, and color
+   temperature only. No raster overlays, no scanlines, no
+   grain, no grid backgrounds.
    ========================================================= */
 
 :root {
-  /* ── PRIMARY PALETTE — Unsealed Archive ────────────────── */
-  --bg-void:          #030504;
-  --bg-panel:         #0A0D0C;
-  --bg-raised:        #101513;
-  --bg-document:      #D8D2C2;
-  --redact:           #050505;
+  /* ── Default mode (DARK). Overridden by [data-mode="light"]. */
+  --bg-base:        #0F0D0B;
+  --bg-raised:      #181613;
+  --bg-overlay:     #221E1A;
+  --ink-primary:    #F2EBE0;
+  --ink-secondary:  #A89B8C;
+  --ink-muted:      #6B6358;
+  --rule:           #2A251F;
 
-  --text-main:        #E7ECE6;
-  --text-muted:       #8D988F;
-  --text-dim:         #5E6A63;
-  --text-ink:         #1A1F1C;
+  /* Accent tokens, strict semantics.
+     amber: primary action, selected state, tack glow,
+            supports/derived_from edges.
+     verdigris: contradictions, redactions, classified
+                markers, contradicts edges. */
+  --accent-amber-dark:      #E8A857;
+  --accent-amber-light:     #B8741F;
+  --accent-verdigris-dark:  #5C8474;
+  --accent-verdigris-light: #3D5C50;
 
-  --phosphor:         #9CFFB1;
-  --phosphor-dim:     #416F4B;
-  --amber:            #D7A85A;
-  --amber-dim:        #6A5026;
-  --warning:          #C45F4A;
+  /* Resolved accent (mode-dependent, see below). */
+  --accent-amber:     var(--accent-amber-dark);
+  --accent-verdigris: var(--accent-verdigris-dark);
 
-  --border-faint:     rgba(210, 230, 210, 0.10);
-  --border-mid:       rgba(210, 230, 210, 0.18);
-  --border-hot:       rgba(190, 255, 200, 0.28);
-  --border-amber:     rgba(215, 168, 90, 0.30);
+  /* Typography. */
+  --font-display:  'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-body:     'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  --font-mono:     'Azeret Mono', 'JetBrains Mono', 'SF Mono', Menlo, monospace;
 
-  --grid-line:        rgba(210, 230, 210, 0.04);
-  --scanline:         rgba(0, 0, 0, 0.30);
-  --grain-opacity:    0.035;
+  /* Display: 400 (regular only, Instrument Serif ships one weight). */
+  --weight-display:  400;
+  /* Body: 400 base, 500 emphasis, 600 strong. */
+  --weight-body:     400;
+  --weight-body-md:  500;
+  --weight-body-sb:  600;
+  /* Mono: 400 base, 500 emphasis. */
+  --weight-mono:     400;
+  --weight-mono-md:  500;
 
-  --focus-ring:       0 0 0 1px var(--phosphor), 0 0 14px rgba(156, 255, 177, 0.28);
-  --bloom-phosphor:   0 0 24px rgba(156, 255, 177, 0.14);
-  --bloom-amber:      0 0 18px rgba(215, 168, 90, 0.18);
+  --fs-xs:   11px;
+  --fs-sm:   13px;
+  --fs-base: 15px;
+  --fs-md:   17px;
+  --fs-lg:   22px;
+  --fs-xl:   32px;
+  --fs-2xl:  48px;
+  --fs-3xl:  72px;
+  --fs-4xl:  112px;
 
-  /* ── BACKWARD-COMPAT ALIASES (existing pages keep working) */
-  --bg:               var(--bg-void);
-  --bg-1:             var(--bg-panel);
-  --bg-2:             var(--bg-raised);
-  --bg-3:             var(--bg-raised);
-  --fg-1:             var(--text-main);
-  --fg-2:             var(--text-muted);
-  --fg-3:             var(--text-dim);
-  --fg-disabled:      var(--text-dim);
-  --border:           var(--border-faint);
-  --border-strong:    var(--border-hot);
-  --border-subtle:    var(--border-faint);
-  --accent:           var(--phosphor);
-  --accent-soft:      var(--phosphor-dim);
-  --signal-ok:        var(--phosphor);
-  --signal-error:     var(--warning);
-  --signal-warn:      var(--amber);
-  --crt-glow:         var(--phosphor);
-  --spectral-blue:    var(--phosphor-dim);
-  --terminal-green:   var(--phosphor);
-  --warning-amber:    var(--amber);
-  --error-red:        var(--warning);
-  --void-black:       var(--bg-void);
-  --absolute-black:   #000000;
-  --deep-charcoal:    var(--bg-panel);
-  --card-black:       var(--bg-raised);
-  --soft-carbon:      var(--bg-raised);
-  --ghost-white:      var(--text-main);
-  --dead-silver:      var(--text-muted);
-  --static-gray:      var(--text-dim);
-  --dim-signal:       var(--border-mid);
-
-  /* ── TYPOGRAPHY ────────────────────────────────────────── */
-  --font-display:     'Hanken Grotesk', 'Inter', -apple-system, sans-serif;
-  --font-ui:          'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono:        'JetBrains Mono', 'SF Mono', Menlo, monospace;
-  --font-serif:       'Source Serif 4', 'Iowan Old Style', Georgia, serif;
-  --font-document:    'Special Elite', 'Courier Prime', 'Courier New', monospace;
-
-  --fs-xs:            11px;
-  --fs-sm:            13px;
-  --fs-base:          15px;
-  --fs-md:            17px;
-  --fs-lg:            22px;
-  --fs-xl:            32px;
-  --fs-2xl:           48px;
-  --fs-3xl:           72px;
-  --fs-4xl:           112px;
-
-  --lh-tight:         1.05;
-  --lh-snug:          1.25;
-  --lh-normal:        1.55;
-  --lh-loose:         1.75;
+  --lh-tight:  1.05;
+  --lh-snug:   1.25;
+  --lh-normal: 1.55;
+  --lh-loose:  1.70;
 
   --tracking-tight:   -0.02em;
   --tracking-normal:  0;
-  --tracking-wide:    0.08em;
-  --tracking-wider:   0.18em;
-  --tracking-widest:  0.42em;
+  --tracking-wide:    0.06em;
+  --tracking-wider:   0.14em;
+  --tracking-widest:  0.32em;
 
-  /* ── SPACING ───────────────────────────────────────────── */
-  --sp-0:             0;
-  --sp-1:             4px;
-  --sp-2:             8px;
-  --sp-3:             12px;
-  --sp-4:             16px;
-  --sp-5:             24px;
-  --sp-6:             32px;
-  --sp-7:             48px;
-  --sp-8:             64px;
-  --sp-9:             96px;
-  --sp-10:            128px;
+  /* Spacing scale. */
+  --sp-0:  0;
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  24px;
+  --sp-6:  32px;
+  --sp-7:  48px;
+  --sp-8:  64px;
+  --sp-9:  96px;
+  --sp-10: 128px;
 
-  /* ── RADII (square is sacred) ──────────────────────────── */
-  --radius-0:         0;
-  --radius-1:         2px;
-  --radius-2:         4px;
+  /* Radii. Hard-edge bias, two soft options only. */
+  --radius-0: 0;
+  --radius-1: 2px;
+  --radius-2: 4px;
 
-  --bw-hair:          1px;
-  --bw-thin:          1px;
-  --bw-medium:        2px;
+  /* Hairline border weights. */
+  --bw-hair:   1px;
+  --bw-thin:   1px;
+  --bw-medium: 2px;
 
-  --elev-0:           none;
-  --elev-1:           0 0 0 1px var(--border-faint);
-  --elev-bloom:       0 0 0 1px var(--border-faint), 0 0 32px rgba(156, 255, 177, 0.08);
+  /* Motion. */
+  --ease-out:    cubic-bezier(0.16, 0.84, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    120ms;
+  --dur-base:    220ms;
+  --dur-slow:    420ms;
+  --dur-xfade:   200ms;
 
-  --ease-out:         cubic-bezier(0.16, 0.84, 0.32, 1);
-  --ease-in-out:      cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-fast:         120ms;
-  --dur-base:         220ms;
-  --dur-slow:         600ms;
-  --dur-glacial:      1400ms;
+  /* Focus ring uses resolved amber so it adapts per mode. */
+  --focus-ring: 0 0 0 2px var(--accent-amber);
+
+  /* Soft elevation, hairline-first. No drop shadows that
+     create glassy AI aesthetic. Used sparingly. */
+  --elev-0: none;
+  --elev-1: 0 1px 0 var(--rule);
+  --elev-2: 0 8px 24px rgba(0, 0, 0, 0.32);
+
+  /* ── Backward-compat aliases.
+     Map legacy DPD tokens that other Phase-5 pages still
+     reference. Wave-2 agents replace these. */
+  --bg:             var(--bg-base);
+  --bg-1:           var(--bg-raised);
+  --bg-2:           var(--bg-raised);
+  --bg-3:           var(--bg-overlay);
+  --fg-1:           var(--ink-primary);
+  --fg-2:           var(--ink-secondary);
+  --fg-3:           var(--ink-muted);
+  --fg-disabled:    var(--ink-muted);
+  --border:         var(--rule);
+  --border-strong:  var(--accent-amber);
+  --border-subtle:  var(--rule);
+  --border-faint:   var(--rule);
+  --border-mid:     var(--rule);
+  --border-hot:     var(--accent-amber);
+  --border-amber:   var(--accent-amber);
+  --accent:         var(--accent-amber);
+  --accent-soft:    var(--accent-verdigris);
+  --crt-glow:       var(--accent-amber);
+  --warning-amber:  var(--accent-amber);
+  --signal-warn:    var(--accent-amber);
+  --signal-ok:      var(--accent-amber);
+  --signal-error:   var(--accent-verdigris);
+  --text-main:      var(--ink-primary);
+  --text-muted:     var(--ink-secondary);
+  --text-dim:       var(--ink-muted);
+  --text-ink:       var(--ink-primary);
+  --phosphor:       var(--accent-amber);
+  --phosphor-dim:   var(--accent-verdigris);
+  --amber:          var(--accent-amber);
 }
 
-/* ── BASE ─────────────────────────────────────────────── */
+/* ── DARK mode (default, cinematic). */
+[data-mode="dark"],
+:root {
+  --bg-base:       #0F0D0B;
+  --bg-raised:     #181613;
+  --bg-overlay:    #221E1A;
+  --ink-primary:   #F2EBE0;
+  --ink-secondary: #A89B8C;
+  --ink-muted:     #6B6358;
+  --rule:          #2A251F;
+
+  --accent-amber:     var(--accent-amber-dark);
+  --accent-verdigris: var(--accent-verdigris-dark);
+
+  color-scheme: dark;
+}
+
+/* ── LIGHT mode (reading). */
+[data-mode="light"] {
+  --bg-base:       #F4EFE6;
+  --bg-raised:     #FBF7EF;
+  --bg-overlay:    #FFFFFF;
+  --ink-primary:   #1A1612;
+  --ink-secondary: #4D4640;
+  --ink-muted:     #8A8175;
+  --rule:          #D8CFC0;
+
+  --accent-amber:     var(--accent-amber-light);
+  --accent-verdigris: var(--accent-verdigris-light);
+
+  color-scheme: light;
+}
+
+/* ── BASE. */
 html, body {
-  background: var(--bg-void);
-  color: var(--text-main);
-  font-family: var(--font-ui);
+  background: var(--bg-base);
+  color: var(--ink-primary);
+  font-family: var(--font-body);
   font-size: var(--fs-base);
   line-height: var(--lh-normal);
+  font-weight: var(--weight-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   margin: 0;
   padding: 0;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 ::selection {
-  background: rgba(156, 255, 177, 0.22);
-  color: var(--text-main);
+  background: var(--accent-amber);
+  color: var(--bg-base);
 }
 
-/* ── SEMANTIC TYPE STYLES ─────────────────────────────── */
-.dp-display {
-  font-family: var(--font-display);
-  font-size: var(--fs-4xl);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-  font-weight: 500;
-  color: var(--text-main);
-}
-.dp-h1 {
-  font-family: var(--font-display);
-  font-size: var(--fs-3xl);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-  font-weight: 500;
-  margin: 0;
-}
-.dp-h2 {
-  font-family: var(--font-display);
-  font-size: var(--fs-2xl);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--tracking-tight);
-  font-weight: 500;
-  margin: 0;
-}
-.dp-h3 {
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  line-height: var(--lh-snug);
-  font-weight: 500;
-  margin: 0;
-}
-.dp-h4 {
-  font-family: var(--font-ui);
-  font-size: var(--fs-lg);
-  line-height: var(--lh-snug);
-  font-weight: 600;
-  margin: 0;
-}
-.dp-lead {
-  font-family: var(--font-ui);
-  font-size: var(--fs-md);
-  line-height: var(--lh-loose);
-  color: var(--text-muted);
-}
-.dp-body {
-  font-family: var(--font-ui);
-  font-size: var(--fs-base);
-  line-height: var(--lh-normal);
-  color: var(--text-muted);
-}
-.dp-small {
-  font-family: var(--font-ui);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-  color: var(--text-dim);
-}
-.dp-label {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-.dp-meta {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wide);
-  color: var(--text-dim);
-}
-.dp-brand {
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
-}
-
-/* Document excerpt — recovered source quote. */
-.dp-document {
-  font-family: var(--font-document);
-  font-size: var(--fs-base);
-  line-height: var(--lh-loose);
-  color: var(--text-ink);
-  background: var(--bg-document);
-  padding: var(--sp-5) var(--sp-6);
-  letter-spacing: 0.01em;
-  position: relative;
-}
-.dp-document::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0,0,0,0.03) 0,
-    rgba(0,0,0,0.03) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none;
-  mix-blend-mode: multiply;
-}
-
-/* ── PRIMITIVES ───────────────────────────────────────── */
-.dp-divider {
-  border-top: 1px solid var(--border-faint);
-}
-.dp-bracket-rule {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-.dp-bracket-rule::before,
-.dp-bracket-rule::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border-faint);
-  min-width: 24px;
-}
-
-.dp-cursor {
-  display: inline-block;
-  width: 0.55em;
-  height: 1em;
-  background: var(--phosphor);
-  vertical-align: -0.12em;
-  animation: dp-cursor-blink 1.05s steps(1) infinite;
-  box-shadow: 0 0 6px rgba(156, 255, 177, 0.6);
-}
-@keyframes dp-cursor-blink {
-  0%, 49%   { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-
-/* ── LINKS ────────────────────────────────────────────── */
 a {
-  color: var(--text-main);
+  color: var(--ink-primary);
   text-decoration: none;
   transition: color var(--dur-fast) var(--ease-out);
 }
-a:hover {
-  color: var(--phosphor);
-}
+a:hover { color: var(--accent-amber); }
 a:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
 
-/* ── ACCESSIBILITY ────────────────────────────────────── */
 :focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+
+/* ── Type primitives. */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink-primary);
 }
+.t-h1 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+.t-h2 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  margin: 0;
+}
+.t-h3 {
+  font-family: var(--font-body);
+  font-weight: var(--weight-body-sb);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  margin: 0;
+}
+.t-lead {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  color: var(--ink-secondary);
+}
+.t-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--ink-secondary);
+}
+.t-small {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+.t-mono {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--ink-muted);
+}
+.t-label {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* Hairline rule. */
+.rule { border-top: 1px solid var(--rule); }
+
+/* Redaction bar, crisp solid, used inline in prose. */
+.redaction-bar {
+  display: inline-block;
+  background: var(--accent-verdigris);
+  color: transparent;
+  user-select: none;
+  padding: 0 0.4em;
+  border-radius: 0;
+  line-height: 1;
+}
+</content>
+</invoke>
