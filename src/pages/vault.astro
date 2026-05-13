@@ -1,37 +1,325 @@
 ---
 import Base from '../layouts/Base.astro';
+import { archiveOf, getRenderableCases, headlineDate, tidyTitle, type AnyCase } from '../lib/case-utils';
+
+const all = await getRenderableCases();
+
+function byCaseDate(a: AnyCase, b: AnyCase): number {
+  const da = headlineDate(a) ?? '';
+  const db = headlineDate(b) ?? '';
+  return da.localeCompare(db);
+}
+
+const pursue = all.filter((c) => archiveOf(c) === 'pursue').sort(byCaseDate);
+const fbi = all.filter((c) => archiveOf(c) === 'fbi').sort(byCaseDate);
+
+const pursueReleaseDate = '8 MAY 2026';
+const fbiSpan = '1947 → 1973';
 ---
 <Base
-  title="Source Vault"
-  description="Direct access to original source material: PDFs, FBI 302s, AARO sheets, OCR transcripts, video, and stills."
-  serial="VAULT/PREVIEW"
-  section="SOURCE VAULT"
+  title="Source Manifest"
+  description="Every original PDF and primary source in the archive, listed by release batch with direct links to the issuing agency."
+  section="SOURCE MANIFEST"
+  pathname="/vault"
 >
-  <section class="section" style="margin-top: var(--sp-7);">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">MOD-06 · Investigation mode</span>
-        <h1 class="section__title">Source Vault</h1>
-      </div>
-      <span class="section__meta">Building · Phase 4</span>
+  <main class="vault-main" id="main">
+
+    <a class="ufo-section-anchor vault-anchor" href="/timeline">
+      <span class="ufo-section-anchor__num">{all.length}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Source files in the archive</span>
+        <span class="ufo-section-anchor__sublabel">{pursue.length} PURSUE &nbsp;/&nbsp; {fbi.length} FBI 62-HQ-83894</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Read by date</span>
+    </a>
+
+    <header class="vault-head">
+      <h1 class="vault-title">Every file points back to an original.</h1>
+      <p class="vault-lede">
+        One row per case. Click the row for the curated dossier. Follow the arrow on
+        the right to open the original PDF on the issuing agency's server. If a
+        dossier ever drifts from its source, the source wins.
+      </p>
     </header>
 
-    <div class="coming-soon">
-      <span class="coming-soon__label">Under construction</span>
-      <h2 class="coming-soon__title">Direct access to the original material.</h2>
-      <p class="coming-soon__body">
-        The Vault will catalog every PDF, FBI 302, AARO sheet, OCR transcript, video, and image
-        in the archive. Filterable by source type, agency, release batch, OCR status, and
-        whether the source has a curated dossier attached.
+    <section class="vault-batch">
+      <header class="vault-batch__head">
+        <span class="vault-batch__label">PURSUE Release 01</span>
+        <span class="vault-batch__span">RELEASED {pursueReleaseDate}</span>
+        <span class="vault-batch__count">{String(pursue.length).padStart(2, '0')} files</span>
+      </header>
+      <ol class="manifest-list">
+        {pursue.map((c, i) => (
+          <li class="manifest-row">
+            <a class="manifest-row__open ufo-row-link" href={`/dossier/${c.id}`}>
+              <span class="manifest-row__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
+              <span class="manifest-row__body">
+                <span class="manifest-row__title ufo-row-link__fg">{tidyTitle(c.data.title)}</span>
+                <span class="manifest-row__meta ufo-row-link__mid">
+                  <span class="manifest-row__id">{c.data.caseId ?? c.id}</span>
+                  {headlineDate(c) && (<>
+                    <span class="manifest-row__sep">·</span>
+                    <span>{headlineDate(c)}</span>
+                  </>)}
+                  {c.data.publisher && (<>
+                    <span class="manifest-row__sep">·</span>
+                    <span class="manifest-row__pub">{c.data.publisher}</span>
+                  </>)}
+                </span>
+              </span>
+            </a>
+            {c.data.origin_url && (
+              <a class="manifest-row__source" href={c.data.origin_url} target="_blank" rel="noopener external" aria-label={`Open original source for ${tidyTitle(c.data.title)}`}>
+                <span class="manifest-row__source-arrow" aria-hidden="true">↗</span>
+                <span class="manifest-row__source-label">ORIGINAL</span>
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="vault-batch">
+      <header class="vault-batch__head">
+        <span class="vault-batch__label">FBI 62-HQ-83894</span>
+        <span class="vault-batch__span">CASE FILE {fbiSpan}</span>
+        <span class="vault-batch__count">{String(fbi.length).padStart(2, '0')} files</span>
+      </header>
+      <ol class="manifest-list">
+        {fbi.map((c, i) => (
+          <li class="manifest-row">
+            <a class="manifest-row__open ufo-row-link" href={`/dossier/${c.id}`}>
+              <span class="manifest-row__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
+              <span class="manifest-row__body">
+                <span class="manifest-row__title ufo-row-link__fg">{tidyTitle(c.data.title)}</span>
+                <span class="manifest-row__meta ufo-row-link__mid">
+                  <span class="manifest-row__id">{c.data.caseId ?? c.id}</span>
+                  {headlineDate(c) && (<>
+                    <span class="manifest-row__sep">·</span>
+                    <span>{headlineDate(c)}</span>
+                  </>)}
+                  {c.data.publisher && (<>
+                    <span class="manifest-row__sep">·</span>
+                    <span class="manifest-row__pub">{c.data.publisher}</span>
+                  </>)}
+                </span>
+              </span>
+            </a>
+            {c.data.origin_url && (
+              <a class="manifest-row__source" href={c.data.origin_url} target="_blank" rel="noopener external" aria-label={`Open original source for ${tidyTitle(c.data.title)}`}>
+                <span class="manifest-row__source-arrow" aria-hidden="true">↗</span>
+                <span class="manifest-row__source-label">ORIGINAL</span>
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <footer class="vault-foot">
+      <p>
+        Originals are hosted by the U.S. Department of War (PURSUE) and the FBI
+        Vault (62-HQ-83894). The dossier curation lives in
+        <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">this corpus</a>;
+        the canonical files do not. Follow the arrows for the raw bytes.
       </p>
-      <p class="coming-soon__body">
-        While the Vault is being built, source material is reachable inside each dossier.
-      </p>
-      <div class="wake__actions" style="margin-top: var(--sp-4);">
-        <a class="btn" href="/">Case board</a>
-        <a class="btn" href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">Raw archive on GitHub</a>
-        <a class="btn btn--primary" href="https://www.war.gov/UFO/" rel="noopener external">Originals at war.gov</a>
-      </div>
-    </div>
-  </section>
+    </footer>
+
+  </main>
 </Base>
+
+<style>
+  .vault-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+  @media (max-width: 720px) {
+    .vault-main { padding: 48px 16px 80px; }
+  }
+
+  .vault-anchor { margin-bottom: 56px; }
+  @media (max-width: 720px) {
+    .vault-anchor { margin-bottom: 40px; }
+  }
+
+  .vault-head { margin: 0 0 80px; max-width: 70ch; }
+  .vault-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
+    max-width: 18ch;
+  }
+  .vault-lede {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--fg-mid);
+    max-width: 60ch;
+    margin: 0;
+  }
+  @media (max-width: 720px) {
+    .vault-head { margin-bottom: 56px; }
+  }
+
+  .vault-batch { margin: 0 0 80px; }
+  .vault-batch:last-of-type { margin-bottom: 56px; }
+
+  .vault-batch__head {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 24px;
+    align-items: baseline;
+    padding: 16px 0;
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 0;
+  }
+  .vault-batch__label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg);
+  }
+  .vault-batch__span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+  }
+  .vault-batch__count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+    font-feature-settings: "tnum";
+  }
+  @media (max-width: 720px) {
+    .vault-batch__head {
+      grid-template-columns: 1fr auto;
+    }
+    .vault-batch__span { display: none; }
+  }
+
+  .manifest-list { list-style: none; margin: 0; padding: 0; }
+
+  .manifest-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .manifest-row__open {
+    grid-template-columns: 48px 1fr;
+    gap: 20px;
+    align-items: baseline;
+    padding: 18px 16px 18px 0;
+    min-width: 0;
+  }
+  .manifest-row__num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    font-feature-settings: "tnum";
+  }
+  .manifest-row__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .manifest-row__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 19px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .manifest-row__meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .manifest-row__id { letter-spacing: 0.12em; }
+  .manifest-row__sep { opacity: 0.5; }
+  .manifest-row__pub { font-style: normal; }
+
+  .manifest-row__source {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 0 18px 24px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .manifest-row__source:hover,
+  .manifest-row__source:focus-visible {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    outline: none;
+  }
+  .manifest-row__source-arrow {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  @media (max-width: 720px) {
+    .manifest-row {
+      grid-template-columns: 1fr;
+    }
+    .manifest-row__open {
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      padding: 16px 0 8px;
+    }
+    .manifest-row__title { font-size: 16px; }
+    .manifest-row__source {
+      padding: 0 0 16px 48px;
+      justify-content: flex-start;
+    }
+  }
+
+  .vault-foot {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    max-width: 70ch;
+  }
+  .vault-foot p {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--fg-mid);
+    margin: 0;
+  }
+  .vault-foot a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .vault-foot a:hover,
+  .vault-foot a:focus-visible {
+    background: var(--fg);
+    color: var(--bg);
+    text-decoration: none;
+    outline: none;
+  }
+</style>
