@@ -1,0 +1,93 @@
+---
+/**
+ * SocialsStrip.astro
+ *
+ * Typographic socials strip in Azeret Mono small caps with hairline rule
+ * above. Six links separated by middle dots. No colored brand icons.
+ * Used on the homepage and on /about under "About the Archivist".
+ */
+
+interface Props {
+  /** Optional left-aligned label. Default centered with no label. */
+  align?: 'center' | 'left';
+}
+
+const { align = 'center' } = Astro.props;
+
+const links: { href: string; label: string }[] = [
+  { href: 'https://x.com/deadpixeldavid',                               label: 'X' },
+  { href: 'https://www.reddit.com/user/PunchbowlPorkSoda/',             label: 'Reddit' },
+  { href: 'https://www.facebook.com/david.russell.579989/',             label: 'Facebook' },
+  { href: 'https://www.youtube.com/@wretcher207',                       label: 'YouTube' },
+  { href: 'https://www.tiktok.com/@newenglandwretch',                   label: 'TikTok' },
+  { href: 'https://www.linkedin.com/in/david-russell-7b920532a/',       label: 'LinkedIn' },
+];
+---
+<nav class={`socials socials--${align}`} aria-label="David Russell on social platforms">
+  <ul class="socials__list">
+    {links.map((link, i) => (
+      <li class="socials__item">
+        <a
+          class="socials__link"
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer me"
+        >{link.label}</a>
+        {i < links.length - 1 && <span class="socials__sep" aria-hidden="true">·</span>}
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .socials {
+    border-top: 1px solid var(--rule);
+    padding-top: var(--sp-4);
+    margin-top: var(--sp-5);
+  }
+  .socials__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-weight: var(--weight-mono-md);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .socials--center .socials__list { justify-content: center; }
+  .socials--left   .socials__list { justify-content: flex-start; }
+
+  .socials__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .socials__link {
+    color: var(--ink-secondary);
+    text-decoration: none;
+    padding: 4px 2px;
+    transition: color var(--dur-fast) var(--ease-out);
+    border-bottom: 1px solid transparent;
+  }
+  .socials__link:hover,
+  .socials__link:focus-visible {
+    color: var(--accent-amber);
+    border-bottom-color: var(--accent-amber);
+    outline: none;
+  }
+  .socials__sep {
+    color: var(--ink-muted);
+    opacity: 0.6;
+  }
+
+  @media (max-width: 560px) {
+    .socials__list { gap: var(--sp-2); }
+    .socials__item { gap: var(--sp-2); }
+  }
+</style>

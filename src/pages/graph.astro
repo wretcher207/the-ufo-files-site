@@ -1,148 +1,23 @@
 ---
-import Base from '../layouts/Base.astro';
-import { getAllEntities } from '../lib/entities';
-import { getRenderableCases } from '../lib/case-utils';
-
-const entities = await getAllEntities();
-const cases = await getRenderableCases();
-
-const topEntities = entities.filter((e) => e.cases.length >= 3).slice(0, 30);
-const topSlugs = new Set(topEntities.map((e) => e.slug));
-
-const threadOrder = ['pursue-2026', '1947-origin', '1948-49-hardening', '1949-50-disinfo', '1950s-1973-tail'];
-const threadColors = {
-  'pursue-2026': '#C7F7FF',
-  '1947-origin': '#9DB8C2',
-  '1948-49-hardening': '#A8B4B8',
-  '1949-50-disinfo': '#D7B46A',
-  '1950s-1973-tail': '#6F7C80',
-};
-
-const nodes = topEntities.map((e) => {
-  const threadCounts = new Map();
-  for (const c of e.cases) {
-    const t = c.data.thread;
-    if (!t) continue;
-    threadCounts.set(t, (threadCounts.get(t) ?? 0) + 1);
-  }
-  let dominant = '1947-origin';
-  let maxN = 0;
-  for (const pair of threadCounts) {
-    if (pair[1] > maxN) { maxN = pair[1]; dominant = pair[0]; }
-  }
-  return {
-    slug: e.slug,
-    label: e.display,
-    size: Math.min(40, 8 + e.cases.length * 1.5),
-    thread: dominant,
-    color: threadColors[dominant] || '#A8B4B8',
-    cases: e.cases.length,
-  };
-});
-
-const W = 1200, H = 700, cx = W / 2, cy = H / 2;
-const placed = [];
-const byThread = new Map();
-for (const n of nodes) {
-  if (!byThread.has(n.thread)) byThread.set(n.thread, []);
-  byThread.get(n.thread).push(n);
-}
-let clusterIndex = 0;
-for (const tId of threadOrder) {
-  const list = byThread.get(tId) ?? [];
-  if (list.length === 0) continue;
-  const angle = (clusterIndex / 5) * Math.PI * 2 - Math.PI / 2;
-  const clusterCx = cx + Math.cos(angle) * 280;
-  const clusterCy = cy + Math.sin(angle) * 220;
-  list.forEach((n, i) => {
-    const inner = (i / Math.max(1, list.length)) * Math.PI * 2;
-    n.x = clusterCx + Math.cos(inner) * (60 + i * 4);
-    n.y = clusterCy + Math.sin(inner) * (60 + i * 4);
-    placed.push(n);
-  });
-  clusterIndex++;
-}
-
-const coOccur = new Map();
-for (const c of cases) {
-  const eList = (c.data.entities_mentioned ?? []).map(String).filter((s) => topSlugs.has(s));
-  for (let i = 0; i < eList.length; i++) {
-    for (let j = i + 1; j < eList.length; j++) {
-      const pair = [eList[i], eList[j]].sort();
-      const key = pair[0] + '@@' + pair[1];
-      coOccur.set(key, (coOccur.get(key) ?? 0) + 1);
-    }
-  }
-}
-const edges = [];
-for (const [key, w] of coOccur) {
-  if (w < 2) continue;
-  const parts = key.split('@@');
-  const na = placed.find((n) => n.slug === parts[0]);
-  const nb = placed.find((n) => n.slug === parts[1]);
-  if (na && nb) edges.push({ na, nb, w });
-}
+/**
+ * /graph is retired in Phase 6. The Netlify `_redirects` rule sends a 301
+ * to `/board`. This page is a static fallback for hosts that do not honor
+ * `_redirects`. The browser meta-refresh navigates immediately; the link
+ * is there for clients that ignore the meta tag.
+ */
+const target = '/board';
+const canonical = Astro.site ? new URL(target, Astro.site).toString() : target;
 ---
-<Base title="Entity graph" description="A network view of the most-referenced entities across the archive." serial="GRAPH" section="ENTITIES">
-  <header class="g-hero">
-    <div class="g-hero__breadcrumb"><a href="/">Case board</a> <span aria-hidden="true">/</span> <span>Entity graph</span></div>
-    <p class="g-hero__eyebrow">Top {placed.length} entities · {edges.length} co-occurrences (cases sharing 2+ entities)</p>
-    <h1 class="g-hero__title">Who travels with whom.</h1>
-    <p class="g-hero__lede">
-      Entities clustered by dominant thread. A line between two means they appear in at least two cases together. Tab to a node and press Enter to open that entity.
-    </p>
-  </header>
-
-  <div class="g-frame" role="region" aria-label="Entity graph">
-    <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Entity-relationship graph">
-      <defs>
-        <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#C7F7FF" stop-opacity="0.06" />
-          <stop offset="100%" stop-color="#C7F7FF" stop-opacity="0" />
-        </radialGradient>
-      </defs>
-      <rect x="0" y="0" width="1200" height="700" fill="url(#bloom)" />
-      {edges.map((e) => (
-        <line x1={e.na.x} y1={e.na.y} x2={e.nb.x} y2={e.nb.y} stroke="#3B474B" stroke-width={Math.min(2, e.w * 0.4)} stroke-opacity="0.7" />
-      ))}
-      {placed.map((n) => (
-        <a href={'/entity/' + n.slug} class="g-node" aria-label={n.label + ' — ' + n.cases + ' cases'}>
-          <circle cx={n.x} cy={n.y} r={n.size / 2} fill={n.color} fill-opacity="0.85" stroke="#030506" stroke-width="2" />
-          <text x={n.x} y={n.y + n.size / 2 + 14} text-anchor="middle" fill="#E8F0F2" font-family="JetBrains Mono, monospace" font-size="11">{n.label}</text>
-        </a>
-      ))}
-    </svg>
-  </div>
-
-  <section class="g-legend" aria-labelledby="g-legend-h">
-    <h2 id="g-legend-h" class="g-legend__title">Threads</h2>
-    <ul class="g-legend__list">
-      <li><span class="g-swatch" style="background:#C7F7FF"></span> PURSUE 2026</li>
-      <li><span class="g-swatch" style="background:#9DB8C2"></span> 1947 origin</li>
-      <li><span class="g-swatch" style="background:#A8B4B8"></span> 1948–49 hardening</li>
-      <li><span class="g-swatch" style="background:#D7B46A"></span> 1949–50 disinformation</li>
-      <li><span class="g-swatch" style="background:#6F7C80"></span> 1950s–1973 long tail</li>
-    </ul>
-  </section>
-</Base>
-
-<style>
-  .g-hero { padding: var(--sp-5) 0 var(--sp-6); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--sp-6); }
-  .g-hero__breadcrumb { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wide); color: var(--fg-3); display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4); }
-  .g-hero__breadcrumb a { color: var(--fg-2); }
-  .g-hero__eyebrow { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-3); }
-  .g-hero__title { font-family: var(--font-display); font-size: var(--fs-3xl); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; max-width: 22ch; }
-  @media (max-width: 640px) { .g-hero__title { font-size: var(--fs-2xl); } }
-  .g-hero__lede { font-family: var(--font-ui); font-size: var(--fs-md); line-height: var(--lh-loose); color: var(--fg-2); max-width: 70ch; margin: 0; }
-  .g-frame { border: 1px solid var(--border); background: var(--bg-1); padding: var(--sp-3); margin-bottom: var(--sp-6); }
-  .g-frame svg { display: block; width: 100%; height: auto; }
-  .g-node { cursor: pointer; }
-  .g-node:hover circle, .g-node:focus circle { stroke: var(--crt-glow); stroke-width: 2; }
-  .g-node:focus { outline: none; }
-  .g-node:focus circle { filter: drop-shadow(0 0 6px rgba(199, 247, 255, 0.6)); }
-  .g-legend { border-top: 1px solid var(--border); padding-top: var(--sp-5); }
-  .g-legend__title { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-4); font-weight: 500; }
-  .g-legend__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-5); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-2); letter-spacing: var(--tracking-wide); }
-  .g-legend__list li { display: flex; align-items: center; gap: var(--sp-2); }
-  .g-swatch { width: 12px; height: 12px; display: inline-block; border: 1px solid #030506; }
-</style>
+<!doctype html>
+<html lang="en" data-mode="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <link rel="canonical" href={canonical} />
+    <title>Moved · The UFO Files</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body style="background:#0F0D0B;color:#F2EBE0;font-family:'Schibsted Grotesk',system-ui,sans-serif;padding:64px;">
+    <p>This page has moved to <a href={target} style="color:#E8A857;">{target}</a>.</p>
+  </body>
+</html>

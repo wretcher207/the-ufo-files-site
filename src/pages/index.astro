@@ -1,338 +1,791 @@
 ---
+/**
+ * Homepage (DARK mode, single scroll). Phase 6.
+ *
+ * Sections:
+ *   1. Hero (100vh): exploded-document composition over an anchor case
+ *      rotated weekly. Two amber buttons.
+ *   2. The Index: 3 entry panels.
+ *   3. On the Board: live React Flow preview, ~12 nodes.
+ *   4. About the Archivist: 80-word blurb + name + socials strip.
+ */
 import Base from '../layouts/Base.astro';
-import ThreadDrawer from '../components/ThreadDrawer.astro';
-import PriorityCasePanel from '../components/PriorityCasePanel.astro';
-import InvestigationMode from '../components/InvestigationMode.astro';
-import { THREADS, type ThreadId } from '../lib/threads';
-import { archiveOf, caseUrl, getRenderableCases, headlineDate, threadOf, tidyTitle } from '../lib/case-utils';
+import Hero, { type SatelliteCard } from '../components/Hero.astro';
+import SocialsStrip from '../components/SocialsStrip.astro';
+import { HomeBoardPreview } from '../components/HomeBoardPreview';
+import { THREADS } from '../lib/threads';
+import {
+  archiveOf,
+  getAllCases,
+  getRenderableCases,
+  headlineDate,
+  tidyTitle,
+} from '../lib/case-utils';
+import { getGraph } from '../graph/data/buildGraph';
+import { pickWeeklyAnchor } from '../components/HeroComposition';
 
-const allCases = await getRenderableCases();
+// All cases for counts + finding the first FBI case slug for the secondary button.
+const allCases = await getAllCases();
+const renderable = await getRenderableCases();
+const fbiCases = renderable.filter((c) => archiveOf(c) === 'fbi');
+const pursueCases = renderable.filter((c) => archiveOf(c) === 'pursue');
+const firstFbiSlug = fbiCases[0]?.id ?? renderable[0]?.id ?? '';
 
-const countsByThread = new Map<ThreadId, number>();
-for (const c of allCases) {
-  const t = c.data.thread!;
-  countsByThread.set(t, (countsByThread.get(t) ?? 0) + 1);
+// Anchor cases for the hero rotation (one per week, deterministic).
+const anchorSlugs = [
+  'apollo-17-vm6',
+  'bronze-ellipsoid',
+  'orbs-launching-orbs',
+  'usper-statement',
+  'guy-hottel-three-saucers-new-mexico-1950',
+];
+const anchorCases = anchorSlugs
+  .map((slug) => allCases.find((c) => c.id === slug))
+  .filter((c): c is NonNullable<typeof c> => Boolean(c));
+const heroAnchor = pickWeeklyAnchor(anchorCases) ?? anchorCases[0] ?? renderable[0];
+
+// Build hero satellites from the anchor's frontmatter.
+function buildHeroSatellites(c: typeof heroAnchor): SatelliteCard[] {
+  if (!c) return [];
+  const data = c.data;
+  const sats: SatelliteCard[] = [];
+  const heroAsset = (data as { heroAsset?: { type?: string; src?: string; alt?: string; credit?: string } }).heroAsset;
+  if (heroAsset && (heroAsset.type === 'photo' || heroAsset.type === 'scan' || heroAsset.type === 'map')) {
+    sats.push({
+      kind: heroAsset.type,
+      eyebrow: heroAsset.type.toUpperCase(),
+      title: heroAsset.alt ?? `${heroAsset.type} record`,
+      meta: heroAsset.credit ?? undefined,
+      src: heroAsset.src ?? undefined,
+      alt: heroAsset.alt ?? undefined,
+    });
+  }
+  const witnesses = (data as { witnesses?: string[] }).witnesses;
+  if (Array.isArray(witnesses) && witnesses.length > 0) {
+    sats.push({
+      kind: 'witness',
+      eyebrow: 'WITNESS',
+      title: String(witnesses[0]),
+      meta: witnesses.length > 1 ? `+${witnesses.length - 1} more in file` : undefined,
+    });
+  }
+  const agency = typeof (data as { agency?: unknown }).agency === 'string'
+    ? (data as { agency: string }).agency
+    : typeof data.publisher === 'string'
+      ? data.publisher
+      : archiveOf(c) === 'pursue' ? 'WAR.GOV / PURSUE' : 'FBI';
+  const classification = typeof (data as { classification?: unknown }).classification === 'string'
+    ? (data as { classification: string }).classification
+    : 'PUBLIC RELEASE';
+  sats.push({
+    kind: 'agency',
+    eyebrow: 'AGENCY STAMP',
+    title: agency,
+    meta: classification,
+  });
+  const summary = typeof (data as { summary?: unknown }).summary === 'string'
+    ? (data as { summary: string }).summary
+    : null;
+  if (summary) {
+    sats.push({
+      kind: 'evidence',
+      eyebrow: 'EVIDENCE',
+      title: summary.length > 140 ? summary.slice(0, 137) + '…' : summary,
+    });
+  }
+  const geo = (data as { geo?: { lat?: number; lng?: number; placeName?: string } }).geo;
+  if (geo) {
+    sats.push({
+      kind: 'sighting',
+      eyebrow: 'SIGHTING',
+      title: geo.placeName ?? 'Reported location',
+      meta: geo.lat != null && geo.lng != null ? `${geo.lat.toFixed(3)}, ${geo.lng.toFixed(3)}` : undefined,
+    });
+  }
+  return sats.slice(0, 5);
 }
 
-const byId = new Map(allCases.map((c) => [c.id, c]));
-const survivorSlugs = ['apollo-17-vm6', 'orbs-launching-orbs', 'bronze-ellipsoid', 'usper-statement'];
-const survivors = survivorSlugs
-  .map((slug) => allCases.find((c) => c.id.endsWith(slug) || c.id === slug))
-  .filter((c): c is NonNullable<typeof c> => Boolean(c));
+const heroSatellites = heroAnchor ? buildHeroSatellites(heroAnchor) : [];
+const heroEyebrow = heroAnchor
+  ? [
+      typeof heroAnchor.data.caseId === 'string' && heroAnchor.data.caseId,
+      headlineDate(heroAnchor),
+    ].filter(Boolean).join(' · ')
+  : 'THE UFO FILES';
+const heroTitle = heroAnchor ? tidyTitle(heroAnchor.data.title) : 'The UFO Files';
+const heroCaseId = heroAnchor
+  ? (typeof heroAnchor.data.caseId === 'string' ? heroAnchor.data.caseId : heroAnchor.id)
+  : 'home';
 
-const survivorMeta: Record<string, { variant: 'lead' | 'side-a' | 'side-b' | 'side-c'; summary: string; chips: string[] }> = {
-  'apollo-17-vm6': {
-    variant: 'lead',
-    summary:
-      'Closest thing to a smoking gun in PURSUE Release 01. Three dots in triangular formation on the Apollo 17 lunar sky. AARO has formally opened a re-analysis case and retrieved the original film.',
-    chips: ['NASA', 'Re-analysis open', 'Triangular formation', 'Lunar 1972'],
-  },
-  'orbs-launching-orbs': {
-    variant: 'side-a',
-    summary:
-      'Western US cluster. Multiple witnesses, multi-domain sensor coverage, and the most uncomfortable PURSUE phrase: orbs that launch smaller orbs. AARO has not closed.',
-    chips: ['Multi-witness', 'Sensor data', 'Open case'],
-  },
-  'bronze-ellipsoid': {
-    variant: 'side-c',
-    summary:
-      'September 2023. A bronze-colored ellipsoid logged at low altitude, captured on military FLIR. Geometry and flight envelope do not match any prosaic candidate the report could rule in.',
-    chips: ['FLIR', 'Sept 2023', 'Geometry anomaly'],
-  },
-  'usper-statement': {
-    variant: 'side-b',
-    summary:
-      'USPER super-hot orb pursued by a US Army helicopter. The witness chain is intact. The thermal signature exceeds prosaic explanation. AARO did not classify it solved.',
-    chips: ['Helicopter pursuit', 'Thermal exceedance', 'USPER witness'],
-  },
+// Archive button: open the first FBI case dossier (or fallback to timeline).
+const archiveHref = firstFbiSlug ? `/dossier/${firstFbiSlug}` : '/timeline';
+
+// PURSUE countdown / now-live state.
+// The release was 2026-05-08 00:00:00 -04:00. Compute relative to BUILD time.
+const PURSUE_RELEASE_ISO = '2026-05-08T00:00:00-04:00';
+const releaseMs = Date.parse(PURSUE_RELEASE_ISO);
+const nowMs = Date.now();
+const pursueLive = nowMs >= releaseMs;
+const daysToRelease = Math.max(0, Math.ceil((releaseMs - nowMs) / 86_400_000));
+const pursueCount = pursueCases.length;
+const fbiCount = fbiCases.length;
+
+// Curated 12-node board subset.
+// 5 PURSUE + 5 FBI + 2 entities, chosen for narrative density. Edges come
+// from frontmatter relationships[]; the extraction pipeline populates those.
+const BOARD_SUBSET_IDS = new Set<string>([
+  // PURSUE
+  'PURSUE-01/apollo-17-vm6',
+  'PURSUE-01/bronze-ellipsoid',
+  'PURSUE-01/orbs-launching-orbs',
+  'PURSUE-01/usper-statement',
+  'PURSUE-01/kazakhstan-1994-747',
+  // FBI
+  'FBI-62HQ-83894/kenneth-arnold-cascade-1947',
+  'FBI-62HQ-83894/mantell-p51-fatality-january-1948-dayton-clipping',
+  'FBI-62HQ-83894/guy-hottel-three-saucers-new-mexico-1950',
+  'FBI-62HQ-83894/oak-ridge-gasser-atomic-propulsion-1947-1949',
+  'FBI-62HQ-83894/maury-island-1947',
+  // Entities
+  'ENTITY/aaro',
+  'ENTITY/pursue-program',
+]);
+const fullGraph = await getGraph();
+const boardSubset = {
+  nodes: fullGraph.nodes.filter((n) => BOARD_SUBSET_IDS.has(n.id)),
+  edges: fullGraph.edges.filter(
+    (e) => BOARD_SUBSET_IDS.has(e.source) && BOARD_SUBSET_IDS.has(e.target)
+  ),
 };
-
-const totalDocs = 120;
-const totalVideos = 28;
-const totalImages = 14;
-const totalCases = allCases.length;
-const ocrPages = 1262;
-const lastUpdated = '2026-05-13';
-
-// Latest additions surface (most recent ingestion dates).
-const recentCases = [...allCases]
-  .sort((a, b) => String(b.data.date_ingested ?? '').localeCompare(String(a.data.date_ingested ?? '')))
-  .slice(0, 3);
+const boardNodeCount = boardSubset.nodes.length;
 ---
 <Base
   title="The UFO Files"
-  description="The Unsealed Archive. A searchable evidence atlas of unresolved UAP records. Built from public government releases, FBI case files, source PDFs, OCR transcripts, and investigative cross-references."
-  serial="ARCHIVE/INDEX-00"
-  section="CASE BOARD"
+  description="An archive of FBI 62-HQ-83894, the May 8 2026 PURSUE release, and the witnesses, agencies, and contradictions threaded through both."
+  section="ARCHIVE"
 >
-  <!-- ───────────────────────── ARCHIVE WAKE ───────────────────────── -->
-  <section class="wake" aria-labelledby="wake-title">
-    <div class="wake__main">
-      <div class="wake__chrome">
-        <span class="wake__chrome-tag">UAS · v1</span>
-        <span class="wake__chrome-sep">/</span>
-        <span>The Unsealed Archive System</span>
-        <span class="wake__chrome-sep">/</span>
-        <span class="wake__chrome-ts">Last revision {lastUpdated}</span>
-      </div>
+  {/* ────────────────────────────── HERO ────────────────────────────── */}
+  <section class="home-hero" aria-labelledby="home-hero-title">
+    <div class="home-hero__stage">
+      {heroAnchor && heroSatellites.length > 0 ? (
+        <Hero
+          centerEyebrow={heroEyebrow}
+          centerTitle={heroTitle}
+          satellites={heroSatellites}
+          caseId={heroCaseId}
+          mode="parallax"
+        />
+      ) : (
+        <div class="home-hero__fallback">
+          <span class="home-hero__eyebrow" id="home-hero-eyebrow">THE UFO FILES</span>
+          <h1 class="home-hero__title" id="home-hero-title">The Unsealed Archive</h1>
+        </div>
+      )}
+    </div>
 
-      <h1 class="wake__title" id="wake-title">
-        <span class="wake__title-mark">The UFO Files · Reading Room</span>
-        A searchable evidence atlas of unresolved UAP records.
-      </h1>
-
-      <p class="wake__lede">
-        Built from public government releases, FBI case files, source PDFs, OCR transcripts,
-        and investigative cross-references. <strong>62 curated cases. 120 PDFs. 1,262 OCR pages.</strong>
-        Coverage missed four of them. This archive doesn't.
+    <div class="home-hero__plate">
+      <p class="home-hero__lede">
+        An archive of FBI 62-HQ-83894, the May 8 2026 PURSUE release, and the
+        witnesses, agencies, and contradictions threaded through both.
       </p>
-
-      <div class="wake__actions">
-        <a class="btn btn--primary" href="#survivors">
-          Begin investigation
+      <div class="home-hero__actions">
+        <a class="btn btn--primary" href="/board">
+          Open the Board
           <span class="btn__chevron" aria-hidden="true">→</span>
         </a>
-        <button class="btn" type="button" data-search-trigger>
-          <span aria-hidden="true">⌘K</span>
-          Search archive
+        <a class="btn" href={archiveHref}>
+          Browse the Archive
+        </a>
+        <button class="home-hero__tilt" type="button" data-tilt-toggle aria-pressed="false">
+          Enable tilt
         </button>
-        <a class="btn" href="/about">Read the methodology</a>
       </div>
-    </div>
-
-    <aside class="wake__aside" aria-label="Archive inventory">
-      <span class="wake__aside-label">Archive inventory</span>
-      <dl class="wake__inventory">
-        <dt>Cases</dt><dd>{totalCases.toString().padStart(3, '0')}<span class="wake__inv-unit">curated</span></dd>
-        <dt>PDFs</dt><dd>{totalDocs}<span class="wake__inv-unit">documents</span></dd>
-        <dt>OCR</dt><dd>{ocrPages.toLocaleString()}<span class="wake__inv-unit">FBI pages</span></dd>
-        <dt>Video</dt><dd>{totalVideos}<span class="wake__inv-unit">clips</span></dd>
-        <dt>Stills</dt><dd>{totalImages}<span class="wake__inv-unit">images</span></dd>
-        <dt>Updated</dt><dd>{lastUpdated}</dd>
-      </dl>
-      <div class="wake__status">
-        <span class="wake__status-dot" aria-hidden="true"></span>
-        <span>Archive active. New material under review.</span>
-      </div>
-    </aside>
-  </section>
-
-  <!-- ─────────────── THE FOUR THAT SURVIVED THE FILTER ────────────── -->
-  <section class="section" aria-labelledby="survivors-heading" id="survivors">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">PURSUE Release 01 · Filtered for signal</span>
-        <h2 id="survivors-heading" class="section__title">The four that survived the filter</h2>
-      </div>
-      <span class="section__meta">
-        <span>162 records reviewed</span>
-        <span>4 cases retained</span>
-      </span>
-    </header>
-
-    <div class="survivors">
-      {survivors.map((c) => {
-        const meta = survivorMeta[c.id] ?? survivorMeta['apollo-17-vm6'];
-        const thread = threadOf(c);
-        return (
-          <PriorityCasePanel
-            variant={meta.variant}
-            href={caseUrl(c)}
-            archive={archiveOf(c)}
-            caseId={c.id}
-            date={headlineDate(c) ?? undefined}
-            signal={c.data.significance}
-            title={tidyTitle(c.data.title)}
-            summary={meta.summary}
-            chips={meta.chips}
-            thread={thread?.title}
-          />
-        );
-      })}
     </div>
   </section>
 
-  <!-- ─────────────── HOW DO YOU WANT TO ENTER THE FILE? ───────────── -->
-  <section class="section" aria-labelledby="modes-heading">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">Investigation modes</span>
-        <h2 id="modes-heading" class="section__title">How do you want to enter the file?</h2>
-      </div>
-      <span class="section__meta">Pick a vector</span>
+  {/* ───────────────────────────── INDEX ───────────────────────────── */}
+  <section class="home-index" aria-labelledby="home-index-title">
+    <header class="home-index__head">
+      <span class="home-index__eyebrow">THE INDEX</span>
+      <h2 id="home-index-title" class="home-index__title">Three doors into the file.</h2>
     </header>
 
-    <div class="instruments">
-      <InvestigationMode
-        id="MOD-01"
-        href="#survivors"
-        icon="board"
-        title="Headline cases"
-        desc="Start with the four that didn't get prosaic-explained away. Curated entry points to the strongest material."
-        meta="4 cases"
-      />
-      <InvestigationMode
-        id="MOD-02"
-        href="/timeline"
-        icon="timeline"
-        title="Chronology"
-        desc="1947 onward. Watch the institutional response form in real time. Mantell, Twinkle, Hottel, AARO, PURSUE."
-        meta="62 events"
-      />
-      <InvestigationMode
-        id="MOD-03"
-        href="/map"
-        icon="map"
-        title="Geography"
-        desc="Incidents placed on the ground. Atomic installations, military bases, witness chains. Memo correspondence is excluded by policy."
-        meta="Geolocated"
-      />
-      <InvestigationMode
-        id="MOD-04"
-        href="/graph"
-        icon="graph"
-        title="Entity network"
-        desc="Follow the people, agencies, programs, and places. Edge strength encodes co-occurrence across sources."
-        meta="Connected"
-      />
-      <InvestigationMode
-        id="MOD-05"
-        href="/atlas"
-        icon="atlas"
-        title="Evidence Atlas"
-        desc="The unified research interface. Filter by source, thread, signal, evidence type, witness count. Live preview drawer."
-        meta="Phase 3"
-        disabled={true}
-      />
-      <InvestigationMode
-        id="MOD-06"
-        href="/vault"
-        icon="vault"
-        title="Source Vault"
-        desc="Browse original source material directly. PDFs, FBI 302s, OCR transcripts, AARO sheets. Filter by agency and release."
-        meta="Phase 4"
-        disabled={true}
-      />
+    <div class="home-index__grid">
+      <article class="home-panel home-panel--pursue">
+        <span class="home-panel__eyebrow">PURSUE · LATEST RELEASE</span>
+        {pursueLive ? (
+          <>
+            <p class="home-panel__date">MAY 8, 2026</p>
+            <p class="home-panel__line">Now live.</p>
+            <p class="home-panel__body">
+              {pursueCount} {pursueCount === 1 ? 'case' : 'cases'} pulled from
+              the Department of War tranche. Apollo 17 VM6. Bronze Ellipsoid.
+              Orbs-launching-orbs. USPER. The file is open.
+            </p>
+            <a class="home-panel__cta" href="/dossier/apollo-17-vm6">
+              Open the release →
+            </a>
+          </>
+        ) : (
+          <>
+            <p class="home-panel__date">MAY 8, 2026 · 00:00 EDT</p>
+            <p class="home-panel__count" data-pursue-countdown>
+              T-minus {daysToRelease} {daysToRelease === 1 ? 'day' : 'days'}
+            </p>
+            <p class="home-panel__body">
+              The Department of War's PURSUE tranche is unsealed on May 8.
+              The site cuts straight to the four cases that matter.
+            </p>
+            <span class="home-panel__cta is-disabled" aria-disabled="true">
+              Pending release
+            </span>
+          </>
+        )}
+      </article>
+
+      <article class="home-panel">
+        <span class="home-panel__eyebrow">FBI 62-HQ-83894 · CORE</span>
+        <p class="home-panel__count">{fbiCount} cases</p>
+        <p class="home-panel__body">
+          Flying-discs case file, 1944 through 1973. Kenneth Arnold's Cascade
+          sighting. Mantell. The Hottel memo read against itself. Project
+          Twinkle. Civilian correspondence after Blue Book.
+        </p>
+        <a class="home-panel__cta" href={archiveHref}>
+          Open the file →
+        </a>
+      </article>
+
+      <article class="home-panel">
+        <span class="home-panel__eyebrow">THREADS · FIVE DRAWERS</span>
+        <ol class="home-threads">
+          {THREADS.map((thread, i) => (
+            <li class="home-threads__row">
+              <span class="home-threads__num">{String(i + 1).padStart(2, '0')}</span>
+              <a class="home-threads__link" href={`/thread/${thread.id}`}>
+                <span class="home-threads__title">{thread.title}</span>
+                <span class="home-threads__span">{thread.span}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </article>
     </div>
   </section>
 
-  <!-- ─────────────────── THE FIVE THREADS (DRAWERS) ─────────────────── -->
-  <section class="section" aria-labelledby="threads-heading">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">The Unsealed Archive · Filed records</span>
-        <h2 id="threads-heading" class="section__title">The five threads</h2>
+  {/* ──────────────────────────── ON THE BOARD ────────────────────────────── */}
+  <section class="home-board" aria-labelledby="home-board-title">
+    <header class="home-board__head">
+      <div>
+        <span class="home-board__eyebrow">ON THE BOARD</span>
+        <h2 id="home-board-title" class="home-board__title">
+          A starter investigation. Live.
+        </h2>
+        <p class="home-board__lede">
+          {boardNodeCount} nodes pulled from the corpus. PURSUE anchors, FBI
+          serial documents, the agencies threading them. Click any node to
+          open the full board with it centered.
+        </p>
       </div>
-      <span class="section__meta">{allCases.length} cases across {THREADS.length} drawers</span>
+      <a class="btn" href="/board">
+        Open the Board <span aria-hidden="true">→</span>
+      </a>
     </header>
 
-    <div class="drawers">
-      {THREADS.map((thread, i) => (
-        <ThreadDrawer thread={thread} index={i} caseCount={countsByThread.get(thread.id) ?? 0} />
+    <div class="home-board__embed">
+      {/*
+        HomeBoardPreview wraps InvestigationBoard with a thin store
+        subscriber that routes node clicks to /board?focus=<id>.
+      */}
+      <HomeBoardPreview client:only="react" graph={boardSubset} />
+    </div>
+
+    {/* Accessible mirror of the curated subset. */}
+    <ul class="sr-only" aria-label="Cases on the homepage board preview">
+      {boardSubset.nodes.map((n) => (
+        <li>
+          <a href={n.collection === 'entities' ? `/entity/${n.slug}` : `/dossier/${n.slug}`}>
+            {n.id}: {n.title}
+          </a>
+        </li>
       ))}
-    </div>
+    </ul>
   </section>
 
-  <!-- ───────────────────── ATLAS + VAULT PREVIEW ───────────────────── -->
-  <section class="section" aria-labelledby="preview-heading">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">Coming next</span>
-        <h2 id="preview-heading" class="section__title">Atlas and Vault</h2>
-      </div>
-      <span class="section__meta">Phases 3 + 4</span>
+  {/* ─────────────────────── ABOUT THE ARCHIVIST ─────────────────────── */}
+  <section class="home-about" aria-labelledby="home-about-title">
+    <header class="home-about__head">
+      <span class="home-about__eyebrow">ABOUT THE ARCHIVIST</span>
+      <h2 id="home-about-title" class="home-about__title">Who built this.</h2>
     </header>
 
-    <div class="preview-strip">
-      <a class="preview-card" href="/atlas">
-        <span class="preview-card__eyebrow">Evidence Atlas · MOD-05</span>
-        <h3 class="preview-card__title">A single research surface for the whole archive.</h3>
-        <p class="preview-card__body">
-          One screen with case list, chronology, geography, and network views. Side drawer preview.
-          Filters across source, thread, signal, evidence type, entity, and location.
-        </p>
-        <span class="preview-card__footer">Preview the build →</span>
-      </a>
-      <a class="preview-card" href="/vault">
-        <span class="preview-card__eyebrow">Source Vault · MOD-06</span>
-        <h3 class="preview-card__title">Direct access to the original material.</h3>
-        <p class="preview-card__body">
-          Every PDF, FBI 302, AARO sheet, OCR transcript, video, and image. Filter by agency,
-          release, OCR status, and whether the source has a curated dossier yet.
-        </p>
-        <span class="preview-card__footer">Preview the build →</span>
-      </a>
-    </div>
-  </section>
+    <div class="home-about__body">
+      <p>
+        I was eight years old when I first heard Roswell. Thirty years later
+        the government published the file and I read it cover to cover. There
+        are cases in there that nobody on cable news got to. There are
+        cases that contradict each other. There is one photo from the lunar
+        surface that nobody has cleanly explained. This archive puts every
+        page in one place so a stranger can land at the start, follow the
+        files, and decide for themselves.
+      </p>
 
-  <!-- ─────────────────────── TRUST CONTRACT ─────────────────────── -->
-  <section class="section" aria-labelledby="trust-heading">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">Methodology</span>
-        <h2 id="trust-heading" class="section__title">The trust contract</h2>
-      </div>
-      <span class="section__meta">Read this first</span>
-    </header>
+      <p class="home-about__name">David Russell</p>
+      <p class="home-about__role">Archivist · Dead Pixel Design · Houlton, Maine</p>
 
-    <div class="trust-contract">
-      <div class="trust-contract__head">
-        <span class="trust-contract__eyebrow">What this is</span>
-        <h3 class="trust-contract__title">A reading guide, not a verdict.</h3>
-        <p class="trust-contract__lede">
-          This is not a "they're hiding aliens" archive. AARO openly identifies mundane causes
-          inside the unresolved tranche. This is also not a debunk site. Several cases have
-          evidentiary structure that would warrant follow-up in any other domain. Read the cases.
-          Verify the sources. Decide for yourself.
-        </p>
-        <p class="trust-contract__lede" style="margin-top: var(--sp-3);">
-          Files are the government's. Voice and analysis are <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>'s.
-        </p>
-      </div>
-      <ul class="trust-contract__list" aria-label="Editorial commitments">
-        <li>Every claim links back to a primary source.</li>
-        <li>Cases were selected on evidentiary structure, not narrative payoff.</li>
-        <li>What is missing is named, not hidden.</li>
-        <li>Memo correspondence is not placed on the map.</li>
-        <li>Corrections page is open and dated.</li>
-        <li>You are encouraged to disagree with the framing.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ─────────────────────── MINING STATUS ─────────────────────── -->
-  <section class="section" aria-labelledby="mining-heading">
-    <header class="section__head">
-      <div class="section__title-block">
-        <span class="section__eyebrow">Status</span>
-        <h2 id="mining-heading" class="section__title">Latest additions</h2>
-      </div>
-      <span class="section__meta">Updated {lastUpdated}</span>
-    </header>
-
-    <div class="mining">
-      <span class="mining__pulse">
-        <span class="mining__pulse-dot" aria-hidden="true"></span>
-        Mining active
-      </span>
-      <ul class="mining__list">
-        {recentCases.map((c) => (
-          <li>
-            <strong>{tidyTitle(c.data.title)}</strong> · {archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}
-          </li>
-        ))}
-      </ul>
-      <a class="mining__more" href="/timeline">Full chronology →</a>
+      <SocialsStrip align="center" />
     </div>
   </section>
 </Base>
 
 <script>
-  // Hook the "Search archive" button to the existing SearchHUD trigger.
-  document.querySelectorAll('[data-search-trigger]').forEach((el) => {
-    el.addEventListener('click', () => {
-      const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
-      document.dispatchEvent(evt);
-    });
-  });
+  // PURSUE countdown updater. Only runs if a [data-pursue-countdown] is in
+  // the DOM (i.e. pre-release state). Updates once per minute. Respects
+  // reduced motion (no animation, just text replacement at interval).
+  (() => {
+    if (typeof window === 'undefined') return;
+    const el = document.querySelector<HTMLElement>('[data-pursue-countdown]');
+    if (!el) return;
+    const releaseMs = Date.parse('2026-05-08T00:00:00-04:00');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function update() {
+      const now = Date.now();
+      const diff = releaseMs - now;
+      if (diff <= 0) {
+        // Reload to swap into the "now live" state on next visit.
+        return;
+      }
+      const days = Math.max(0, Math.ceil(diff / 86_400_000));
+      if (el) el.textContent = `T-minus ${days} ${days === 1 ? 'day' : 'days'}`;
+    }
+    update();
+    if (!reduced) {
+      setInterval(update, 60_000);
+    }
+  })();
 </script>
+
+<script>
+  // Tilt toggle for mobile (gyroscope). Desktop parallax is handled
+  // inside Hero.astro automatically. Reduced motion disables both.
+  (() => {
+    if (typeof window === 'undefined') return;
+    const btn = document.querySelector<HTMLButtonElement>('[data-tilt-toggle]');
+    if (!btn) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      btn.setAttribute('hidden', '');
+      return;
+    }
+    // Only show on coarse-pointer (touch) devices that support gyro.
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    const hasGyro = typeof (window as unknown as { DeviceOrientationEvent?: unknown }).DeviceOrientationEvent !== 'undefined';
+    if (!coarse || !hasGyro) {
+      btn.setAttribute('hidden', '');
+      return;
+    }
+    let active = false;
+    const stage = document.querySelector<HTMLElement>('.hero[data-mode="parallax"] .hero__stage');
+    function onTilt(e: DeviceOrientationEvent) {
+      if (!stage) return;
+      const x = (e.gamma ?? 0) / 45;
+      const y = (e.beta ?? 0) / 45;
+      stage.querySelectorAll<HTMLElement>('[data-parallax-depth]').forEach((el) => {
+        const depth = Number(el.dataset.parallaxDepth || '0');
+        const max = 8;
+        const dx = -x * depth * (max / 3);
+        const dy = -y * depth * (max / 3);
+        if (el.classList.contains('hero__sat')) {
+          const rot = el.style.getPropertyValue('--rot') || '0deg';
+          el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot})`;
+        } else {
+          el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+        }
+      });
+    }
+    async function enable() {
+      type Req = { requestPermission?: () => Promise<'granted' | 'denied'> };
+      const Constructor = (window as unknown as { DeviceOrientationEvent: Req }).DeviceOrientationEvent;
+      if (Constructor && typeof Constructor.requestPermission === 'function') {
+        try {
+          const state = await Constructor.requestPermission();
+          if (state !== 'granted') return;
+        } catch {
+          return;
+        }
+      }
+      window.addEventListener('deviceorientation', onTilt);
+      active = true;
+      btn?.setAttribute('aria-pressed', 'true');
+      btn!.textContent = 'Tilt on';
+    }
+    function disable() {
+      window.removeEventListener('deviceorientation', onTilt);
+      active = false;
+      btn?.setAttribute('aria-pressed', 'false');
+      btn!.textContent = 'Enable tilt';
+    }
+    btn.addEventListener('click', () => {
+      if (active) disable();
+      else enable();
+    });
+  })();
+</script>
+
+<style>
+  /* ─────────────── HERO ─────────────── */
+  .home-hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: var(--sp-6);
+    padding-bottom: var(--sp-7);
+  }
+  .home-hero__stage {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+  }
+  .home-hero__stage :global(.hero) { width: 100%; }
+  .home-hero__stage :global(.hero__stage) {
+    min-height: 56vh;
+  }
+  .home-hero__stage :global(.hero__title) {
+    font-size: 84px;
+  }
+  @media (max-width: 720px) {
+    .home-hero__stage :global(.hero__title) {
+      font-size: 48px;
+    }
+  }
+
+  .home-hero__fallback {
+    text-align: center;
+    padding: var(--sp-9) var(--sp-4);
+  }
+  .home-hero__eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: var(--sp-3);
+  }
+  .home-hero__title {
+    font-family: var(--font-display);
+    font-size: 96px;
+    line-height: var(--lh-tight);
+    margin: 0;
+  }
+
+  .home-hero__plate {
+    margin-top: var(--sp-6);
+    max-width: 760px;
+  }
+  .home-hero__lede {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    color: var(--ink-primary);
+    margin: 0 0 var(--sp-5);
+  }
+  @media (max-width: 720px) {
+    .home-hero__lede { font-size: var(--fs-md); font-family: var(--font-body); }
+  }
+  .home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    align-items: center;
+  }
+  .home-hero__tilt {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: var(--radius-1);
+  }
+  .home-hero__tilt[aria-pressed="true"] {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+  }
+  @media (max-width: 720px) {
+    .home-hero__actions { flex-direction: column; align-items: stretch; }
+    .home-hero__actions .btn { width: 100%; justify-content: center; }
+  }
+
+  /* ─────────────── THE INDEX ─────────────── */
+  .home-index {
+    margin-top: var(--sp-10);
+    padding-top: var(--sp-7);
+    border-top: 1px solid var(--rule);
+  }
+  .home-index__head {
+    margin-bottom: var(--sp-7);
+  }
+  .home-index__eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: var(--sp-3);
+  }
+  .home-index__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    line-height: var(--lh-tight);
+    margin: 0;
+    color: var(--ink-primary);
+  }
+  .home-index__grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--sp-5);
+  }
+  .home-panel {
+    grid-column: span 4;
+    background: var(--bg-raised);
+    border: 1px solid var(--rule);
+    padding: var(--sp-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    min-height: 320px;
+  }
+  @media (max-width: 960px) {
+    .home-panel { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .home-panel { grid-column: span 12; }
+  }
+  .home-panel--pursue {
+    border-color: var(--accent-amber);
+    border-width: 1px;
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent-amber) 30%, transparent);
+  }
+  .home-panel__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .home-panel__date {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-sm);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--accent-amber);
+    margin: 0;
+  }
+  .home-panel__count {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    line-height: var(--lh-tight);
+    color: var(--ink-primary);
+    margin: 0;
+  }
+  .home-panel__line {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    line-height: var(--lh-snug);
+    color: var(--ink-primary);
+    margin: 0;
+  }
+  .home-panel__body {
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    line-height: var(--lh-loose);
+    color: var(--ink-secondary);
+    margin: 0;
+    flex: 1;
+  }
+  .home-panel__cta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--accent-amber);
+    text-decoration: none;
+    padding-top: var(--sp-2);
+    border-top: 1px solid var(--rule);
+  }
+  .home-panel__cta:hover { color: var(--ink-primary); }
+  .home-panel__cta.is-disabled { color: var(--ink-muted); cursor: not-allowed; }
+
+  .home-threads {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .home-threads__row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .home-threads__row:last-child { border-bottom: none; }
+  .home-threads__num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-muted);
+    min-width: 28px;
+  }
+  .home-threads__link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--ink-primary);
+    text-decoration: none;
+  }
+  .home-threads__title {
+    font-family: var(--font-body);
+    font-weight: var(--weight-body-sb);
+    font-size: var(--fs-base);
+  }
+  .home-threads__span {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--ink-muted);
+  }
+  .home-threads__link:hover .home-threads__title { color: var(--accent-amber); }
+
+  /* ─────────────── ON THE BOARD ─────────────── */
+  .home-board {
+    margin-top: var(--sp-10);
+    padding-top: var(--sp-7);
+    border-top: 1px solid var(--rule);
+  }
+  .home-board__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-5);
+    margin-bottom: var(--sp-6);
+  }
+  @media (max-width: 720px) {
+    .home-board__head { flex-direction: column; align-items: stretch; }
+  }
+  .home-board__eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: var(--sp-3);
+  }
+  .home-board__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    line-height: var(--lh-tight);
+    margin: 0 0 var(--sp-3);
+    color: var(--ink-primary);
+    max-width: 22ch;
+  }
+  .home-board__lede {
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--ink-secondary);
+    margin: 0;
+    max-width: 60ch;
+  }
+  .home-board__embed {
+    position: relative;
+    width: 100%;
+    border: 1px solid var(--rule);
+    background: var(--bg-raised);
+    overflow: hidden;
+  }
+  .home-board__embed :global(.board-root) {
+    height: min(640px, 70vh);
+    min-height: 480px;
+  }
+  @media (max-width: 720px) {
+    .home-board__embed :global(.board-root) {
+      height: 560px;
+      min-height: 420px;
+    }
+  }
+
+  /* ─────────────── ABOUT THE ARCHIVIST ─────────────── */
+  .home-about {
+    margin-top: var(--sp-10);
+    padding: var(--sp-7) 0 var(--sp-9);
+    border-top: 1px solid var(--rule);
+  }
+  .home-about__head {
+    text-align: center;
+    margin-bottom: var(--sp-6);
+  }
+  .home-about__eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: var(--sp-3);
+  }
+  .home-about__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    line-height: var(--lh-tight);
+    margin: 0;
+    color: var(--ink-primary);
+  }
+  .home-about__body {
+    max-width: 64ch;
+    margin: 0 auto;
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--ink-secondary);
+    text-align: center;
+  }
+  .home-about__body p { margin: 0 0 var(--sp-4); }
+  .home-about__name {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--ink-primary);
+    margin-top: var(--sp-5) !important;
+    margin-bottom: var(--sp-1) !important;
+  }
+  .home-about__role {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0 0 var(--sp-4) !important;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
