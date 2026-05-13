@@ -393,3 +393,36 @@
   padding: var(--sp-2) 0;
 }
 .case-list--compact .case-list__title { font-size: var(--fs-sm); }
+
+/* Redaction reveal — investigation flourish.
+   Wrap a span in .redacted to render a black bar. Click/focus to lift it. */
+.redacted {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  display: inline;
+}
+.redacted::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--fg-1);
+  transition: opacity var(--dur-base) var(--ease-out);
+  opacity: 1;
+}
+.redacted[aria-expanded="true"]::after { opacity: 0; pointer-events: none; }
+.redacted:focus-visible { outline: 1px solid var(--crt-glow); outline-offset: 2px; }
+
+/* Decorative classified stamp for the dossier hero. */
+.classified-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 4px 10px;
+  border: 1px solid var(--warning-amber);
+  color: var(--warning-amber);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}

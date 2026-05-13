@@ -1,0 +1,112 @@
+---
+import Base from '../../layouts/Base.astro';
+import { archiveOf, getRenderableCases, headlineDate, threadOf, tidyTitle } from '../../lib/case-utils';
+import ProvenanceCard from '../../components/ProvenanceCard.astro';
+
+export async function getStaticPaths() {
+  const cases = await getRenderableCases();
+  return cases
+    .filter((c) => c.data.origin_url)
+    .map((entry) => ({
+      params: { slug: entry.id },
+      props: { entry },
+    }));
+}
+
+const { entry } = Astro.props;
+const archive = archiveOf(entry);
+const thread = threadOf(entry);
+const date = headlineDate(entry);
+const headline = tidyTitle(entry.data.title);
+
+const url = entry.data.origin_url;
+const isImage = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
+const isVideo = /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url);
+const isPdf = /\.pdf(\?|$)/i.test(url);
+---
+<Base
+  title={'Evidence — ' + headline}
+  description={'War.gov source media linked to ' + headline}
+  serial={archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894'}
+  section="EVIDENCE"
+>
+  <div class="ev-breadcrumb">
+    <a href="/">Case board</a>
+    <span aria-hidden="true">/</span>
+    <a href={'/dossier/' + entry.id}>{headline}</a>
+    <span aria-hidden="true">/</span>
+    <span>Evidence</span>
+  </div>
+
+  <header class="ev-hero">
+    <p class="ev-eyebrow">Linked source media</p>
+    <h1 class="ev-title">{headline}</h1>
+    <p class="ev-meta">
+      {date && <span>{date}</span>}
+      {thread && <span>{thread.title}</span>}
+      <span>{archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-83894'}</span>
+    </p>
+  </header>
+
+  <section class="ev-frame" aria-labelledby="ev-frame-h">
+    <header class="ev-frame__head">
+      <h2 id="ev-frame-h" class="ev-frame__label">Source material</h2>
+      <span class="ev-frame__status">Hot-linked from war.gov · live</span>
+    </header>
+
+    <div class="ev-frame__body">
+      {isImage && (
+        <a href={url} rel="noopener external" target="_blank">
+          <img src={url} alt={'War.gov source image for ' + headline} loading="lazy" />
+        </a>
+      )}
+      {isVideo && (
+        <video controls preload="metadata" src={url}>
+          Your browser cannot play this video. <a href={url} rel="noopener external" target="_blank">Open at war.gov</a>.
+        </video>
+      )}
+      {isPdf && (
+        <object data={url} type="application/pdf">
+          <p>
+            Embedded PDF viewer unavailable.
+            <a href={url} rel="noopener external" target="_blank">Open the PDF at war.gov ↗</a>
+          </p>
+        </object>
+      )}
+      {!isImage && !isVideo && !isPdf && (
+        <p class="ev-frame__fallback">
+          The source file type cannot be embedded directly.
+          <a href={url} rel="noopener external" target="_blank">Open at war.gov ↗</a>
+        </p>
+      )}
+    </div>
+  </section>
+
+  <ProvenanceCard entry={entry} />
+
+  <a class="ev-back" href={'/dossier/' + entry.id}>← Back to dossier</a>
+</Base>
+
+<style>
+  .ev-breadcrumb { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-3); display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-5); letter-spacing: var(--tracking-wide); }
+  .ev-breadcrumb a { color: var(--fg-2); }
+  .ev-hero { border-top: 1px solid var(--border); padding-top: var(--sp-5); margin-bottom: var(--sp-7); }
+  .ev-eyebrow { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-3); }
+  .ev-title { font-family: var(--font-display); font-size: var(--fs-2xl); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; max-width: 32ch; }
+  @media (max-width: 640px) { .ev-title { font-size: var(--fs-xl); } }
+  .ev-meta { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); display: flex; flex-wrap: wrap; gap: var(--sp-4); margin: 0; }
+
+  .ev-frame { border: 1px solid var(--border); background: var(--bg-1); padding: var(--sp-5); margin-bottom: var(--sp-6); }
+  .ev-frame__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-4); flex-wrap: wrap; }
+  .ev-frame__label { font-family: var(--font-display); font-size: var(--fs-lg); margin: 0; color: var(--fg-1); font-weight: 500; }
+  .ev-frame__status { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--signal-ok); }
+  .ev-frame__body { position: relative; min-height: 320px; background: var(--bg); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; padding: var(--sp-3); }
+  .ev-frame__body img { display: block; max-width: 100%; height: auto; }
+  .ev-frame__body video { display: block; max-width: 100%; max-height: 70vh; background: black; }
+  .ev-frame__body object { width: 100%; min-height: 70vh; }
+  .ev-frame__fallback { font-family: var(--font-mono); color: var(--fg-2); }
+  .ev-frame__fallback a { color: var(--crt-glow); text-decoration: underline; }
+
+  .ev-back { display: inline-block; margin-top: var(--sp-7); font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-2); padding: 8px 12px; border: 1px solid var(--border); text-decoration: none; }
+  .ev-back:hover { color: var(--crt-glow); border-color: var(--border-strong); }
+</style>
