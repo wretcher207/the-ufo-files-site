@@ -1,0 +1,128 @@
+---
+import Base from '../layouts/Base.astro';
+import { getRenderableCases } from '../lib/case-utils';
+
+const all = await getRenderableCases();
+const fbiCount = all.filter((c) => (c.collection as string) === 'fbiCases').length;
+const pursueCount = all.filter((c) => (c.collection as string) === 'pursueCases').length;
+---
+<Base
+  title="Methodology"
+  description="What this archive is, what it is not, and how it was assembled."
+  serial="METHODOLOGY"
+  section="ABOUT"
+>
+  <header class="ab-hero">
+    <div class="ab-hero__breadcrumb">
+      <a href="/">Case board</a> <span aria-hidden="true">/</span> <span>Methodology</span>
+    </div>
+    <p class="ab-hero__eyebrow">What this is, and what it is not</p>
+    <h1 class="ab-hero__title">A reading guide to the file, not a campaign for a conclusion.</h1>
+  </header>
+
+  <article class="prose ab-body">
+    <h2>What this archive is</h2>
+    <p>
+      On May 8, 2026, the US Department of War published 162 records under the Presidential Unsealing
+      and Reporting System for UAP Encounters, called PURSUE. Inside that release was a full,
+      OCR-ready copy of the FBI's flying-discs case file, 62-HQ-83894, covering 1944 through 1973.
+      This site mirrors the public files and adds a reading layer on top: per-case writeups,
+      thread groupings, entity cross-references, a timeline, and a relationship graph.
+    </p>
+    <p>
+      Every case page in this archive cites the page it came from. Source PDFs at war.gov are one
+      click away from any dossier. The voice and analysis are mine. The files are the government's.
+    </p>
+
+    <h2>What this archive is not</h2>
+    <p>
+      <strong>Not a "they're hiding aliens" repo.</strong> AARO openly identifies mundane causes
+      inside the unresolved tranche, including Russian SU-27/35 fighters and platform parallax.
+      The cases that survive AARO's filter survive because the data is insufficient to resolve
+      them, not because anyone is hiding alien explanations.
+    </p>
+    <p>
+      <strong>Not a debunk site, either.</strong> Several cases in the release have multi-witness
+      evidentiary structure that would warrant follow-up in any other domain. The Bronze Ellipsoid,
+      the USPER orb-helicopter chase, the western-US orbs-launching-orbs cluster, and the Apollo 17
+      VM6 photo are not closed cases by any honest reading.
+    </p>
+    <p>
+      The honest read: this is the most evidentially structured public-domain UAP material in
+      decades, with several genuinely strange cases buried under viral coverage that mostly missed
+      them.
+    </p>
+
+    <h2>How the archive was built</h2>
+    <p>
+      The PURSUE Release 01 inventory mirrors AARO's metadata exactly. Where AARO and the news
+      cycle disagreed about which cases mattered, this archive sides with the metadata.
+    </p>
+    <p>
+      The FBI 62-HQ-83894 file was mined systematically across 41 archival passes between May 8
+      and May 10, 2026, using a CIC investigative-priority filter, a high-signal grep, and a
+      cluster-adjacency methodology. That approach favors credentialed witnesses, multi-agency
+      coordination patterns, geographically clustered cases at atomic installations and vital
+      infrastructure, and institutional-disposition documents like policy memos and baseline
+      correspondence patterns. It is not exhaustive. Sections 3, 4, 5, 6, and 9 of the FBI file
+      are still being mined.
+    </p>
+
+    <h2>How to read this site</h2>
+    <ol>
+      <li>Start at the <a href="/">case board</a>. The "If you only read these" section surfaces
+        16 high-signal cases (4 from PURSUE, 12 from the FBI file).</li>
+      <li>Open a dossier. Every page includes provenance to the war.gov source, related cases by
+        shared entities, and a list of every entity the case names.</li>
+      <li>For broader context, the <a href="/timeline">timeline</a> plots every dated case from
+        1944 to 2026, and the <a href="/graph">entity graph</a> shows which people, agencies, and
+        places appear together across the file.</li>
+      <li>Use Cmd or Ctrl + K to search across all 62 case bodies.</li>
+    </ol>
+
+    <h2>Sourcing</h2>
+    <p>
+      All government records, including FBI files, AARO documents, State Department cables, and
+      war.gov-hosted PDFs, are in the public domain in the United States. The case writeups,
+      syntheses, and master reports are released under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener external">CC BY 4.0</a>.
+      Quote freely. A link back is appreciated.
+    </p>
+    <p>
+      The source archive is published at
+      <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">github.com/wretcher207/the-ufo-files</a>.
+      Original PDFs and videos live at <a href="https://www.war.gov/UFO/" rel="noopener external">war.gov/UFO</a>.
+    </p>
+
+    <h2>Stats</h2>
+    <ul>
+      <li>{fbiCount} cases from FBI 62-HQ-83894 (Sections 2, 10 mined; 3, 4, 5, 6, 9 pending)</li>
+      <li>{pursueCount} cases from PURSUE Release 01 (the four cases that mattered, plus two State Department cables)</li>
+      <li>1,262 pages of OCR'd FBI source content backing every claim</li>
+      <li>Site published by Dead Pixel Design, May 2026</li>
+    </ul>
+
+    <h2>What's missing</h2>
+    <p>
+      No site map for the locations yet. We added geographic coordinates to a small set of headline
+      cases; the rest will follow as the next mining passes complete. No video embeds for the 28
+      PURSUE videos yet; they hot-link out to war.gov. No live deployment to a standalone domain
+      yet; that is the next step.
+    </p>
+
+    <h2>Corrections</h2>
+    <p>
+      If you find an error, open an issue on the source repo. If you have a case the archive has not
+      covered yet, open a PR. Quote freely. Cite back to the page.
+    </p>
+  </article>
+</Base>
+
+<style>
+  .ab-hero { padding: var(--sp-5) 0 var(--sp-6); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--sp-7); }
+  .ab-hero__breadcrumb { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wide); color: var(--fg-3); display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+  .ab-hero__breadcrumb a { color: var(--fg-2); }
+  .ab-hero__eyebrow { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-3); }
+  .ab-hero__title { font-family: var(--font-display); font-size: var(--fs-3xl); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); margin: 0; font-weight: 500; max-width: 26ch; }
+  @media (max-width: 640px) { .ab-hero__title { font-size: var(--fs-2xl); } }
+  .ab-body { max-width: 70ch; }
+</style>

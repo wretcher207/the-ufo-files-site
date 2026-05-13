@@ -1,0 +1,148 @@
+---
+import Base from '../layouts/Base.astro';
+
+const LOCATIONS = [
+  { slug: 'kenneth-arnold-cascade-1947',  label: 'Kenneth Arnold sighting',  lat: 46.8523,  lng: -121.7603, year: 1947, archive: 'fbi',    sig: 'high' },
+  { slug: 'maury-island-1947',            label: 'Maury Island incident',    lat: 47.3650,  lng: -122.4570, year: 1947, archive: 'fbi',    sig: 'high' },
+  { slug: 'rhodes-phoenix-photographs-1947', label: 'Rhodes Phoenix photographs', lat: 33.4484, lng: -112.0740, year: 1947, archive: 'fbi', sig: 'medium' },
+  { slug: 'muroc-1947-cic-affidavits',    label: 'Muroc AAF affidavits',     lat: 34.9054,  lng: -117.8835, year: 1947, archive: 'fbi',    sig: 'medium' },
+  { slug: 'mantell-p51-fatality-january-1948-dayton-clipping', label: 'Mantell P-51 fatality', lat: 36.6781, lng: -85.1467, year: 1948, archive: 'fbi', sig: 'high' },
+  { slug: 'oak-ridge-gasser-atomic-propulsion-1947-1949', label: 'Oak Ridge installation', lat: 35.9706, lng: -84.2696, year: 1948, archive: 'fbi', sig: 'high' },
+  { slug: 'guy-hottel-three-saucers-new-mexico-1950', label: 'Hottel memo (Roswell area)', lat: 33.3943, lng: -104.5230, year: 1950, archive: 'fbi', sig: 'high' },
+  { slug: 'belmont-twinkle-master-memo-osi-log-1949-1950', label: 'Belmont/Twinkle OSI log', lat: 32.8517, lng: -106.1063, year: 1950, archive: 'fbi', sig: 'high' },
+  { slug: 'la-paz-seventh-report-cabell-directive-twinkle', label: 'La Paz green-fireball report', lat: 34.0341, lng: -106.9056, year: 1950, archive: 'fbi', sig: 'medium' },
+  { slug: 'kodiak-alaska-oni-january-1950', label: 'Kodiak ONI cable',       lat: 57.7900,  lng: -152.4072, year: 1950, archive: 'fbi', sig: 'medium' },
+  { slug: 'pervier-tulsa-fbi-agent-corroboration-1950', label: 'Pervier Tulsa case', lat: 36.1540, lng: -95.9928, year: 1950, archive: 'fbi', sig: 'medium' },
+  { slug: 'phoenix-blythe-radar-intercept-509th-bomb-group-june-1950', label: '509th Bomb Group radar intercept', lat: 33.6105, lng: -114.5963, year: 1950, archive: 'fbi', sig: 'medium' },
+  { slug: 'philadelphia-1950-soap-suds-disc', label: 'Philadelphia soap suds disc', lat: 39.9526, lng: -75.1652, year: 1950, archive: 'fbi', sig: 'medium' },
+  { slug: 'james-collins-chesapeake-abduction-january-1967', label: 'Chesapeake abduction', lat: 36.7682, lng: -76.2875, year: 1967, archive: 'fbi', sig: 'medium' },
+  { slug: 'mexico-2003-alien-corpses',    label: 'Mexico congress cable',    lat: 19.4326,  lng: -99.1332,  year: 2003, archive: 'pursue', sig: 'medium' },
+  { slug: 'kazakhstan-1994-747',          label: 'Kazakhstan 747 cable',     lat: 51.1605,  lng: 71.4704,   year: 1994, archive: 'pursue', sig: 'medium' },
+  { slug: 'usper-statement',              label: 'USPER orb chase',          lat: 38.8951,  lng: -77.0364,  year: 2025, archive: 'pursue', sig: 'high' },
+  { slug: 'orbs-launching-orbs',          label: 'Western US orbs cluster',  lat: 40.7608,  lng: -111.8910, year: 2023, archive: 'pursue', sig: 'high' },
+  { slug: 'bronze-ellipsoid',             label: 'Bronze Ellipsoid',         lat: 37.2350,  lng: -115.8111, year: 2023, archive: 'pursue', sig: 'high' },
+];
+
+const geocoded = LOCATIONS.length;
+---
+<Base
+  title="Map"
+  description="Geographic distribution of headline cases."
+  serial="MAP"
+  section="WORLD VIEW"
+>
+  <header class="mp-hero">
+    <div class="mp-hero__breadcrumb"><a href="/">Case board</a> <span aria-hidden="true">/</span> <span>Map</span></div>
+    <p class="mp-hero__eyebrow">{geocoded} headline cases located</p>
+    <h1 class="mp-hero__title">Where the file went down.</h1>
+    <p class="mp-hero__lede">
+      A starting geographic view: every high-signal case from the FBI file and PURSUE Release 01 whose location we could responsibly place. Many cases are policy memos or correspondence patterns and do not have a point on a map.
+    </p>
+  </header>
+
+  <div id="ufo-map" class="mp-map" role="region" aria-label="Map of cases">
+    <div class="mp-map__fallback"><p>Map view requires JavaScript. The cases below are the full geocoded set.</p></div>
+  </div>
+
+  <section class="mp-list" aria-labelledby="mp-list-h">
+    <h2 id="mp-list-h" class="mp-list__title">Located cases</h2>
+    <ul class="case-list">
+      {LOCATIONS.map((loc) => (
+        <li class="case-list__item">
+          <a href={'/dossier/' + loc.slug} class="case-list__link">
+            <div class="case-list__chrome">
+              <span class="case-list__archive">{loc.archive === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+              <span class="case-list__date">{loc.year}</span>
+              <span class={'case-list__sig case-list__sig--' + loc.sig}>{loc.sig.toUpperCase()}</span>
+            </div>
+            <span class="case-list__title">{loc.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .mp-hero { padding: var(--sp-5) 0 var(--sp-6); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--sp-6); }
+  .mp-hero__breadcrumb { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wide); color: var(--fg-3); display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+  .mp-hero__breadcrumb a { color: var(--fg-2); }
+  .mp-hero__eyebrow { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-3); }
+  .mp-hero__title { font-family: var(--font-display); font-size: var(--fs-3xl); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; max-width: 22ch; }
+  @media (max-width: 640px) { .mp-hero__title { font-size: var(--fs-2xl); } }
+  .mp-hero__lede { font-family: var(--font-ui); font-size: var(--fs-md); line-height: var(--lh-loose); color: var(--fg-2); max-width: 70ch; margin: 0; }
+  .mp-map { width: 100%; height: 520px; background: var(--bg-1); border: 1px solid var(--border); position: relative; margin-bottom: var(--sp-7); }
+  .mp-map__fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); color: var(--fg-3); font-size: var(--fs-sm); padding: var(--sp-5); text-align: center; pointer-events: none; }
+  .mp-map.is-live .mp-map__fallback { display: none; }
+  .mp-list { margin-bottom: var(--sp-7); }
+  .mp-list__title { font-family: var(--font-display); font-size: var(--fs-xl); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; border-bottom: 1px solid var(--border); padding-bottom: var(--sp-3); }
+</style>
+
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<script id="mp-data" type="application/json" set:html={JSON.stringify(LOCATIONS)}></script>
+<script is:inline src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script is:inline>
+  const dataEl = document.getElementById("mp-data");
+  const locations = dataEl ? JSON.parse(dataEl.textContent) : [];
+  const container = document.getElementById("ufo-map");
+  if (container && locations.length) {
+    const map = new maplibregl.Map({
+      container: "ufo-map",
+      style: {
+        version: 8,
+        sources: {
+          carto: {
+            type: "raster",
+            tiles: [
+              "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+              "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+              "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+              "https://d.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+            ],
+            tileSize: 256,
+            minzoom: 0,
+            maxzoom: 19,
+            attribution: "© OpenStreetMap contributors © CARTO",
+          },
+        },
+        layers: [
+          { id: "bg", type: "background", paint: { "background-color": "#030506" } },
+          { id: "carto", type: "raster", source: "carto", paint: { "raster-saturation": -1, "raster-brightness-min": 0.15, "raster-brightness-max": 1.0, "raster-contrast": 0.15 } },
+        ],
+      },
+      center: [-95, 40],
+      zoom: 2.2,
+    });
+    // Auto-frame to cover all markers with padding
+    const lats = locations.map((l) => l.lat);
+    const lngs = locations.map((l) => l.lng);
+    const bounds = [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]];
+    map.on('load', () => {
+      map.resize();
+      map.fitBounds(bounds, { padding: { top: 60, bottom: 60, left: 60, right: 60 }, duration: 0, maxZoom: 4 });
+    });
+    // Also resize after a beat in case container measured wrong initially
+    requestAnimationFrame(() => map.resize());
+    window.addEventListener('resize', () => map.resize());
+    container.classList.add("is-live");
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    for (const loc of locations) {
+      const el = document.createElement("div");
+      el.style.width = (loc.sig === "high" ? 16 : 12) + "px";
+      el.style.height = el.style.width;
+      el.style.borderRadius = "50%";
+      el.style.border = "2px solid #030506";
+      el.style.cursor = "pointer";
+      if (loc.archive === "pursue") {
+        el.style.background = "#C7F7FF";
+        el.style.boxShadow = "0 0 8px rgba(199, 247, 255, 0.6)";
+      } else {
+        el.style.background = "#A8B4B8";
+      }
+      const popup = new maplibregl.Popup({ offset: 14, closeButton: false, className: "ufo-popup" }).setHTML(
+        '<div style="font-family:monospace;font-size:11px;color:#E8F0F2;background:#0D1416;border:1px solid #6F7C80;padding:8px;"><strong>' + loc.label + "</strong><br><span style=\"color:#A8B4B8\">" + loc.year + " . " + (loc.archive === "pursue" ? "PURSUE" : "FBI") + "</span><br><a style=\"color:#C7F7FF\" href=\"/dossier/" + loc.slug + "\">Open dossier</a></div>"
+      );
+      new maplibregl.Marker({ element: el }).setLngLat([loc.lng, loc.lat]).setPopup(popup).addTo(map);
+    }
+  }
+</script>
