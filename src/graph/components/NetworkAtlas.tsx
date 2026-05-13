@@ -2,6 +2,7 @@
 // Uses Sigma 3 + Graphology + ForceAtlas2 (worker). Reads brand
 // tokens off the document root so node/edge colors track mode.
 
+import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Graph from 'graphology';
@@ -33,61 +34,76 @@ const NODE_TYPE_LABELS: Record<EvidenceNodeType, string> = {
 const CONFIDENCES: Confidence[] = ['low', 'medium', 'high'];
 
 interface ResolvedTokens {
-  amber: string;
-  amberDim: string;
-  verdigris: string;
-  verdigrisDim: string;
-  inkPrimary: string;
-  inkSecondary: string;
-  inkMuted: string;
+  fg: string;
+  fgMid: string;
+  fgDim: string;
+  red: string;
   rule: string;
-  bgBase: string;
-  bgRaised: string;
+  bg: string;
+  // Backwards-compat names retained so the rest of the file compiles.
+  amber: string;        // alias of fg (highlight)
+  amberDim: string;     // alias of fgMid
+  verdigris: string;    // alias of red (semantic)
+  verdigrisDim: string; // alias of fgDim
+  inkPrimary: string;   // alias of fg
+  inkSecondary: string; // alias of fgMid
+  inkMuted: string;     // alias of fgDim
+  bgBase: string;       // alias of bg
+  bgRaised: string;     // alias of bg
 }
 
 function readTokens(): ResolvedTokens {
-  if (typeof window === 'undefined') {
-    return {
-      amber: '#E8A857',
-      amberDim: '#8C6431',
-      verdigris: '#5C8474',
-      verdigrisDim: '#3D5C50',
-      inkPrimary: '#F2EBE0',
-      inkSecondary: '#A89B8C',
-      inkMuted: '#6B6358',
-      rule: '#2A251F',
-      bgBase: '#0F0D0B',
-      bgRaised: '#181613',
+  const fallback = {
+    fg: '#ffffff',
+    fgMid: '#888888',
+    fgDim: '#555555',
+    red: '#e10600',
+    rule: '#1a1a1a',
+    bg: '#000000',
+  };
+  let resolved = { ...fallback };
+  if (typeof window !== 'undefined') {
+    const css = getComputedStyle(document.documentElement);
+    const v = (k: string, f: string) => (css.getPropertyValue(k).trim() || f);
+    resolved = {
+      fg: v('--fg', fallback.fg),
+      fgMid: v('--fg-mid', fallback.fgMid),
+      fgDim: v('--fg-dim', fallback.fgDim),
+      red: v('--red', fallback.red),
+      rule: v('--rule', fallback.rule),
+      bg: v('--bg', fallback.bg),
     };
   }
-  const css = getComputedStyle(document.documentElement);
-  const v = (k: string, fallback: string) => (css.getPropertyValue(k).trim() || fallback);
   return {
-    amber: v('--accent-amber', '#E8A857'),
-    amberDim: v('--accent-amber-dark', '#8C6431'),
-    verdigris: v('--accent-verdigris', '#5C8474'),
-    verdigrisDim: v('--accent-verdigris-dark', '#3D5C50'),
-    inkPrimary: v('--ink-primary', '#F2EBE0'),
-    inkSecondary: v('--ink-secondary', '#A89B8C'),
-    inkMuted: v('--ink-muted', '#6B6358'),
-    rule: v('--rule', '#2A251F'),
-    bgBase: v('--bg-base', '#0F0D0B'),
-    bgRaised: v('--bg-raised', '#181613'),
+    ...resolved,
+    amber: resolved.fg,
+    amberDim: resolved.fgMid,
+    verdigris: resolved.red,
+    verdigrisDim: resolved.fgDim,
+    inkPrimary: resolved.fg,
+    inkSecondary: resolved.fgMid,
+    inkMuted: resolved.fgDim,
+    bgBase: resolved.bg,
+    bgRaised: resolved.bg,
   };
 }
 
 function colorForNodeType(t: EvidenceNodeType, tokens: ResolvedTokens): string {
+  // Monochrome distribution: high-importance node types stay bright,
+  // structural / context types step back to mid/dim greys. Contradictions
+  // are the only non-grey signal because the rule reserves red for
+  // content semantics (contradiction is content semantics).
   switch (t) {
-    case 'document': return tokens.inkPrimary;
-    case 'witness': return tokens.amberDim;
-    case 'agency': return tokens.inkSecondary;
-    case 'location': return tokens.verdigrisDim;
-    case 'event': return mix(tokens.amber, tokens.bgBase, 0.45);
-    case 'sighting': return tokens.amber;
-    case 'contradiction': return tokens.verdigris;
-    case 'media': return tokens.inkSecondary;
-    case 'classification': return tokens.verdigrisDim;
-    default: return tokens.inkMuted;
+    case 'document': return tokens.fg;
+    case 'witness': return tokens.fg;
+    case 'agency': return tokens.fgMid;
+    case 'location': return tokens.fgMid;
+    case 'event': return tokens.fgMid;
+    case 'sighting': return tokens.fg;
+    case 'contradiction': return tokens.red;
+    case 'media': return tokens.fgMid;
+    case 'classification': return tokens.fgDim;
+    default: return tokens.fgDim;
   }
 }
 
@@ -95,19 +111,19 @@ function colorForEdgeType(t: EvidenceRelationship, tokens: ResolvedTokens): stri
   switch (t) {
     case 'supports':
     case 'derived_from':
-      return tokens.amber;
+      return tokens.fg;
     case 'contradicts':
-      return tokens.verdigris;
+      return tokens.red;
     case 'mentions':
-      return tokens.rule;
+      return tokens.fgDim;
     case 'same_location':
     case 'same_date':
     case 'same_agency':
     case 'classified_under':
     case 'occurred_before':
-      return tokens.inkMuted;
+      return tokens.fgDim;
     default:
-      return tokens.rule;
+      return tokens.fgDim;
   }
 }
 
@@ -319,11 +335,18 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
       const selected = selectedNodeId;
       const matches = searchMatchesRef.current;
 
-      // Search-result pulse (amber glow for 1.5s post-query).
+      // Search-result pulse: nodes that match the query enlarge and turn
+      // red for 1.5s after the search fires. Uses red because that's the
+      // archive's content-semantics accent; here it signals "this is a
+      // matched item, not just a hovered one."
       const pulsing = matches.has(key) && Date.now() < pulseUntilRef.current;
 
-      if (selected === key || hovered === key || pulsing) {
-        out.color = readTokens().amber;
+      if (pulsing) {
+        out.color = readTokens().red;
+        out.size = (attrs.size ?? 4) * 1.6;
+        out.zIndex = 2;
+      } else if (selected === key || hovered === key) {
+        out.color = readTokens().fg;
         out.size = (attrs.size ?? 4) * 1.5;
         out.zIndex = 2;
       } else if (hovered && !graphRef.current?.hasEdge(hovered, key) && !graphRef.current?.hasEdge(key, hovered)) {

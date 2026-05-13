@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { NodeProps } from '@xyflow/react';
 import type { EvidenceNode } from '../../types';
 import { ContradictionGlyph } from './glyphs';

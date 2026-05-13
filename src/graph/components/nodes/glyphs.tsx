@@ -2,6 +2,8 @@
 // inherit the card's resolved ink color in both modes. Each glyph is a clean
 // geometric mark with no raster fill, no grunge, no texture.
 
+import * as React from 'react';
+
 const stroke = 'currentColor';
 
 export function DocumentGlyph() {

@@ -2,6 +2,7 @@
 // with its own silhouette glyph and label. The card itself handles zoom level
 // of detail, selected state, tack treatment, and confidence chip.
 
+import * as React from 'react';
 import { Handle, Position, useStore } from '@xyflow/react';
 import type { ReactNode } from 'react';
 import type { Confidence, EvidenceNode } from '../../types';
@@ -15,9 +16,9 @@ export interface NodeCardProps {
 }
 
 function confidenceColor(c: Confidence | undefined): string {
-  if (c === 'high') return 'var(--accent-amber)';
-  if (c === 'low') return 'var(--accent-verdigris)';
-  return 'var(--ink-secondary)';
+  if (c === 'high') return 'var(--fg)';
+  if (c === 'low') return 'var(--red)';
+  return 'var(--fg-mid)';
 }
 
 const zoomSelector = (s: { transform: [number, number, number] }) => s.transform[2];

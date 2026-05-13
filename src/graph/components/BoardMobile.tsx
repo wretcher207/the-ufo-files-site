@@ -8,6 +8,7 @@
 // here; it's a plain scrollable list. Same DossierPanel surfaces as a
 // bottom sheet when the user opens a card for full detail.
 
+import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGraphStore } from '../store/graphStore';
 import type { EvidenceEdge, EvidenceGraph, EvidenceNode } from '../types';

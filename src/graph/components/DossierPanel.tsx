@@ -6,6 +6,7 @@
 // this lands. Save action wires to localStorage immediately as a toggle.
 // Open Original is a stub link target for now.
 
+import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGraphStore } from '../store/graphStore';
 import type { EvidenceEdge, EvidenceNode } from '../types';

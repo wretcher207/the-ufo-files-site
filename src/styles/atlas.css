@@ -1,7 +1,6 @@
 /* =========================================================
-   /atlas styles. Network atlas chrome: filters rail, top bar,
-   canvas, search, mobile sheet, and the stub DossierPanel.
-   All colors resolve from Phase 6 brand tokens.
+   /atlas styles. Phase 6 monochrome system.
+   No amber highlights. No rounded corners. No glow.
    ========================================================= */
 
 .atlas-root {
@@ -9,7 +8,7 @@
   width: 100%;
   height: 100%;
   display: flex;
-  background: var(--bg-base);
+  background: var(--bg);
 }
 
 /* ── Filters rail (desktop). */
@@ -19,11 +18,9 @@
   flex-shrink: 0;
   height: 100%;
   border-right: 1px solid var(--rule);
-  background: color-mix(in oklab, var(--bg-raised) 92%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--bg);
   overflow-y: auto;
-  transition: width var(--dur-base) var(--ease-out);
+  transition: width 200ms linear;
 }
 .atlas-filters--collapsed {
   width: 56px;
@@ -33,132 +30,153 @@
   position: sticky;
   top: 0;
   width: 100%;
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--bg-raised);
+  padding: 14px 16px;
+  background: var(--bg);
   border: none;
   border-bottom: 1px solid var(--rule);
-  color: var(--ink-secondary);
+  color: var(--fg-mid);
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-widest);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   text-align: left;
   cursor: pointer;
   z-index: 2;
+  border-radius: 0;
 }
-.atlas-filters__toggle:hover { color: var(--accent-amber); }
+.atlas-filters__toggle:hover { color: var(--fg); }
 .atlas-filters__body {
-  padding: var(--sp-5) var(--sp-4);
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: 24px;
 }
 .atlas-filters__body section {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: 8px;
 }
 .atlas-filters__body h3 {
-  margin: 0 0 var(--sp-1);
-  color: var(--ink-muted);
+  margin: 0 0 4px;
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
 }
 
 /* ── Filter chips. */
 .atlas-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-1);
+  gap: 4px;
 }
 .atlas-chip {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
   background: transparent;
-  color: var(--ink-secondary);
+  color: var(--fg-mid);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
-  font-family: var(--font-body);
-  font-size: var(--fs-xs);
-  font-weight: var(--weight-body-md);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out),
-              background var(--dur-fast) var(--ease-out);
+  transition: color var(--dur-quick) linear,
+              border-color var(--dur-quick) linear,
+              background var(--dur-quick) linear;
 }
 .atlas-chip:hover {
-  color: var(--ink-primary);
-  border-color: var(--ink-secondary);
+  color: var(--fg);
+  border-color: var(--fg);
 }
 .atlas-chip[data-active="true"] {
-  color: var(--bg-base);
-  background: var(--accent-amber);
-  border-color: var(--accent-amber);
+  color: var(--bg);
+  background: var(--fg);
+  border-color: var(--fg);
 }
 
 .atlas-select {
   width: 100%;
-  padding: 6px 8px;
-  background: var(--bg-overlay);
-  color: var(--ink-primary);
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--fg);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
   cursor: pointer;
 }
+.atlas-select:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
+
 .atlas-tags {
   list-style: none;
   padding: 0;
-  margin: var(--sp-2) 0 0;
+  margin: 8px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 .atlas-tag {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 4px 8px;
-  background: var(--bg-overlay);
-  color: var(--ink-primary);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
-  font-family: var(--font-body);
-  font-size: var(--fs-xs);
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--fg-mid);
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: background var(--dur-quick) linear,
+              color var(--dur-quick) linear;
 }
-.atlas-tag:hover { border-color: var(--accent-amber); }
+.atlas-tag:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
 
 .atlas-daterange {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: var(--sp-2);
+  gap: 8px;
   align-items: center;
 }
 .atlas-daterange input[type="range"] {
   grid-column: 2;
   width: 100%;
-  accent-color: var(--accent-amber);
+  accent-color: var(--fg);
 }
 .atlas-daterange span {
-  color: var(--ink-muted);
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
 }
 
 .atlas-clear {
-  margin-top: var(--sp-4);
+  margin-top: 16px;
   align-self: flex-start;
   background: transparent;
   border: none;
-  color: var(--accent-amber);
+  color: var(--fg);
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wider);
+  font-size: 11px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
   padding: 0;
+  border-bottom: 1px solid transparent;
 }
-.atlas-clear:hover { color: var(--ink-primary); }
+.atlas-clear:hover { border-bottom-color: var(--fg); }
 
 /* ── Canvas + topbar. */
 .atlas-canvas-wrap {
@@ -176,9 +194,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-4);
-  padding: var(--sp-3) var(--sp-5);
-  background: linear-gradient(to bottom, color-mix(in oklab, var(--bg-base) 88%, transparent) 30%, transparent);
+  gap: 16px;
+  padding: 12px 24px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 30%, transparent);
   pointer-events: none;
 }
 .atlas-topbar > * { pointer-events: auto; }
@@ -186,49 +204,57 @@
 .atlas-search {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: 12px;
   flex: 1 1 360px;
   max-width: 480px;
   padding: 8px 12px;
-  background: var(--bg-overlay);
+  background: var(--bg);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
+  border-radius: 0;
 }
-.atlas-search:focus-within { border-color: var(--accent-amber); }
-.atlas-search__label { flex-shrink: 0; }
+.atlas-search:focus-within { border-color: var(--fg); }
+.atlas-search__label { flex-shrink: 0; color: var(--fg-dim); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; }
 .atlas-search input[type="search"] {
   flex: 1;
   background: transparent;
   border: none;
   outline: none;
-  color: var(--ink-primary);
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: -0.01em;
 }
-.atlas-search input[type="search"]::placeholder { color: var(--ink-muted); }
+.atlas-search input[type="search"]::placeholder { color: var(--fg-dim); }
 .atlas-search__count {
   flex-shrink: 0;
-  color: var(--accent-amber);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-feature-settings: "tnum";
 }
 
 .atlas-cross {
   display: inline-flex;
   align-items: center;
   padding: 8px 14px;
-  background: transparent;
+  background: var(--bg);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
-  color: var(--ink-primary);
+  border-radius: 0;
+  color: var(--fg);
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wider);
+  font-size: 11px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: background-color var(--dur-quick) linear,
+              color var(--dur-quick) linear,
+              border-color var(--dur-quick) linear;
 }
 .atlas-cross:hover {
-  color: var(--accent-amber);
-  border-color: var(--accent-amber);
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
 }
 
 .atlas-canvas {
@@ -239,15 +265,12 @@
 }
 .atlas-canvas canvas { outline: none; }
 
-/* The shared DossierPanel (built by Agent 4) brings its own CSS via
-   src/graph/components/board.css. atlas.astro imports it. */
-
 /* ── Mobile variant. */
 .atlas-mobile {
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--bg-base);
+  background: var(--bg);
   display: flex;
   flex-direction: column;
 }
@@ -257,34 +280,39 @@
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-4);
-  background: color-mix(in oklab, var(--bg-raised) 95%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg);
   border-bottom: 1px solid var(--rule);
 }
 .atlas-mobile__search {
   flex: 1;
-  padding: 8px 10px;
-  background: var(--bg-overlay);
-  color: var(--ink-primary);
+  padding: 8px 12px;
+  background: var(--bg);
+  color: var(--fg);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
 }
-.atlas-mobile__search:focus { outline: none; border-color: var(--accent-amber); }
+.atlas-mobile__search:focus { outline: none; border-color: var(--fg); }
 .atlas-mobile__filter-btn {
   padding: 8px 14px;
   background: transparent;
   border: 1px solid var(--rule);
-  color: var(--ink-primary);
+  color: var(--fg);
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wider);
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  border-radius: var(--radius-1);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background var(--dur-quick) linear,
+              color var(--dur-quick) linear;
+}
+.atlas-mobile__filter-btn:hover {
+  background: var(--fg);
+  color: var(--bg);
 }
 .atlas-mobile__canvas {
   flex: 1;
@@ -298,16 +326,16 @@
   bottom: 0;
   max-height: 70vh;
   overflow-y: auto;
-  background: var(--bg-raised);
-  border-top: 1px solid var(--rule);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  padding: var(--sp-5) var(--sp-4) var(--sp-7);
+  background: var(--bg);
+  border-top: 1px solid var(--fg);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding: 24px 16px 56px;
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
-  animation: sheet-up var(--dur-base) var(--ease-out);
+  gap: 16px;
+  animation: sheet-up 200ms linear;
 }
 @keyframes sheet-up {
   from { transform: translateY(100%); }
@@ -324,14 +352,18 @@
 .atlas-mobile__sheet-head button {
   background: transparent;
   border: 1px solid var(--rule);
-  color: var(--ink-primary);
+  color: var(--fg);
   padding: 6px 12px;
   font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wider);
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  border-radius: var(--radius-1);
+  border-radius: 0;
   cursor: pointer;
+  transition: background var(--dur-quick) linear,
+              color var(--dur-quick) linear;
 }
-
-/* Mobile dossier sheet behavior lives in board.css (Agent 4). */
+.atlas-mobile__sheet-head button:hover {
+  background: var(--fg);
+  color: var(--bg);
+}

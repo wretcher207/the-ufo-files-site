@@ -3,6 +3,7 @@
 // dash pattern. Hovering thickens the line and reveals the explanation
 // tooltip (when present).
 
+import * as React from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -29,31 +30,31 @@ function styleFor(rel: EvidenceRelationship, conf: Confidence): Style {
   switch (rel) {
     case 'supports':
       return {
-        stroke: 'var(--accent-amber)',
+        stroke: 'var(--fg)',
         width: 2,
         dash: isLow ? '2 4' : undefined,
       };
     case 'contradicts':
       return {
-        stroke: 'var(--accent-verdigris)',
+        stroke: 'var(--red)',
         width: 2,
         dash: '6 4',
       };
     case 'derived_from':
       return {
-        stroke: 'var(--accent-amber)',
+        stroke: 'var(--fg)',
         width: 1.5,
         dash: '4 4',
       };
     case 'mentions':
       return {
-        stroke: 'var(--rule)',
+        stroke: 'var(--fg-dim)',
         width: 1,
         dash: isLow ? '2 4' : undefined,
       };
     default:
       return {
-        stroke: 'var(--ink-muted)',
+        stroke: 'var(--fg-dim)',
         width: 1,
         dash: isLow ? '2 4' : undefined,
       };

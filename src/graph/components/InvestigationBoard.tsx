@@ -10,6 +10,7 @@
 import '@xyflow/react/dist/style.css';
 import './board.css';
 
+import * as React from 'react';
 import {
   Background,
   BackgroundVariant,
@@ -271,11 +272,12 @@ function BoardCanvas({ graph, initialFocusId }: InvestigationBoardProps) {
         <MiniMap
           pannable
           zoomable
-          nodeColor={() => 'var(--accent-amber)'}
-          maskColor="rgba(15, 13, 11, 0.7)"
+          nodeColor={() => '#ffffff'}
+          maskColor="rgba(0, 0, 0, 0.85)"
           style={{
-            background: 'var(--bg-raised)',
-            border: '1px solid var(--rule)',
+            background: '#000000',
+            border: '1px solid #ffffff',
+            borderRadius: 0,
           }}
         />
         <Controls showInteractive={false} />

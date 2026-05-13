@@ -66,12 +66,11 @@ const { nodes, edges } = await getGraph();
 <style>
   .atlas-page {
     position: relative;
-    /* OperatorChrome is 56px fixed at the top, page-shell pads top by 56px,
-       so the viewport for atlas content is 100vh - 56px. */
-    height: calc(100vh - 56px);
+    /* OperatorChrome is 48px fixed; page-shell pads top by 48px. */
+    height: calc(100vh - 48px);
     width: 100%;
     overflow: hidden;
-    background: var(--bg-base);
+    background: var(--bg);
   }
   .atlas-page__desktop { display: none; height: 100%; }
   .atlas-page__mobile  { display: block; height: 100%; }

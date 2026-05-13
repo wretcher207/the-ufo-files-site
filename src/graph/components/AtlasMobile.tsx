@@ -3,6 +3,7 @@
 // filter sheet, bottom-sheet DossierPanel. Tap-radius (~40px) snaps the
 // nearest visible node into selection.
 
+import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Graph from 'graphology';
