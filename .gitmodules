@@ -1,0 +1,3 @@
+[submodule "content/archive"]
+	path = content/archive
+	url = https://github.com/wretcher207/the-ufo-files.git
