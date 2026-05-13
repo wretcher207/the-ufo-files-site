@@ -32,9 +32,10 @@ entities. Astro 5 + Tailwind v4, static output, content is a git submodule
 at `content/archive/` pointing at `github.com/wretcher207/the-ufo-files`.
 Completeness is the product. As of this handoff every major route is on
 the new monochrome identity system, the broken /board page is repaired and
-mounting 69 evidence nodes, and the launch gate passes. What remains is
-sourcing more archival images, deleting legacy components, and a possible
-fate decision on /vault.
+mounting 69 evidence nodes, /vault is rebuilt as a working Source Manifest,
+all confirmed-dead legacy components have been deleted, and the launch
+gate passes. The remaining moves are mostly content (more archival images,
+more pull-quotes on the homepage) plus one Vite/Rolldown dev-server bug.
 
 ---
 
@@ -142,6 +143,12 @@ helper, and the three reusable utility patterns
   `NetworkAtlas.tsx`. Search-result pulse turns red (semantic), hover/
   selected stays white. `atlas.css` rewritten for monochrome chrome with
   hover-invert filter chips and tags.
+- `/vault`: rebuilt from the Phase 4 "coming soon" placeholder into the
+  Source Manifest. Big numeral `63 / SOURCES`, two batches (PURSUE Release
+  01 with 6 rows / FBI 62-HQ-83894 with 57 rows), each row hover-inverts
+  to the dossier with a separate `↗ ORIGINAL` link to the issuing
+  agency's PDF. Sorted by case_date within each batch. Added to operator
+  chrome between Map and About.
 
 ### Identity utilities (reusable, in globals.css)
 
@@ -188,17 +195,10 @@ and the homepage section anchors and stats grid.
   (`npm run preview` after `npm run build`) is fine and is what David
   should use to verify board/atlas changes locally. Has been there for at
   least the entire current branch.
-- **/vault**: still a Phase 5 / first-attempt placeholder. Decide whether
-  to delete or repurpose.
-- **Legacy components not yet deleted**: `Hero.astro`, `TopPlate.astro`,
-  `HeroComposition.ts`, `HomeBoardPreview.tsx`, the three popovers
-  (`CitePopover.astro`, `SharePopover.astro`, `ExportPopover.astro`),
-  `EntityRail.astro`, `RelatedCases.astro`, `ProvenanceFooter.astro`,
-  `SocialsStrip.astro`. Some are still referenced from dossier; audit
-  before deleting.
-- **Hero images on most cases**: 16 archival images mapped, ~47 of 63
-  cases have no hero. Adding more is the highest-leverage next move on
-  visual richness without changing layout.
+- **Hero images on most cases**: 19 archival images mapped (20 cases
+  covered via one cross-mapped image), 43 of 63 cases still have no hero.
+  Adding more is the highest-leverage next move on visual richness
+  without changing layout.
 
 ---
 
@@ -262,12 +262,16 @@ Mode is set per route on `<html data-mode="...">` by `resolveMode()` in
   3. Homepage index list, dossier hero, and entity hero pick it up
      automatically.
 
-### Currently mapped (15 cases, 2 entities)
+### Currently mapped (20 cases, 3 entities)
 
-Hottel, three Arnold variants, Maury Island, Brown-Davidson, Mantell,
-Rhodes, Apollo 17 VM6, Hoover-Scully, two pre-Scully rumor cases, Project
-Grudge, Section 10 civilian cluster, Chesapeake abduction 1967. Entities:
-J. Edgar Hoover, Kenneth Arnold.
+Hottel, three Arnold variants, Maury Island, Brown-Davidson, Mantell
+(crash-site marker, not the generic F-51D), Rhodes, Apollo 17 VM6,
+Hoover-Scully, two pre-Scully rumor cases, Project Grudge, Section 10
+civilian cluster, Chesapeake abduction 1967, Kazakhstan 1994 (Boeing
+747), USPER statement (Pentagon aerial), Oak Ridge gasser (X-10 reactor),
+Cabell AFOIC (Cabell USAF portrait), Muroc CIC affidavits (1947 P-80).
+Entities: J. Edgar Hoover, Kenneth Arnold, Department of War (shares the
+Pentagon image with USPER).
 
 ### Sourcing more images
 
@@ -356,21 +360,17 @@ src/
 ├── layouts/
 │   └── Base.astro                  shell, fonts, mode, chrome, footer (record-of-record)
 ├── components/
-│   ├── OperatorChrome.astro        48px text strip with live counter, hamburger
+│   ├── OperatorChrome.astro        48px text strip, nav, live counter, hamburger
 │   ├── SearchHUD.astro             "/" trigger, Pagefind-backed modal
-│   ├── CaseActions.astro           [legacy, still used on dossier]
-│   ├── CitePopover.astro           [legacy]
-│   ├── SharePopover.astro          [legacy]
-│   ├── ExportPopover.astro         [legacy]
-│   ├── Hero.astro                  [legacy, unused]
-│   ├── TopPlate.astro              [legacy, unused]
-│   ├── ProvenanceFooter.astro      [legacy, still on dossier]
-│   ├── ProvenanceCard.astro        [legacy, still on evidence]
-│   ├── EntityRail.astro            [legacy, still on dossier]
-│   ├── RelatedCases.astro          [legacy, still on dossier]
-│   ├── SocialsStrip.astro          [legacy, still on /about]
-│   ├── HomeBoardPreview.tsx        [legacy, unused]
-│   └── HeroComposition.ts          [legacy, unused]
+│   ├── CaseActions.astro           dossier action bar (Cite, Share, Export)
+│   ├── CitePopover.astro           ↑ child popover
+│   ├── SharePopover.astro          ↑ child popover
+│   ├── ExportPopover.astro         ↑ child popover
+│   ├── ProvenanceFooter.astro      dossier footer
+│   ├── ProvenanceCard.astro        evidence-page card
+│   ├── EntityRail.astro            dossier sidebar
+│   ├── RelatedCases.astro          dossier related rail
+│   └── SocialsStrip.astro          /about social links
 ├── pages/
 │   ├── index.astro                 *** monochrome typography wall, dead-click sweep
 │   ├── threads.astro               *** section anchor, hover-invert
@@ -385,7 +385,7 @@ src/
 │   ├── map.astro                   *** PURSUE marker glow removed, monochrome popup
 │   ├── evidence/[slug].astro       *** bordered frame removed, monochrome
 │   ├── entity/[slug].astro         *** full rewrite, light mode, entity image
-│   ├── vault.astro                 [first-attempt placeholder, may not be needed]
+│   ├── vault.astro                 *** Source Manifest, 63 sources by batch
 │   └── graph.astro                 meta-refresh fallback to /board
 ├── styles/
 │   ├── brand.css                   monochrome token system + backward-compat aliases
@@ -421,42 +421,38 @@ scripts/extract/                    extraction pipeline (working, 100% coverage)
 content/archive/                    git submodule pinned to wretcher207/the-ufo-files
 ```
 
-Files marked `***` are the current Phase 6 v2 work. Files marked `[legacy]`
-are first-attempt agent-built or Phase 5 era; `unused` ones can be deleted.
+Files marked `***` are current Phase 6 v2 work. All previously-flagged
+legacy/unused components have been deleted in this branch.
 
 ---
 
 ## Recommended next-session work, in priority order
 
-1. **Source more archival images.** 47 of 63 cases lack a hero. Adding
-   visuals via the case-images mapping is the highest-leverage way to add
-   warmth without changing layout. Targets: more 1947-1950 newspaper
-   clippings, Project Twinkle documents, Maury Island slag photos if any,
-   Mantell newspaper coverage, AARO press release images, USPER context.
-   Use Wikimedia Commons + FBI Vault. Federal works = public domain.
-2. **Decide fate of /vault.** First-attempt placeholder. Either delete the
-   file and the nav link, or repurpose as something meaningful (an "all
-   evidence files" landing? a redaction methodology page?).
-3. **Delete legacy components.** Audit each `[legacy unused]` file in
-   `src/components/`, confirm zero references via Grep, delete. Risky for
-   `CaseActions.astro`, `EntityRail.astro`, `RelatedCases.astro`,
-   `ProvenanceFooter.astro`, `ProvenanceCard.astro`, `SocialsStrip.astro`
-   because they are still used by dossier/evidence/about. The truly unused
-   set is probably `Hero.astro`, `TopPlate.astro`, `HeroComposition.ts`,
-   `HomeBoardPreview.tsx`, the three popovers.
-4. **Strip `serial` legacy prop**. `Base.astro` no longer accepts it.
-   Several pages still pass it (`map.astro`, `vault.astro`, etc). Astro
-   doesn't fail on unknown props, but `astro check` warns. Strip during
-   the next pass touching each file.
-5. **Investigate Vite dev-server bug**. The
+1. **Source more archival images.** 43 of 63 cases still lack a hero.
+   Confirmed-good leads not yet pulled: Project Twinkle / green fireball
+   documents (Sandia, Los Alamos era), Horten Ho 229 or Me 262 for the
+   Peyerl 1944 German aircraft case, Edwards Air Force Base aerials for
+   Muroc-adjacent cases, NARA newspaper clippings for the 1947 wave
+   (Portland, Hackensack, Houston), Lincoln La Paz portrait if a PD copy
+   surfaces, Project Blue Book era hangar/lab photos for the Section 10
+   cluster cases. Use Wikimedia Commons + FBI Vault + NARA. Federal works
+   = public domain. Always set `User-Agent:
+   the-ufo-files-archive/1.0 (drjr1021@gmail.com)` on Wikimedia.
+2. **Investigate Vite dev-server bug**. The
    `vite-react-refresh-wrapper: Missing field 'moduleType'` issue blocks
    dev-mode work on React routes. Likely a version pin issue between
    Astro 5.18 / React 19 / Rolldown. May need to downgrade Astro or
    upgrade past it. Production build is unaffected.
-6. **More content for the homepage.** The page reads strong but a few more
+3. **More content for the homepage.** The page reads strong but a few more
    strategic full-bleed images between sections would help. Pull-quotes
    set in Fraunces italic at scale would also help break up the dossier
    reading column.
+4. **Pre-existing `astro check` errors.** Fourteen TS errors live in
+   `src/pages/evidence/[slug].astro`, `src/pages/timeline.astro`, and
+   `src/pages/thread/[id].astro` (mostly `string | undefined` not
+   narrowed before passing to `.test()` or `.localeCompare()`). The
+   production build still passes because Astro builds without strict TS.
+   Worth a cleanup pass before any PR review.
 
 ### Things David may bring up
 
