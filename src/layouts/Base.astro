@@ -9,15 +9,22 @@ interface Props {
   description?: string;
   section?: string;
   pathname?: string;
+  ogImage?: string;
 }
 const {
   title,
   description = 'An archive of the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
+  ogImage,
 } = Astro.props;
 
 const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : Astro.url.pathname;
 const pathname = Astro.url.pathname;
+const ogImagePath = ogImage ?? '/og-image.jpg';
+const ogImageUrl = Astro.site
+  ? new URL(ogImagePath, Astro.site).toString()
+  : ogImagePath;
+const isDefaultOgImage = ogImagePath === '/og-image.jpg';
 
 const stats = await getArchiveStats();
 const commitHref = `https://github.com/wretcher207/the-ufo-files-site/commit/${stats.commitHash}`;
@@ -50,8 +57,16 @@ const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    {isDefaultOgImage && <meta property="og:image:width" content="1200" />}
+    {isDefaultOgImage && <meta property="og:image:height" content="630" />}
+    <meta property="og:image:alt" content="The UFO Files: an archive of the May 2026 PURSUE release and FBI 62-HQ-83894" />
+    <meta property="og:site_name" content="The UFO Files" />
     <link rel="canonical" href={canonical} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

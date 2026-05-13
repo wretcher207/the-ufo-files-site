@@ -45,7 +45,12 @@ const pageUrl = Astro.site
 
 const body: string = (entry as unknown as { body?: string }).body ?? '';
 ---
-<Base title={headline} section={sectionLabel}>
+<Base
+  title={headline}
+  description={excerpt || `${caseId} — ${headline}`}
+  section={sectionLabel}
+  ogImage={img?.src}
+>
   <article class="dossier" data-pagefind-body>
 
     <header class="dossier__masthead">

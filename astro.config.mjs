@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { rewriteMdLinks } from './src/lib/rewrite-md-links.ts';
 
@@ -9,6 +10,7 @@ export default defineConfig({
   integrations: [
     mdx({ rehypePlugins: [rewriteMdLinks] }),
     react({ include: ['**/graph/**'] }),
+    sitemap(),
   ],
   vite: {
     plugins: [tailwindcss()],
