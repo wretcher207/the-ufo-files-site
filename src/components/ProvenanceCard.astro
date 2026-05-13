@@ -5,7 +5,12 @@ interface Props { entry: AnyCase; }
 const { entry } = Astro.props;
 const { origin_url, mirror_url, source } = entry.data;
 
-const sourcePages = source ? source.split(',').map((s) => s.trim()).filter(Boolean) : [];
+// `source` is either the legacy comma-list string of OCR pages, or the Phase 6
+// source object. Only the string form populates the OCR pages list.
+const sourceString = typeof source === 'string' ? source : '';
+const sourcePages = sourceString
+  ? sourceString.split(',').map((s) => s.trim()).filter(Boolean)
+  : [];
 ---
 <aside class="provenance" aria-labelledby="provenance-heading">
   <header class="provenance__head">
