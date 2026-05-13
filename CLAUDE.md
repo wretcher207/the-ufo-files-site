@@ -47,7 +47,7 @@ David prefers double-clickable `.bat` files for any multi-step build. If we add 
 
 ## Conventions
 
-- **No new framework.** No React/Svelte islands unless a feature genuinely needs them — Astro components only so far.
+- **React is scoped to `/board` and `/atlas` (graph routes) only.** All other routes stay pure Astro. The graph stack (`@xyflow/react`, `zustand`, `graphology`, `sigma`, `elkjs`, `d3-force`) loads exclusively on those two routes via `client:only="react"`.
 - **Markdown link rewriting** goes through `src/lib/rewrite-md-links.ts` (rehype plugin). Wire it into both `markdown.rehypePlugins` and the MDX integration when adding new content surfaces.
 - **Brand tokens** in `src/styles/brand.css`, layered into `globals.css`. Don't hardcode hex — use the CSS vars.
 - **OperatorChrome** is the persistent top frame; `Base.astro` wraps every page and emits canonical + og:url.

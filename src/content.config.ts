@@ -111,7 +111,7 @@ const caseSchema = z.object({
   entities_mentioned: z.array(stringish).optional(),
   // Legacy single-thread enum. Phase 6 also writes `threads[]`. Both kept.
   thread: z
-    .enum(['1947-origin', '1948-49-hardening', '1949-50-disinfo', '1950s-1973-tail', 'pursue-2026'])
+    .enum(['1947-origin', '1948-49-hardening', '1949-50-disinfo', '1950s-1973-tail', 'gap-1974-2025', 'pursue-2026'])
     .optional(),
   significance: z.enum(['high', 'medium', 'low']).optional(),
   evidence_urls: z.array(z.string()).optional(),

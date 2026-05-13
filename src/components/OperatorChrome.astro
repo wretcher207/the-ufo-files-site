@@ -2,31 +2,24 @@
 import SearchHUD from './SearchHUD.astro';
 
 interface Props {
-  section?: string;
   pathname?: string;
 }
-const {
-  section = '',
-  pathname = '/',
-} = Astro.props;
+const { pathname = '/' } = Astro.props;
 
 const navLinks: { href: string; label: string; matchPrefixes: string[] }[] = [
-  { href: '/',          label: 'Archive',  matchPrefixes: ['/'] },
-  { href: '/threads',   label: 'Threads',  matchPrefixes: ['/threads', '/thread'] },
-  { href: '/board',     label: 'Board',    matchPrefixes: ['/board'] },
-  { href: '/atlas',     label: 'Atlas',    matchPrefixes: ['/atlas'] },
-  { href: '/timeline',  label: 'Timeline', matchPrefixes: ['/timeline'] },
-  { href: '/map',       label: 'Map',      matchPrefixes: ['/map'] },
-  { href: '/about',     label: 'About',    matchPrefixes: ['/about'] },
+  { href: '/',         label: 'Archive',  matchPrefixes: ['/'] },
+  { href: '/threads',  label: 'Threads',  matchPrefixes: ['/threads', '/thread'] },
+  { href: '/board',    label: 'Board',    matchPrefixes: ['/board'] },
+  { href: '/atlas',    label: 'Atlas',    matchPrefixes: ['/atlas'] },
+  { href: '/timeline', label: 'Timeline', matchPrefixes: ['/timeline'] },
+  { href: '/map',      label: 'Map',      matchPrefixes: ['/map'] },
+  { href: '/about',    label: 'About',    matchPrefixes: ['/about'] },
 ];
 
 function isActive(prefixes: string[]) {
   if (pathname === '/') return prefixes.includes('/');
   return prefixes.some((p) => p !== '/' && pathname.startsWith(p));
 }
-
-const activeLink = navLinks.find((l) => isActive(l.matchPrefixes));
-const breadcrumb = section || (activeLink ? activeLink.label : 'Archive');
 ---
 <header class="operator-chrome" data-operator-chrome>
   <div class="operator-chrome__inner">
@@ -35,7 +28,7 @@ const breadcrumb = section || (activeLink ? activeLink.label : 'Archive');
     </a>
 
     <nav class="operator-chrome__nav" aria-label="Primary">
-      {navLinks.map((link) => (
+      {navLinks.slice(1).map((link) => (
         <a
           href={link.href}
           aria-current={isActive(link.matchPrefixes) ? 'page' : undefined}
@@ -44,10 +37,6 @@ const breadcrumb = section || (activeLink ? activeLink.label : 'Archive');
         </a>
       ))}
     </nav>
-
-    <span class="operator-chrome__breadcrumb" aria-hidden="true">
-      {breadcrumb}
-    </span>
 
     <div class="operator-chrome__right">
       <SearchHUD />
@@ -58,10 +47,10 @@ const breadcrumb = section || (activeLink ? activeLink.label : 'Archive');
         aria-expanded="false"
         data-mobile-toggle
       >
-        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
-          <line x1="0" y1="1" x2="18" y2="1" />
-          <line x1="0" y1="7" x2="18" y2="7" />
-          <line x1="0" y1="13" x2="18" y2="13" />
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="square">
+          <line x1="0" y1="1" x2="16" y2="1" />
+          <line x1="0" y1="7" x2="16" y2="7" />
+          <line x1="0" y1="13" x2="16" y2="13" />
         </svg>
       </button>
     </div>
@@ -83,71 +72,22 @@ const breadcrumb = section || (activeLink ? activeLink.label : 'Archive');
   const chrome = document.querySelector('[data-operator-chrome]') as HTMLElement | null;
   const toggle = document.querySelector('[data-mobile-toggle]') as HTMLButtonElement | null;
 
-  if (chrome) {
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    let lastY = window.scrollY;
-    let ticking = false;
-    const HERO_THRESHOLD = 480;
-    const HIDE_DELTA = 8;
-
-    function onScroll() {
-      const y = window.scrollY;
-      const scrolledPastHero = y > HERO_THRESHOLD;
-      const goingDown = y - lastY > HIDE_DELTA;
-      const goingUp = lastY - y > HIDE_DELTA;
-
-      if (scrolledPastHero) {
-        chrome!.setAttribute('data-scrolled', 'true');
+  if (chrome && toggle) {
+    toggle.addEventListener('click', () => {
+      const open = chrome.getAttribute('data-mobile-open') === 'true';
+      if (open) {
+        chrome.removeAttribute('data-mobile-open');
+        toggle.setAttribute('aria-expanded', 'false');
       } else {
-        chrome!.removeAttribute('data-scrolled');
+        chrome.setAttribute('data-mobile-open', 'true');
+        toggle.setAttribute('aria-expanded', 'true');
       }
-
-      if (!prefersReducedMotion && y > 80) {
-        if (goingDown) chrome!.setAttribute('data-hidden', 'true');
-        else if (goingUp) chrome!.removeAttribute('data-hidden');
-      } else {
-        chrome!.removeAttribute('data-hidden');
-      }
-
-      lastY = y;
-      ticking = false;
-    }
-
-    window.addEventListener(
-      'scroll',
-      () => {
-        if (!ticking) {
-          window.requestAnimationFrame(onScroll);
-          ticking = true;
-        }
-      },
-      { passive: true }
-    );
-
-    if (toggle) {
-      toggle.addEventListener('click', () => {
-        const open = chrome.getAttribute('data-mobile-open') === 'true';
-        if (open) {
-          chrome.removeAttribute('data-mobile-open');
-          toggle.setAttribute('aria-expanded', 'false');
-        } else {
-          chrome.setAttribute('data-mobile-open', 'true');
-          toggle.setAttribute('aria-expanded', 'true');
-        }
+    });
+    chrome.querySelectorAll('.operator-chrome__mobile-menu a').forEach((a) => {
+      a.addEventListener('click', () => {
+        chrome.removeAttribute('data-mobile-open');
+        toggle.setAttribute('aria-expanded', 'false');
       });
-      // Close on link click.
-      chrome.querySelectorAll('.operator-chrome__mobile-menu a').forEach((a) => {
-        a.addEventListener('click', () => {
-          chrome.removeAttribute('data-mobile-open');
-          toggle.setAttribute('aria-expanded', 'false');
-        });
-      });
-    }
+    });
   }
 </script>
-</content>
-</invoke>

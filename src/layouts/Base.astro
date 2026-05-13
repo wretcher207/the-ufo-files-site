@@ -7,11 +7,12 @@ interface Props {
   title: string;
   description?: string;
   section?: string;
+  pathname?: string;
+  serial?: string;
 }
 const {
   title,
-  description = 'Interactive investigation site for the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
-  section,
+  description = 'An archive of the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
 } = Astro.props;
 
 const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
@@ -31,7 +32,7 @@ function resolveMode(path: string): 'dark' | 'light' {
   return 'dark';
 }
 const mode = resolveMode(pathname);
-const themeColor = mode === 'dark' ? '#0F0D0B' : '#F4EFE6';
+const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
 ---
 <!doctype html>
 <html lang="en" data-mode={mode}>
@@ -52,7 +53,7 @@ const themeColor = mode === 'dark' ? '#0F0D0B' : '#F4EFE6';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600&family=Azeret+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -61,20 +62,18 @@ const themeColor = mode === 'dark' ? '#0F0D0B' : '#F4EFE6';
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="page-shell">
-      <OperatorChrome section={section} pathname={pathname} />
+      <OperatorChrome pathname={pathname} />
       <main id="main" class="page-main">
         <slot />
       </main>
       <footer class="page-footer">
-        <div class="page-footer__inner">
-          <span>The UFO Files</span>
-          <span class="page-footer__sep">·</span>
-          <span>An archive by <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a></span>
-          <span class="page-footer__sep">·</span>
-          <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">Github</a>
-          <span class="page-footer__sep">·</span>
-          <span>May 8 2026</span>
-        </div>
+        <span>The UFO Files</span>
+        <span class="page-footer__sep">/</span>
+        <span>An archive by <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a></span>
+        <span class="page-footer__sep">/</span>
+        <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">Github</a>
+        <span class="page-footer__sep">/</span>
+        <span>Released May 8 2026</span>
       </footer>
     </div>
   </body>

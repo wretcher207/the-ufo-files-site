@@ -1,292 +1,170 @@
 /* =========================================================
-   THE UFO FILES, Phase 6 brand tokens.
-   Two route-driven modes (DARK cinematic, LIGHT reading).
-   Texture comes from typography, hairline rules, and color
-   temperature only. No raster overlays, no scanlines, no
-   grain, no grid backgrounds.
+   THE UFO FILES, ground-up redesign.
+
+   Rules this version commits to:
+   - Pure black / pure white. No warm tone anywhere.
+   - One accent. Institutional red, reserved for content
+     meaning (redaction, classification, contradiction).
+     NEVER for hover, selection, decoration.
+   - No bordered cards. No box-shadow. No gradients.
+     No rounded corners. No glow. No scanlines. No grain.
+   - Typography carries the whole identity.
+   - Hairlines are full-bleed dividers, never frames.
    ========================================================= */
 
 :root {
-  /* ── Default mode (DARK). Overridden by [data-mode="light"]. */
-  --bg-base:        #0F0D0B;
-  --bg-raised:      #181613;
-  --bg-overlay:     #221E1A;
-  --ink-primary:    #F2EBE0;
-  --ink-secondary:  #A89B8C;
-  --ink-muted:      #6B6358;
-  --rule:           #2A251F;
+  /* Palette. Two values, full stop. */
+  --bg:       #000000;
+  --fg:       #ffffff;
+  --fg-mid:   #888888;
+  --fg-dim:   #555555;
+  --rule:     #1a1a1a;
 
-  /* Accent tokens, strict semantics.
-     amber: primary action, selected state, tack glow,
-            supports/derived_from edges.
-     verdigris: contradictions, redactions, classified
-                markers, contradicts edges. */
-  --accent-amber-dark:      #E8A857;
-  --accent-amber-light:     #B8741F;
-  --accent-verdigris-dark:  #5C8474;
-  --accent-verdigris-light: #3D5C50;
+  /* Single accent, content semantics only. */
+  --red:      #e10600;
 
-  /* Resolved accent (mode-dependent, see below). */
-  --accent-amber:     var(--accent-amber-dark);
-  --accent-verdigris: var(--accent-verdigris-dark);
+  /* Type stack. */
+  --font-display: 'Fraunces', 'Times New Roman', Times, serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Typography. */
-  --font-display:  'Instrument Serif', 'Iowan Old Style', Georgia, serif;
-  --font-body:     'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-  --font-mono:     'Azeret Mono', 'JetBrains Mono', 'SF Mono', Menlo, monospace;
-
-  /* Display: 400 (regular only, Instrument Serif ships one weight). */
-  --weight-display:  400;
-  /* Body: 400 base, 500 emphasis, 600 strong. */
-  --weight-body:     400;
-  --weight-body-md:  500;
-  --weight-body-sb:  600;
-  /* Mono: 400 base, 500 emphasis. */
-  --weight-mono:     400;
-  --weight-mono-md:  500;
-
+  /* Font sizes. */
   --fs-xs:   11px;
   --fs-sm:   13px;
-  --fs-base: 15px;
-  --fs-md:   17px;
+  --fs-base: 16px;
+  --fs-md:   18px;
   --fs-lg:   22px;
-  --fs-xl:   32px;
-  --fs-2xl:  48px;
-  --fs-3xl:  72px;
-  --fs-4xl:  112px;
+  --fs-xl:   34px;
+  --fs-2xl:  56px;
+  --fs-3xl:  92px;
+  --fs-4xl:  144px;
 
-  --lh-tight:  1.05;
-  --lh-snug:   1.25;
-  --lh-normal: 1.55;
-  --lh-loose:  1.70;
+  /* Spacing. */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 40px;
+  --sp-7: 64px;
+  --sp-8: 96px;
+  --sp-9: 160px;
 
-  --tracking-tight:   -0.02em;
-  --tracking-normal:  0;
-  --tracking-wide:    0.06em;
-  --tracking-wider:   0.14em;
-  --tracking-widest:  0.32em;
+  /* Motion. None by default. Animations cost taste points. */
+  --dur-instant: 0ms;
+  --dur-quick:   90ms;
 
-  /* Spacing scale. */
-  --sp-0:  0;
-  --sp-1:  4px;
-  --sp-2:  8px;
-  --sp-3:  12px;
-  --sp-4:  16px;
-  --sp-5:  24px;
-  --sp-6:  32px;
-  --sp-7:  48px;
-  --sp-8:  64px;
-  --sp-9:  96px;
-  --sp-10: 128px;
-
-  /* Radii. Hard-edge bias, two soft options only. */
-  --radius-0: 0;
-  --radius-1: 2px;
-  --radius-2: 4px;
-
-  /* Hairline border weights. */
-  --bw-hair:   1px;
-  --bw-thin:   1px;
-  --bw-medium: 2px;
-
-  /* Motion. */
-  --ease-out:    cubic-bezier(0.16, 0.84, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-fast:    120ms;
-  --dur-base:    220ms;
-  --dur-slow:    420ms;
-  --dur-xfade:   200ms;
-
-  /* Focus ring uses resolved amber so it adapts per mode. */
-  --focus-ring: 0 0 0 2px var(--accent-amber);
-
-  /* Soft elevation, hairline-first. No drop shadows that
-     create glassy AI aesthetic. Used sparingly. */
-  --elev-0: none;
-  --elev-1: 0 1px 0 var(--rule);
-  --elev-2: 0 8px 24px rgba(0, 0, 0, 0.32);
-
-  /* ── Backward-compat aliases.
-     Map legacy DPD tokens that other Phase-5 pages still
-     reference. Wave-2 agents replace these. */
-  --bg:             var(--bg-base);
-  --bg-1:           var(--bg-raised);
-  --bg-2:           var(--bg-raised);
-  --bg-3:           var(--bg-overlay);
-  --fg-1:           var(--ink-primary);
-  --fg-2:           var(--ink-secondary);
-  --fg-3:           var(--ink-muted);
-  --fg-disabled:    var(--ink-muted);
-  --border:         var(--rule);
-  --border-strong:  var(--accent-amber);
-  --border-subtle:  var(--rule);
-  --border-faint:   var(--rule);
-  --border-mid:     var(--rule);
-  --border-hot:     var(--accent-amber);
-  --border-amber:   var(--accent-amber);
-  --accent:         var(--accent-amber);
-  --accent-soft:    var(--accent-verdigris);
-  --crt-glow:       var(--accent-amber);
-  --warning-amber:  var(--accent-amber);
-  --signal-warn:    var(--accent-amber);
-  --signal-ok:      var(--accent-amber);
-  --signal-error:   var(--accent-verdigris);
-  --text-main:      var(--ink-primary);
-  --text-muted:     var(--ink-secondary);
-  --text-dim:       var(--ink-muted);
-  --text-ink:       var(--ink-primary);
-  --phosphor:       var(--accent-amber);
-  --phosphor-dim:   var(--accent-verdigris);
-  --amber:          var(--accent-amber);
+  /* Backward-compat aliases so older pages do not 500. */
+  --bg-base: var(--bg);
+  --bg-raised: var(--bg);
+  --bg-overlay: var(--bg);
+  --ink-primary: var(--fg);
+  --ink-secondary: var(--fg-mid);
+  --ink-muted: var(--fg-dim);
+  --accent-amber: var(--fg);
+  --accent-verdigris: var(--red);
+  --border: var(--rule);
+  --border-strong: var(--fg);
+  --border-subtle: var(--rule);
+  --border-faint: var(--rule);
+  --border-mid: var(--rule);
+  --border-hot: var(--fg);
+  --border-amber: var(--fg);
+  --accent: var(--fg);
+  --accent-soft: var(--red);
+  --crt-glow: var(--fg);
+  --warning-amber: var(--fg);
+  --signal-warn: var(--fg);
+  --signal-ok: var(--fg);
+  --signal-error: var(--red);
+  --text-main: var(--fg);
+  --text-muted: var(--fg-mid);
+  --text-dim: var(--fg-dim);
+  --text-ink: var(--fg);
+  --phosphor: var(--fg);
+  --phosphor-dim: var(--fg-mid);
+  --amber: var(--fg);
+  --fg-1: var(--fg);
+  --fg-2: var(--fg-mid);
+  --fg-3: var(--fg-dim);
+  --fg-disabled: var(--fg-dim);
+  --bg-1: var(--bg);
+  --bg-2: var(--bg);
+  --bg-3: var(--bg);
 }
 
-/* ── DARK mode (default, cinematic). */
-[data-mode="dark"],
-:root {
-  --bg-base:       #0F0D0B;
-  --bg-raised:     #181613;
-  --bg-overlay:    #221E1A;
-  --ink-primary:   #F2EBE0;
-  --ink-secondary: #A89B8C;
-  --ink-muted:     #6B6358;
-  --rule:          #2A251F;
-
-  --accent-amber:     var(--accent-amber-dark);
-  --accent-verdigris: var(--accent-verdigris-dark);
-
+/* Both data-mode values resolve to the same monochrome system.
+   The light reading mode inverts. */
+[data-mode="dark"], :root {
+  --bg: #000000;
+  --fg: #ffffff;
+  --fg-mid: #888888;
+  --fg-dim: #555555;
+  --rule: #1a1a1a;
   color-scheme: dark;
 }
 
-/* ── LIGHT mode (reading). */
 [data-mode="light"] {
-  --bg-base:       #F4EFE6;
-  --bg-raised:     #FBF7EF;
-  --bg-overlay:    #FFFFFF;
-  --ink-primary:   #1A1612;
-  --ink-secondary: #4D4640;
-  --ink-muted:     #8A8175;
-  --rule:          #D8CFC0;
-
-  --accent-amber:     var(--accent-amber-light);
-  --accent-verdigris: var(--accent-verdigris-light);
-
+  --bg: #ffffff;
+  --fg: #000000;
+  --fg-mid: #666666;
+  --fg-dim: #999999;
+  --rule: #e5e5e5;
   color-scheme: light;
 }
 
 /* ── BASE. */
 html, body {
-  background: var(--bg-base);
-  color: var(--ink-primary);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-body);
   font-size: var(--fs-base);
-  line-height: var(--lh-normal);
-  font-weight: var(--weight-body);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+  font-weight: 400;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 * { box-sizing: border-box; }
 
+/* Selection inverts. No accent color. */
 ::selection {
-  background: var(--accent-amber);
-  color: var(--bg-base);
+  background: var(--fg);
+  color: var(--bg);
 }
 
 a {
-  color: var(--ink-primary);
-  text-decoration: none;
-  transition: color var(--dur-fast) var(--ease-out);
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--fg-dim);
+  transition: text-decoration-color var(--dur-quick) linear;
 }
-a:hover { color: var(--accent-amber); }
-a:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
+a:hover { text-decoration-color: var(--fg); }
 
+/* Focus: hard 1px outline, no glow. */
 :focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
 }
 
-/* ── Type primitives. */
-.t-display {
-  font-family: var(--font-display);
-  font-weight: var(--weight-display);
-  font-size: var(--fs-3xl);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-  color: var(--ink-primary);
-}
-.t-h1 {
-  font-family: var(--font-display);
-  font-weight: var(--weight-display);
-  font-size: var(--fs-2xl);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--tracking-tight);
+h1, h2, h3, h4, h5, h6, p, ul, ol, figure {
   margin: 0;
-}
-.t-h2 {
-  font-family: var(--font-display);
-  font-weight: var(--weight-display);
-  font-size: var(--fs-xl);
-  line-height: var(--lh-snug);
-  margin: 0;
-}
-.t-h3 {
-  font-family: var(--font-body);
-  font-weight: var(--weight-body-sb);
-  font-size: var(--fs-lg);
-  line-height: var(--lh-snug);
-  margin: 0;
-}
-.t-lead {
-  font-family: var(--font-body);
-  font-size: var(--fs-md);
-  line-height: var(--lh-loose);
-  color: var(--ink-secondary);
-}
-.t-body {
-  font-family: var(--font-body);
-  font-size: var(--fs-base);
-  line-height: var(--lh-normal);
-  color: var(--ink-secondary);
-}
-.t-small {
-  font-family: var(--font-body);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-  color: var(--ink-muted);
-}
-.t-mono {
-  font-family: var(--font-mono);
-  font-weight: var(--weight-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wide);
-  color: var(--ink-muted);
-}
-.t-label {
-  font-family: var(--font-mono);
-  font-weight: var(--weight-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
-  color: var(--ink-muted);
+  padding: 0;
 }
 
-/* Hairline rule. */
-.rule { border-top: 1px solid var(--rule); }
+ul, ol { list-style: none; }
 
-/* Redaction bar, crisp solid, used inline in prose. */
-.redaction-bar {
-  display: inline-block;
-  background: var(--accent-verdigris);
-  color: transparent;
-  user-select: none;
-  padding: 0 0.4em;
-  border-radius: 0;
-  line-height: 1;
+img { max-width: 100%; display: block; }
+
+button {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
 }
-</content>
-</invoke>

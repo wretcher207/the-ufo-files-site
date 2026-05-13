@@ -1,0 +1,157 @@
+---
+import Base from '../layouts/Base.astro';
+import { THREADS } from '../lib/threads';
+import { getRenderableCases } from '../lib/case-utils';
+
+const cases = await getRenderableCases();
+const countByThread = new Map<string, number>();
+for (const c of cases) {
+  const t = c.data.threads?.[0] ?? c.data.thread;
+  if (!t) continue;
+  countByThread.set(String(t), (countByThread.get(String(t)) ?? 0) + 1);
+}
+---
+<Base title="Threads" pathname="/threads">
+  <main class="threads-main" id="main">
+
+    <header class="threads-head">
+      <p class="threads-eyebrow">THREADS</p>
+      <h1 class="threads-title">Five threads run through the archive.</h1>
+      <p class="threads-lede">
+        The files belong to one of these. Pick one and read straight through, or
+        pick a single case and let the threads pull you sideways.
+      </p>
+    </header>
+
+    <ol class="thread-list">
+      {THREADS.map((t, i) => (
+        <li class="thread-row">
+          <a href={`/thread/${t.id}`} class="thread-row__link">
+            <span class="thread-row__num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="thread-row__body">
+              <span class="thread-row__title">{t.title}</span>
+              <span class="thread-row__span">{t.span}</span>
+              <span class="thread-row__blurb">{t.blurb}</span>
+            </span>
+            <span class="thread-row__count">
+              {countByThread.get(t.id) ?? 0}
+              <span class="thread-row__count-label">cases</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+
+  </main>
+</Base>
+
+<style>
+  .threads-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+  @media (max-width: 720px) {
+    .threads-main { padding: 48px 16px 80px; }
+  }
+
+  .threads-head { margin-bottom: 64px; }
+  .threads-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    margin: 0 0 24px;
+  }
+  .threads-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
+    max-width: 18ch;
+  }
+  .threads-lede {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--fg-mid);
+    max-width: 52ch;
+    margin: 0;
+  }
+
+  .thread-list { margin: 0; padding: 0; list-style: none; }
+  .thread-row { border-top: 1px solid var(--rule); }
+  .thread-row:last-child { border-bottom: 1px solid var(--rule); }
+  .thread-row__link {
+    display: grid;
+    grid-template-columns: 56px 1fr 80px;
+    gap: 24px;
+    align-items: baseline;
+    padding: 18px 0;
+    text-decoration: none;
+    color: inherit;
+  }
+  .thread-row__link:hover .thread-row__title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .thread-row__num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+  }
+  .thread-row__body { display: flex; flex-direction: column; gap: 6px; }
+  .thread-row__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+  }
+  .thread-row__span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+  }
+  .thread-row__blurb {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--fg-mid);
+    max-width: 70ch;
+  }
+  .thread-row__count {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--fg);
+    text-align: right;
+    font-feature-settings: "tnum";
+  }
+  .thread-row__count-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin-top: 6px;
+  }
+  @media (max-width: 720px) {
+    .thread-row__link {
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      padding: 14px 0;
+    }
+    .thread-row__count { display: none; }
+    .thread-row__title { font-size: 18px; }
+  }
+</style>
