@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+import { getGraph } from '../graph/data/buildGraph';
+import { InvestigationBoard } from '../graph/components/InvestigationBoard';
+
+// Build-time graph snapshot. Both /board and /atlas read from the same
+// memoized getGraph(). Passing as a prop avoids a client-side fetch.
+const graph = await getGraph();
+
+const focusParam = Astro.url.searchParams.get('focus');
+const initialFocusId = focusParam ?? null;
+---
+<Base title="Board" description="Curated investigation corkboard. Drag, zoom, follow connections.">
+  <div class="board-host">
+    <InvestigationBoard
+      client:only="react"
+      graph={graph}
+      initialFocusId={initialFocusId}
+    />
+  </div>
+
+  <ul class="sr-only" aria-label="All cases on the board">
+    {graph.nodes.map((n) => (
+      <li>
+        <a href={n.collection === 'entities' ? `/entity/${n.slug}` : `/dossier/${n.slug}`}>
+          {n.id}: {n.title}
+          {n.confidence ? ` (confidence ${n.confidence})` : ''}
+        </a>
+        {graph.edges.filter((e) => e.source === n.id || e.target === n.id).length > 0 && (
+          <ul>
+            {graph.edges
+              .filter((e) => e.source === n.id || e.target === n.id)
+              .map((e) => {
+                const otherId = e.source === n.id ? e.target : e.source;
+                const other = graph.nodes.find((o) => o.id === otherId);
+                if (!other) return null;
+                return (
+                  <li>
+                    {e.type.replace(/_/g, ' ')}: {other.title}
+                  </li>
+                );
+              })}
+          </ul>
+        )}
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style is:global>
+  /* Full-bleed board: neutralize page-main padding/width on this route. */
+  body:has(.board-host) .page-main {
+    max-width: none;
+    padding: 0;
+  }
+  body:has(.board-host) .page-footer {
+    display: none;
+  }
+</style>
+
+<style>
+  .board-host {
+    width: 100%;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

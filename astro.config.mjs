@@ -1,11 +1,15 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
+import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import { rewriteMdLinks } from './src/lib/rewrite-md-links.ts';
 
 export default defineConfig({
   site: 'https://theufofiles.com',
-  integrations: [mdx({ rehypePlugins: [rewriteMdLinks] })],
+  integrations: [
+    mdx({ rehypePlugins: [rewriteMdLinks] }),
+    react({ include: ['**/graph/**'] }),
+  ],
   vite: {
     plugins: [tailwindcss()],
     build: {
