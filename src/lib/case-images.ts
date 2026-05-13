@@ -42,9 +42,9 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     caption: 'Brown-Davidson B-25 / 1 August 1947 / Kelso Washington',
   },
   'mantell-p51-fatality-january-1948-dayton-clipping': {
-    src: '/img/archive/f51d-mustang-flight.jpg',
-    alt: 'F-51D Mustang aircraft of the type Captain Thomas Mantell flew on January 7, 1948.',
-    caption: 'F-51D Mustang in flight / Mantell type / Kentucky ANG',
+    src: '/img/archive/mantell-marker.jpg',
+    alt: 'Historical marker at the site of Captain Thomas F. Mantell Jr.\'s crash near Franklin, Kentucky, January 7, 1948.',
+    caption: 'Mantell historical marker / Franklin Kentucky / Kentucky ANG',
   },
   'rhodes-phoenix-photographs-1947': {
     src: '/img/archive/rhodes-1947-photos.png',
@@ -86,6 +86,31 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'Flying saucer image from the National Archives.',
     caption: 'NARA / flying saucer / declassified',
   },
+  'kazakhstan-1994-747': {
+    src: '/img/archive/boeing-747-flight.jpg',
+    alt: 'A Boeing 747-200, the aircraft type used by Tajik Air on the January 27, 1994 Almaty to Dushanbe flight.',
+    caption: 'Boeing 747-200 / aircraft type / Tajik Air route',
+  },
+  'usper-statement': {
+    src: '/img/archive/pentagon-aerial-2023.jpg',
+    alt: 'Aerial view of the Pentagon, Department of War headquarters, May 15, 2023.',
+    caption: 'The Pentagon / DOD photograph / 15 May 2023',
+  },
+  'oak-ridge-gasser-atomic-propulsion-1947-1949': {
+    src: '/img/archive/x10-graphite-reactor.jpg',
+    alt: 'The X-10 Graphite Reactor face at Oak Ridge National Laboratory, the principal site cited in the 1947 to 1949 gasser correspondence.',
+    caption: 'X-10 Graphite Reactor / Oak Ridge / Manhattan District',
+  },
+  'cabell-afoic-cc-1-multi-agency-protocol-september-1950': {
+    src: '/img/archive/cabell-portrait.jpg',
+    alt: 'Official USAF portrait of Lt. Gen. Charles P. Cabell, Director of Intelligence and later Deputy Director of Central Intelligence.',
+    caption: 'Charles P. Cabell / USAF / Director of Intelligence',
+  },
+  'muroc-1947-cic-affidavits': {
+    src: '/img/archive/p80-shooting-star-1947.jpg',
+    alt: 'A pilot in the cockpit of a Lockheed P-80 Shooting Star at Muroc Army Air Field, 1947, the year of the CIC affidavits.',
+    caption: 'P-80 Shooting Star / Muroc AAF / 1947',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {
@@ -98,6 +123,11 @@ const ENTITY_IMAGES: Record<string, ArchivalImage> = {
     src: '/img/archive/arnold-aaf-document.jpg',
     alt: "Kenneth Arnold's July 12, 1947 AAF report sketch.",
     caption: 'Kenneth Arnold / AAF report / 1947',
+  },
+  'department-of-war': {
+    src: '/img/archive/pentagon-aerial-2023.jpg',
+    alt: 'Aerial view of the Pentagon, headquarters of the Department of War.',
+    caption: 'The Pentagon / DOD photograph / 15 May 2023',
   },
 };
 
