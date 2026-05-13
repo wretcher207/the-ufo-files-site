@@ -87,18 +87,28 @@ const manifest = [...fbiRows, ...pursueRows, ...entityRows];
 const manifestJson = JSON.stringify(manifest);
 ---
 <Base title="Saved" section="SAVED">
-  <article class="saved" data-saved-root>
-    <header class="saved__head">
-      <span class="saved__label">SAVED</span>
-      <h1 class="saved__title">Your saved cases</h1>
-      <p class="saved__lede">
-        Lives in your browser. No account, no sync. Clear your storage and the list is gone.
-      </p>
-      <div class="saved__actions">
-        <button type="button" class="btn btn--primary" data-export-zip disabled>Export all as .zip</button>
-        <button type="button" class="btn" data-clear-saved>Clear all</button>
-      </div>
-    </header>
+  <main class="saved-main" id="main">
+
+    <a class="ufo-section-anchor saved-anchor" href="/">
+      <span class="ufo-section-anchor__num" data-saved-count>00</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Saved cases</span>
+        <span class="ufo-section-anchor__sublabel">Stored in your browser &nbsp;/&nbsp; No account, no sync</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Open archive</span>
+    </a>
+
+    <article class="saved" data-saved-root>
+      <header class="saved__head">
+        <h1 class="saved__title">Your saved cases.</h1>
+        <p class="saved__lede">
+          The list lives in your browser. Clear your storage and it is gone.
+        </p>
+        <div class="saved__actions">
+          <button type="button" class="saved__btn saved__btn--primary" data-export-zip disabled>Export all as .zip</button>
+          <button type="button" class="saved__btn" data-clear-saved>Clear all</button>
+        </div>
+      </header>
 
     <div class="saved__body" data-saved-body hidden>
       <section class="saved__group" data-group="fbi" hidden>
@@ -124,15 +134,17 @@ const manifestJson = JSON.stringify(manifest);
       </section>
     </div>
 
-    <div class="saved__empty" data-saved-empty>
-      <p class="saved__empty-text">
-        Nothing saved yet. Open a dossier, hit save, come back. The list lives in your browser. You do not need an account.
-      </p>
-      <a href="/" class="btn btn--primary">Browse the archive</a>
-    </div>
-  </article>
+      <div class="saved__empty" data-saved-empty>
+        <p class="saved__empty-text">
+          Nothing saved yet. Open a dossier, hit save, come back. The list
+          lives in your browser. You do not need an account.
+        </p>
+        <a href="/" class="saved__btn saved__btn--primary">Browse the archive ↗</a>
+      </div>
+    </article>
 
-  <script type="application/json" data-saved-manifest set:html={manifestJson}></script>
+    <script type="application/json" data-saved-manifest set:html={manifestJson}></script>
+  </main>
 </Base>
 
 <script>
@@ -241,6 +253,9 @@ const manifestJson = JSON.stringify(manifest);
 
     const ids = new Set(getSaved());
     const rows = manifest.filter((r) => ids.has(r.id) || ids.has(r.caseId));
+
+    const counterEl = document.querySelector('[data-saved-count]');
+    if (counterEl) counterEl.textContent = String(rows.length).padStart(2, '0');
 
     if (rows.length === 0) {
       body?.setAttribute('hidden', '');
@@ -385,70 +400,111 @@ const manifestJson = JSON.stringify(manifest);
 </script>
 
 <style is:global>
+  .saved-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+  @media (max-width: 720px) {
+    .saved-main { padding: 48px 16px 80px; }
+  }
+
+  .saved-anchor { margin-bottom: 56px; }
+  @media (max-width: 720px) {
+    .saved-anchor { margin-bottom: 40px; }
+  }
+
   .saved { display: block; }
   .saved__head {
     display: flex;
     flex-direction: column;
-    gap: var(--sp-3);
-    padding-bottom: var(--sp-6);
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: var(--sp-7);
-  }
-  .saved__label {
-    font-family: var(--font-mono);
-    font-weight: var(--weight-mono-md);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-widest);
-    text-transform: uppercase;
-    color: var(--ink-muted);
+    gap: 16px;
+    margin-bottom: 48px;
+    max-width: 60ch;
   }
   .saved__title {
     font-family: var(--font-display);
-    font-size: var(--fs-2xl);
-    line-height: var(--lh-snug);
-    letter-spacing: var(--tracking-tight);
-    color: var(--ink-primary);
+    font-weight: 400;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
     margin: 0;
+    max-width: 22ch;
   }
   .saved__lede {
     font-family: var(--font-body);
-    font-size: var(--fs-md);
-    color: var(--ink-secondary);
-    line-height: var(--lh-loose);
+    font-size: 18px;
+    color: var(--fg-mid);
+    line-height: 1.55;
     margin: 0;
-    max-width: 60ch;
   }
   .saved__actions {
     display: flex;
-    gap: var(--sp-3);
-    margin-top: var(--sp-3);
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
   }
+  .saved__btn {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--fg);
+    color: var(--fg);
+    padding: 10px 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--dur-quick) linear,
+                color var(--dur-quick) linear;
+  }
+  .saved__btn--primary {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .saved__btn:hover:not(:disabled),
+  .saved__btn:focus-visible:not(:disabled) {
+    background: var(--fg);
+    color: var(--bg);
+    outline: none;
+  }
+  .saved__btn--primary:hover:not(:disabled),
+  .saved__btn--primary:focus-visible:not(:disabled) {
+    background: transparent;
+    color: var(--fg);
+  }
+  .saved__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .saved__body {
     display: flex;
     flex-direction: column;
-    gap: var(--sp-7);
+    gap: 56px;
   }
   .saved__group-head {
     display: flex;
     align-items: baseline;
-    gap: var(--sp-3);
-    padding-bottom: var(--sp-3);
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: var(--sp-4);
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--fg);
+    margin-bottom: 0;
   }
   .saved__group-label {
     font-family: var(--font-mono);
-    font-weight: var(--weight-mono-md);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-widest);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--ink-primary);
+    color: var(--fg);
   }
   .saved__group-count {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    color: var(--ink-muted);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+    font-feature-settings: "tnum";
   }
   .saved__list {
     list-style: none;
@@ -461,65 +517,68 @@ const manifestJson = JSON.stringify(manifest);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
-    column-gap: var(--sp-5);
-    row-gap: var(--sp-1);
-    padding: var(--sp-4) 0;
-    border-top: 1px solid var(--rule);
+    column-gap: 24px;
+    row-gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
   }
-  .saved__row:last-child { border-bottom: 1px solid var(--rule); }
   .saved__row-title {
     grid-column: 1;
     grid-row: 1;
     font-family: var(--font-display);
-    font-size: var(--fs-lg);
-    line-height: var(--lh-snug);
-    color: var(--ink-primary);
+    font-size: 20px;
+    line-height: 1.25;
+    color: var(--fg);
     text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+    align-self: start;
+    display: inline-block;
   }
-  .saved__row-title:hover { color: var(--accent-amber); }
+  .saved__row-title:hover { border-bottom-color: var(--fg); }
   .saved__row-meta {
     grid-column: 1;
     grid-row: 2;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--sp-2);
+    gap: 8px;
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wide);
-    color: var(--ink-muted);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
     align-items: center;
   }
-  .saved__row-id { color: var(--ink-secondary); }
+  .saved__row-id { color: var(--fg-mid); }
   .saved__sep { opacity: 0.5; }
   .saved__row-actions {
     grid-column: 2;
     grid-row: 1 / span 2;
     display: flex;
-    gap: var(--sp-1);
+    gap: 6px;
     flex-wrap: wrap;
     align-self: center;
   }
   .saved__row-actions button {
     background: transparent;
     border: 1px solid var(--rule);
-    color: var(--ink-secondary);
+    color: var(--fg-mid);
     padding: 6px 10px;
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
+    font-size: 10px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     cursor: pointer;
-    border-radius: var(--radius-1);
-    transition: color var(--dur-fast) var(--ease-out),
-                border-color var(--dur-fast) var(--ease-out);
+    transition: color var(--dur-quick) linear,
+                border-color var(--dur-quick) linear,
+                background-color var(--dur-quick) linear;
   }
-  .saved__row-actions button:hover {
-    color: var(--accent-amber);
-    border-color: var(--accent-amber);
-  }
+  .saved__row-actions button:hover,
   .saved__row-actions button:focus-visible {
+    color: var(--bg);
+    background: var(--fg);
+    border-color: var(--fg);
     outline: none;
-    box-shadow: var(--focus-ring);
   }
   @media (max-width: 720px) {
     .saved__row {
@@ -536,16 +595,17 @@ const manifestJson = JSON.stringify(manifest);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--sp-5);
-    padding: var(--sp-8) 0;
+    gap: 24px;
+    padding: 80px 0;
     max-width: 60ch;
   }
   .saved__empty[hidden] { display: none; }
   .saved__empty-text {
-    font-family: var(--font-body);
-    font-size: var(--fs-md);
-    color: var(--ink-secondary);
-    line-height: var(--lh-loose);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(20px, 2.2vw, 26px);
+    color: var(--fg);
+    line-height: 1.4;
     margin: 0;
   }
 </style>
