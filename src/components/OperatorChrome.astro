@@ -1,0 +1,24 @@
+---
+interface Props {
+  serial?: string;
+  section?: string;
+}
+const { serial = 'ARCHIVE://OPEN', section = '' } = Astro.props;
+---
+<header class="operator-chrome">
+  <div class="operator-chrome__inner">
+    <a href="/" class="operator-chrome__brand" aria-label="The UFO Files — home">
+      The UFO Files
+    </a>
+
+    <div class="operator-chrome__serial" role="status" aria-live="polite">
+      <span class="operator-chrome__serial-dot" aria-hidden="true"></span>
+      <span>{serial}{section ? ` // ${section}` : ''}</span>
+    </div>
+
+    <nav class="operator-chrome__nav" aria-label="Primary">
+      <a href="/">Case board</a>
+      <a href="/about">Methodology</a>
+    </nav>
+  </div>
+</header>

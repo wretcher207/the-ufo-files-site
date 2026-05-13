@@ -1,0 +1,109 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ThreadCard from '../components/ThreadCard.astro';
+import { THREADS, type ThreadId } from '../lib/threads';
+
+const fbi = await getCollection('fbiCases');
+const pursue = await getCollection('pursueCases');
+const allCases = [...fbi, ...pursue];
+
+const countsByThread = new Map<ThreadId, number>();
+for (const c of allCases) {
+  const t = c.data.thread;
+  if (!t) continue;
+  countsByThread.set(t, (countsByThread.get(t) ?? 0) + 1);
+}
+
+const totalDocs = 120;
+const totalVideos = 28;
+const totalImages = 14;
+const totalCases = allCases.filter((c) => c.data.thread).length;
+const lastUpdated = '2026-05-13';
+---
+<Base
+  title="The UFO Files"
+  description="A reading guide to the May 2026 PURSUE release and FBI 62-HQ-83894. Sourced. Cross-referenced. Honest about what's actually there."
+  serial="ARCHIVE://OPEN"
+  section="CASE BOARD"
+>
+  <section class="hero">
+    <p class="hero__eyebrow">An archive by Dead Pixel Design</p>
+    <h1 class="hero__title">A reading guide to the declassified UFO record.</h1>
+    <p class="hero__lede">
+      On May 8, 2026, the Department of War published 162 records under PURSUE. Most coverage
+      missed the four cases that mattered. This site organizes them by what the documents
+      actually say, alongside the FBI's flying-discs case file from 1944 to 1973.
+    </p>
+
+    <div class="hero__stats" aria-label="Archive statistics">
+      <div class="hero__stat">
+        <span class="hero__stat-value">{totalDocs}</span>
+        <span class="hero__stat-label">PDF documents</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-value">{totalVideos}</span>
+        <span class="hero__stat-label">Videos</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-value">{totalImages}</span>
+        <span class="hero__stat-label">Images</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-value">{totalCases}</span>
+        <span class="hero__stat-label">Cases curated</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-value">{lastUpdated}</span>
+        <span class="hero__stat-label">Updated</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="threads-heading">
+    <header class="section__head">
+      <h2 id="threads-heading" class="section__title">The five threads</h2>
+      <span class="section__meta">Pinned dossiers</span>
+    </header>
+
+    <div class="thread-grid">
+      {THREADS.map((thread) => (
+        <ThreadCard thread={thread} caseCount={countsByThread.get(thread.id) ?? 0} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="orientation-heading">
+    <header class="section__head">
+      <h2 id="orientation-heading" class="section__title">Orientation</h2>
+      <span class="section__meta">How to read this</span>
+    </header>
+    <div class="orientation">
+      <p class="orientation__lede">
+        This is not a "they're hiding aliens" archive. AARO openly identifies mundane causes
+        inside the unresolved tranche. This is also not a debunk site. Several cases have
+        evidentiary structure that would warrant follow-up in any other domain.
+      </p>
+      <p class="orientation__lede">
+        Read the cases. The files are the government's. The voice and analysis are
+        <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>'s.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .orientation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    max-width: 70ch;
+  }
+  .orientation__lede {
+    font-family: var(--font-ui);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--fg-2);
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,78 @@
+---
+import '../styles/globals.css';
+import OperatorChrome from '../components/OperatorChrome.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  serial?: string;
+  section?: string;
+}
+const {
+  title,
+  description = 'Interactive investigation site for the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
+  serial,
+  section,
+} = Astro.props;
+
+const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#030506" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="page-shell">
+      <OperatorChrome serial={serial} section={section} />
+      <main id="main" class="page-main">
+        <slot />
+      </main>
+      <footer class="page-footer">
+        <div class="page-footer__inner">
+          <span>
+            An archive by{' '}
+            <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a>
+          </span>
+          <span>
+            Source content:{' '}
+            <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">github.com/wretcher207/the-ufo-files</a>
+          </span>
+          <span>
+            Originals at{' '}
+            <a href="https://www.war.gov/UFO/" rel="noopener external">war.gov/UFO</a>
+          </span>
+        </div>
+      </footer>
+    </div>
+    <style is:global>
+      .skip-link {
+        position: absolute;
+        top: -100px;
+        left: var(--sp-4);
+        background: var(--bg-2);
+        color: var(--fg-1);
+        padding: var(--sp-2) var(--sp-4);
+        font-family: var(--font-mono);
+        font-size: var(--fs-xs);
+        letter-spacing: var(--tracking-wider);
+        text-transform: uppercase;
+        z-index: 100;
+        border: 1px solid var(--border);
+      }
+      .skip-link:focus {
+        top: var(--sp-3);
+      }
+    </style>
+  </body>
+</html>

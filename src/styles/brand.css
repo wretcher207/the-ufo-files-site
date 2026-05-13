@@ -1,0 +1,268 @@
+/* =========================================================
+   THE UFO FILES — design tokens
+   Inherited from Dead Pixel Design (cold, spectral, haunted).
+   Adapted for an investigation archive: dossier folder feel.
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ── PRIMARY PALETTE ───────────────────────────────────── */
+  --void-black:       #030506;
+  --absolute-black:   #000000;
+  --deep-charcoal:    #080D0F;
+  --card-black:       #0D1416;
+  --soft-carbon:      #121B1E;
+
+  --ghost-white:      #E8F0F2;
+  --dead-silver:      #A8B4B8;
+  --static-gray:      #6F7C80;
+  --dim-signal:       #3B474B;
+
+  /* ── ACCENT PALETTE (status only) ──────────────────────── */
+  --crt-glow:         #C7F7FF;
+  --spectral-blue:    #9DB8C2;
+  --terminal-green:   #81FB58;
+  --error-red:        #DA3E56;
+  --warning-amber:    #D7B46A;
+
+  /* ── SEMANTIC TOKENS ───────────────────────────────────── */
+  --bg:               var(--void-black);
+  --bg-1:             var(--deep-charcoal);
+  --bg-2:             var(--card-black);
+  --bg-3:             var(--soft-carbon);
+
+  --fg-1:             var(--ghost-white);
+  --fg-2:             var(--dead-silver);
+  --fg-3:             var(--static-gray);
+  --fg-disabled:      var(--dim-signal);
+
+  --border:           var(--dim-signal);
+  --border-strong:    var(--static-gray);
+  --border-subtle:    rgba(168,180,184,0.08);
+
+  --accent:           var(--crt-glow);
+  --accent-soft:      var(--spectral-blue);
+  --signal-ok:        var(--terminal-green);
+  --signal-error:     var(--error-red);
+  --signal-warn:      var(--warning-amber);
+
+  --focus-ring:       0 0 0 1px var(--crt-glow), 0 0 12px rgba(199,247,255,0.25);
+  --bloom-soft:       0 0 24px rgba(199,247,255,0.10);
+
+  /* ── TYPOGRAPHY ────────────────────────────────────────── */
+  --font-display:     'Hanken Grotesk', 'Inter', -apple-system, sans-serif;
+  --font-ui:          'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:        'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+  --fs-xs:            11px;
+  --fs-sm:            13px;
+  --fs-base:          15px;
+  --fs-md:            17px;
+  --fs-lg:            22px;
+  --fs-xl:            32px;
+  --fs-2xl:           48px;
+  --fs-3xl:           72px;
+  --fs-4xl:           112px;
+
+  --lh-tight:         1.05;
+  --lh-snug:          1.25;
+  --lh-normal:        1.55;
+  --lh-loose:         1.75;
+
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;
+  --tracking-wider:   0.18em;
+  --tracking-widest:  0.42em;
+
+  /* ── SPACING ───────────────────────────────────────────── */
+  --sp-0:             0;
+  --sp-1:             4px;
+  --sp-2:             8px;
+  --sp-3:             12px;
+  --sp-4:             16px;
+  --sp-5:             24px;
+  --sp-6:             32px;
+  --sp-7:             48px;
+  --sp-8:             64px;
+  --sp-9:             96px;
+  --sp-10:            128px;
+
+  /* ── RADII (square is sacred) ──────────────────────────── */
+  --radius-0:         0;
+  --radius-1:         2px;
+  --radius-2:         4px;
+
+  --bw-hair:          1px;
+  --bw-thin:          1px;
+  --bw-medium:        2px;
+
+  --elev-0:           none;
+  --elev-1:           0 0 0 1px var(--border);
+  --elev-bloom:       0 0 0 1px var(--border), 0 0 32px rgba(199,247,255,0.08);
+
+  --ease-out:         cubic-bezier(0.16, 0.84, 0.32, 1);
+  --ease-in-out:      cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:         120ms;
+  --dur-base:         220ms;
+  --dur-slow:         600ms;
+  --dur-glacial:      1400ms;
+}
+
+/* ── BASE ─────────────────────────────────────────────── */
+html, body {
+  background: var(--bg);
+  color: var(--fg-1);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ── SEMANTIC TYPE STYLES ─────────────────────────────── */
+.dp-display {
+  font-family: var(--font-display);
+  font-size: var(--fs-4xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--fg-1);
+}
+.dp-h1 {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  margin: 0;
+}
+.dp-h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  margin: 0;
+}
+.dp-h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  font-weight: 500;
+  margin: 0;
+}
+.dp-h4 {
+  font-family: var(--font-ui);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  font-weight: 600;
+  margin: 0;
+}
+.dp-lead {
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh-loose);
+  color: var(--fg-2);
+}
+.dp-body {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+}
+.dp-small {
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-3);
+}
+.dp-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.dp-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--fg-3);
+}
+.dp-brand {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+/* ── PRIMITIVES ───────────────────────────────────────── */
+.dp-divider {
+  border-top: 1px solid var(--border);
+}
+.dp-bracket-rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.dp-bracket-rule::before,
+.dp-bracket-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  min-width: 24px;
+}
+
+.dp-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  background: var(--crt-glow);
+  vertical-align: -0.12em;
+  animation: dp-cursor-blink 1.05s steps(1) infinite;
+  box-shadow: 0 0 6px rgba(199,247,255,0.6);
+}
+@keyframes dp-cursor-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── LINKS ────────────────────────────────────────────── */
+a {
+  color: var(--fg-1);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover {
+  color: var(--crt-glow);
+}
+a:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* ── ACCESSIBILITY ────────────────────────────────────── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
