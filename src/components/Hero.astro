@@ -1,0 +1,422 @@
+---
+/**
+ * Hero.astro
+ *
+ * Reusable exploded-document composition.
+ * - Used by TopPlate.astro on dossier pages.
+ * - Used by Agent 7 on the homepage (parallax variant).
+ *
+ * Renders a center title block surrounded by 3-5 satellite cards
+ * placed by deterministic seeded layout per `caseId`. Amber tacks,
+ * faint verdigris strings.
+ *
+ * Props.mode:
+ *   "static"   — dossier Top Plate, no parallax
+ *   "parallax" — homepage, mousemove parallax + opt-in gyro
+ */
+
+export interface SatelliteCard {
+  /** Card kind, drives styling and the silhouette. */
+  kind: 'photo' | 'scan' | 'map' | 'witness' | 'agency' | 'evidence' | 'sighting';
+  /** Mono caps eyebrow shown above title. */
+  eyebrow?: string;
+  /** Card primary line. */
+  title: string;
+  /** Optional secondary line. */
+  meta?: string;
+  /** Optional href, if the satellite should link somewhere. */
+  href?: string;
+  /** Optional image src for photo/scan/map satellites. */
+  src?: string;
+  /** Optional alt for image. */
+  alt?: string;
+}
+
+interface Props {
+  centerTitle: string;
+  centerSubtitle?: string;
+  /** Mono caps line above the title (case ID + agency + date). */
+  centerEyebrow?: string;
+  satellites: SatelliteCard[];
+  /** Stable seed for layout. Use the caseId. */
+  caseId: string;
+  mode?: 'static' | 'parallax';
+}
+
+const {
+  centerTitle,
+  centerSubtitle,
+  centerEyebrow,
+  satellites,
+  caseId,
+  mode = 'static',
+} = Astro.props;
+
+// Deterministic 32-bit hash. Same caseId always produces the same numbers.
+function hash32(str: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+// Mulberry32 PRNG seeded from the hash. Cheap, deterministic, good enough.
+function mulberry(seed: number) {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6D2B79F5) >>> 0;
+    let r = t;
+    r = Math.imul(r ^ (r >>> 15), r | 1);
+    r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rand = mulberry(hash32(caseId || 'fallback'));
+
+// Anchor positions for satellites (percent of container). 6 slots,
+// laid out as a rough ring around the center. We slice to satellites.length.
+const SLOTS: Array<{ x: number; y: number }> = [
+  { x: 8,  y: 18 },
+  { x: 78, y: 12 },
+  { x: 6,  y: 68 },
+  { x: 80, y: 64 },
+  { x: 42, y: 4  },
+  { x: 44, y: 86 },
+];
+
+const placed = satellites.slice(0, 5).map((sat, i) => {
+  const slot = SLOTS[i % SLOTS.length];
+  // Deterministic jitter, +/- 4 percent and +/- 6 degrees.
+  const jx = (rand() - 0.5) * 8;
+  const jy = (rand() - 0.5) * 8;
+  const rot = (rand() - 0.5) * 12;
+  // Amber tack corner: 0=tl,1=tr,2=bl,3=br
+  const tack = Math.floor(rand() * 4);
+  return {
+    sat,
+    x: slot.x + jx,
+    y: slot.y + jy,
+    rot,
+    tack,
+    delay: Math.floor(rand() * 180),
+  };
+});
+
+const isParallax = mode === 'parallax';
+---
+<section
+  class="hero"
+  data-mode={mode}
+  data-case-id={caseId}
+  aria-label="Case composition"
+>
+  <div class="hero__stage" data-parallax={isParallax ? 'true' : 'false'}>
+    {/* Faint verdigris strings, drawn under everything. */}
+    <svg class="hero__strings" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
+      {placed.map((p) => (
+        <line
+          x1="50"
+          y1="50"
+          x2={p.x + 12}
+          y2={p.y + 12}
+        />
+      ))}
+    </svg>
+
+    {placed.map((p, i) => {
+      const Tag = p.sat.href ? 'a' : 'div';
+      const props = p.sat.href
+        ? { href: p.sat.href }
+        : {};
+      return (
+        <Tag
+          class:list={[
+            'hero__sat',
+            `hero__sat--${p.sat.kind}`,
+            `hero__sat--tack-${p.tack}`,
+          ]}
+          style={`--x:${p.x}%; --y:${p.y}%; --rot:${p.rot}deg; --delay:${p.delay}ms;`}
+          data-parallax-depth={(i % 3) + 1}
+          {...props}
+        >
+          <span class="hero__tack" aria-hidden="true"></span>
+          {p.sat.eyebrow && <span class="hero__sat-eyebrow">{p.sat.eyebrow}</span>}
+          {p.sat.kind === 'photo' || p.sat.kind === 'scan' || p.sat.kind === 'map' ? (
+            p.sat.src ? (
+              <img class="hero__sat-img" src={p.sat.src} alt={p.sat.alt ?? p.sat.title} loading="lazy" />
+            ) : (
+              <div class={`hero__sat-silhouette hero__sat-silhouette--${p.sat.kind}`} aria-hidden="true"></div>
+            )
+          ) : null}
+          <span class="hero__sat-title">{p.sat.title}</span>
+          {p.sat.meta && <span class="hero__sat-meta">{p.sat.meta}</span>}
+        </Tag>
+      );
+    })}
+
+    <div class="hero__center" data-parallax-depth="0">
+      {centerEyebrow && <div class="hero__eyebrow">{centerEyebrow}</div>}
+      <h1 class="hero__title">{centerTitle}</h1>
+      {centerSubtitle && <div class="hero__subtitle">{centerSubtitle}</div>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    width: 100%;
+    min-height: 60vh;
+    margin: 0;
+    isolation: isolate;
+  }
+  .hero__stage {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    min-height: 520px;
+  }
+  .hero__strings {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+  .hero__strings line {
+    stroke: var(--accent-verdigris);
+    stroke-width: 0.12;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .hero__center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    max-width: min(820px, 92vw);
+    z-index: 5;
+    will-change: transform;
+  }
+  .hero__eyebrow {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: var(--sp-3);
+  }
+  .hero__title {
+    font-family: var(--font-display);
+    font-weight: var(--weight-display);
+    font-size: 96px;
+    line-height: 0.95;
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+    color: var(--ink-primary);
+  }
+  .hero__subtitle {
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    line-height: var(--lh-loose);
+    color: var(--ink-secondary);
+    margin-top: var(--sp-4);
+  }
+  @media (max-width: 720px) {
+    .hero__title { font-size: 56px; }
+  }
+
+  /* Satellite cards. */
+  .hero__sat {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 220px;
+    padding: var(--sp-3) var(--sp-3) var(--sp-4);
+    background: var(--bg-raised);
+    border: 1px solid var(--rule);
+    color: var(--ink-primary);
+    text-decoration: none;
+    transform: rotate(var(--rot));
+    transform-origin: 50% 0;
+    z-index: 2;
+    will-change: transform;
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out);
+    animation: hero-sat-in var(--dur-slow) var(--ease-out) both;
+    animation-delay: var(--delay);
+  }
+  @media (max-width: 880px) {
+    .hero__sat { width: 180px; }
+  }
+  .hero__sat[href]:hover {
+    border-color: var(--accent-amber);
+    transform: rotate(var(--rot)) translateY(-2px);
+  }
+  .hero__sat:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  @keyframes hero-sat-in {
+    from { opacity: 0; transform: rotate(var(--rot)) translateY(8px); }
+    to   { opacity: 1; transform: rotate(var(--rot)) translateY(0); }
+  }
+
+  /* Amber tack, deterministic corner. */
+  .hero__tack {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-amber);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent-amber) 30%, transparent);
+    pointer-events: none;
+  }
+  .hero__sat--tack-0 .hero__tack { top: -5px;    left: -5px; }
+  .hero__sat--tack-1 .hero__tack { top: -5px;    right: -5px; }
+  .hero__sat--tack-2 .hero__tack { bottom: -5px; left: -5px; }
+  .hero__sat--tack-3 .hero__tack { bottom: -5px; right: -5px; }
+
+  .hero__sat-eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: var(--sp-2);
+  }
+  .hero__sat-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    margin-bottom: var(--sp-2);
+    filter: saturate(0.85);
+  }
+  .hero__sat-silhouette {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    margin-bottom: var(--sp-2);
+    background:
+      repeating-linear-gradient(
+        0deg,
+        var(--bg-overlay) 0 1px,
+        transparent 1px 6px
+      ),
+      var(--bg-overlay);
+    border: 1px solid var(--rule);
+  }
+  .hero__sat-silhouette--map {
+    background:
+      radial-gradient(circle at 40% 60%, color-mix(in oklab, var(--accent-verdigris) 40%, transparent) 0 6%, transparent 6.5%),
+      linear-gradient(to right, var(--bg-overlay), color-mix(in oklab, var(--bg-overlay) 70%, var(--bg-raised)));
+  }
+  .hero__sat-title {
+    display: block;
+    font-family: var(--font-body);
+    font-weight: var(--weight-body-sb);
+    font-size: var(--fs-base);
+    line-height: var(--lh-snug);
+    color: var(--ink-primary);
+  }
+  .hero__sat-meta {
+    display: block;
+    margin-top: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--ink-muted);
+  }
+
+  /* Witness / agency / sighting / evidence card variants. */
+  .hero__sat--witness  .hero__sat-eyebrow { color: var(--accent-amber); }
+  .hero__sat--agency   { border-color: var(--accent-verdigris); }
+  .hero__sat--agency   .hero__sat-eyebrow { color: var(--accent-verdigris); }
+  .hero__sat--evidence .hero__sat-title { font-family: var(--font-display); font-size: var(--fs-md); }
+
+  /* Mobile: ditch the absolute exploded layout, stack the satellites
+     under the center block. NOT scaled down, stacked. */
+  @media (max-width: 720px) {
+    .hero__stage {
+      height: auto;
+      min-height: 0;
+      padding: var(--sp-6) 0 var(--sp-4);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .hero__center {
+      position: static;
+      transform: none;
+      order: 0;
+      margin: 0 auto var(--sp-6);
+      text-align: left;
+    }
+    .hero__strings { display: none; }
+    .hero__sat {
+      position: static;
+      width: 100%;
+      transform: rotate(0deg);
+      margin-bottom: var(--sp-3);
+      animation: none;
+    }
+    .hero__sat[href]:hover { transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__sat { animation: none; }
+  }
+</style>
+
+<script>
+  // Parallax + gyro, opt-in, desktop only, parallax variant only.
+  // Skipped if prefers-reduced-motion.
+  (() => {
+    if (typeof window === 'undefined') return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+
+    document.querySelectorAll<HTMLElement>('.hero[data-mode="parallax"] .hero__stage').forEach((stage) => {
+      if (!matchMedia('(min-width: 721px)').matches) return;
+      let raf = 0;
+      let tx = 0, ty = 0;
+      const onMove = (e: MouseEvent) => {
+        const rect = stage.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        tx = x; ty = y;
+        if (!raf) raf = requestAnimationFrame(apply);
+      };
+      const apply = () => {
+        raf = 0;
+        stage.querySelectorAll<HTMLElement>('[data-parallax-depth]').forEach((el) => {
+          const depth = Number(el.dataset.parallaxDepth || '0');
+          const max = 8;
+          const dx = -tx * depth * (max / 3);
+          const dy = -ty * depth * (max / 3);
+          el.style.setProperty('--px', `${dx}px`);
+          el.style.setProperty('--py', `${dy}px`);
+          // Compose with existing rotation for satellites.
+          if (el.classList.contains('hero__sat')) {
+            const rot = el.style.getPropertyValue('--rot') || '0deg';
+            el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot})`;
+          } else {
+            el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+          }
+        });
+      };
+      stage.addEventListener('mousemove', onMove);
+    });
+  })();
+</script>

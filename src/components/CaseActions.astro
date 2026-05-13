@@ -1,0 +1,462 @@
+---
+/**
+ * CaseActions.astro
+ *
+ * Sticky horizontal action bar. Five actions:
+ *   Save · Open Original · Cite · Share · Export
+ *
+ * Bottom sheet on mobile. Icon-only past the hero on desktop.
+ *
+ * Includes the popovers themselves (CitePopover, SharePopover,
+ * ExportPopover) so a single script can wire everything.
+ */
+import type { AnyCase } from '../lib/case-utils';
+import CitePopover from './CitePopover.astro';
+import SharePopover from './SharePopover.astro';
+import ExportPopover from './ExportPopover.astro';
+
+interface Props {
+  entry: AnyCase;
+  pageUrl: string;
+  /** Raw case body markdown for the .md download. */
+  body: string;
+}
+const { entry, pageUrl, body } = Astro.props;
+
+const src = entry.data.source && typeof entry.data.source === 'object' ? entry.data.source : null;
+const officialUrl =
+  (src && typeof src.officialUrl === 'string' && src.officialUrl) ||
+  (typeof entry.data.origin_url === 'string' ? entry.data.origin_url : null);
+
+const caseId =
+  (typeof entry.data.caseId === 'string' && entry.data.caseId) || entry.id;
+---
+<div class="case-actions-mount" data-case-id={caseId}>
+  <div class="case-actions" data-collapsed="false" role="toolbar" aria-label="Case actions">
+    <div class="case-actions__inner">
+      <button
+        type="button"
+        class="case-actions__btn"
+        data-action="save"
+        aria-pressed="false"
+      >
+        <svg class="case-actions__icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M3 1.5h8v11l-4-2.5-4 2.5v-11z" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+        <span class="case-actions__label" data-save-label>Save</span>
+      </button>
+
+      {officialUrl ? (
+        <a
+          class="case-actions__btn"
+          data-action="open-original"
+          href={officialUrl}
+          target="_blank"
+          rel="noopener external"
+        >
+          <svg class="case-actions__icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <path d="M5 2h7v7M12 2L6 8M3 4v7h7" fill="none" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+          <span class="case-actions__label">Open original</span>
+        </a>
+      ) : (
+        <button
+          type="button"
+          class="case-actions__btn"
+          data-action="pending"
+          disabled
+          aria-disabled="true"
+        >
+          <svg class="case-actions__icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <circle cx="7" cy="7" r="5.4" fill="none" stroke="currentColor" stroke-width="1.2" />
+            <path d="M7 4v3l2 1.5" fill="none" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+          <span class="case-actions__label">Pending May 8 2026 release</span>
+        </button>
+      )}
+
+      <button
+        type="button"
+        class="case-actions__btn"
+        data-action="popover-toggle"
+        data-popover-target="cite"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+      >
+        <svg class="case-actions__icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M3 4h3v3H3zM8 4h3v3H8zM3 4c0 4 0 6-2 7M8 4c0 4 0 6-2 7" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+        <span class="case-actions__label">Cite</span>
+      </button>
+
+      <button
+        type="button"
+        class="case-actions__btn"
+        data-action="popover-toggle"
+        data-popover-target="share"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+      >
+        <svg class="case-actions__icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <circle cx="3.5" cy="7" r="1.5" fill="none" stroke="currentColor" stroke-width="1.2" />
+          <circle cx="10.5" cy="3" r="1.5" fill="none" stroke="currentColor" stroke-width="1.2" />
+          <circle cx="10.5" cy="11" r="1.5" fill="none" stroke="currentColor" stroke-width="1.2" />
+          <path d="M5 6.3l4-2.6M5 7.7l4 2.6" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+        <span class="case-actions__label">Share</span>
+      </button>
+
+      <button
+        type="button"
+        class="case-actions__btn"
+        data-action="popover-toggle"
+        data-popover-target="export"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+      >
+        <svg class="case-actions__icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M7 1.5v8M3.5 6L7 9.5L10.5 6M2 12h10" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+        <span class="case-actions__label">Export</span>
+      </button>
+    </div>
+  </div>
+
+  <CitePopover entry={entry} pageUrl={pageUrl} />
+  <SharePopover entry={entry} pageUrl={pageUrl} />
+  <ExportPopover entry={entry} pageUrl={pageUrl} body={body} />
+</div>
+
+<style>
+  .case-actions-mount {
+    position: sticky;
+    top: 72px;
+    z-index: 30;
+  }
+  .case-actions {
+    background: color-mix(in oklab, var(--bg-base) 92%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-1);
+    margin-bottom: var(--sp-5);
+  }
+  .case-actions__inner {
+    display: flex;
+    gap: var(--sp-1);
+    padding: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .case-actions__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 8px var(--sp-3);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--ink-primary);
+    font-family: var(--font-body);
+    font-weight: var(--weight-body-md);
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: var(--radius-1);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      background var(--dur-fast) var(--ease-out);
+  }
+  .case-actions__btn:hover {
+    color: var(--accent-amber);
+    border-color: var(--rule);
+  }
+  .case-actions__btn[aria-expanded="true"],
+  .case-actions__btn[aria-pressed="true"] {
+    color: var(--accent-amber);
+    border-color: var(--accent-amber);
+  }
+  .case-actions__btn[aria-pressed="true"] .case-actions__icon path {
+    fill: var(--accent-amber);
+  }
+  .case-actions__btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  .case-actions__btn[disabled] {
+    color: var(--ink-muted);
+    cursor: not-allowed;
+  }
+  .case-actions__icon { flex-shrink: 0; }
+
+  /* Collapsed past hero: icon-only on desktop. */
+  .case-actions[data-collapsed="true"] .case-actions__label {
+    display: none;
+  }
+
+  /* Mobile: pin to bottom of viewport as a sheet-style bar. */
+  @media (max-width: 720px) {
+    .case-actions-mount {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: auto;
+      z-index: 40;
+      padding: 0 var(--sp-3) calc(env(safe-area-inset-bottom, 0) + var(--sp-3));
+      background: linear-gradient(to top, var(--bg-base), color-mix(in oklab, var(--bg-base) 0%, transparent) 100%);
+    }
+    .case-actions {
+      margin: 0;
+      background: var(--bg-raised);
+      box-shadow: 0 -1px 0 var(--rule);
+    }
+    .case-actions__inner {
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .case-actions__label { display: none; }
+    .case-actions__btn { padding: var(--sp-3); }
+  }
+
+  /* Popovers (shared positioning). */
+  :global(.popover) {
+    position: absolute;
+    z-index: 50;
+    top: calc(100% + var(--sp-2));
+    left: 0;
+    right: 0;
+    max-width: 520px;
+    margin: 0 auto;
+    background: var(--bg-overlay);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-1);
+    box-shadow: var(--elev-2);
+  }
+  :global(.popover[hidden]) { display: none; }
+  :global(.popover__inner) {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+  :global(.popover__head) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  :global(.popover__label) {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  :global(.popover__close) {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-secondary);
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    border-radius: var(--radius-1);
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+  }
+  :global(.popover__close:hover) {
+    color: var(--accent-amber);
+    border-color: var(--accent-amber);
+  }
+
+  @media (max-width: 720px) {
+    :global(.popover) {
+      position: fixed;
+      top: auto;
+      bottom: 64px;
+      left: var(--sp-3);
+      right: var(--sp-3);
+      max-width: none;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .case-actions, :global(.popover) { transition: none !important; }
+  }
+</style>
+
+<script>
+  // Localstorage key shared with /saved.
+  const SAVED_KEY = 'the-ufo-files:saved-cases';
+
+  function getSaved(): string[] {
+    try {
+      const raw = localStorage.getItem(SAVED_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+  function setSaved(ids: string[]) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(ids));
+  }
+
+  function wireMount(mount: HTMLElement) {
+    const caseId = mount.dataset.caseId || '';
+    const saveBtn = mount.querySelector<HTMLButtonElement>('[data-action="save"]');
+    const saveLabel = mount.querySelector<HTMLElement>('[data-save-label]');
+
+    const refreshSaveState = () => {
+      const saved = getSaved();
+      const is = saved.includes(caseId);
+      if (saveBtn) {
+        saveBtn.setAttribute('aria-pressed', is ? 'true' : 'false');
+        if (saveLabel) saveLabel.textContent = is ? 'Saved' : 'Save';
+      }
+    };
+
+    saveBtn?.addEventListener('click', () => {
+      const saved = getSaved();
+      const idx = saved.indexOf(caseId);
+      if (idx >= 0) saved.splice(idx, 1); else saved.push(caseId);
+      setSaved(saved);
+      refreshSaveState();
+    });
+    refreshSaveState();
+
+    // Popover toggling.
+    const popovers = mount.querySelectorAll<HTMLElement>('.popover');
+    const closeAll = () => {
+      popovers.forEach((p) => p.setAttribute('hidden', ''));
+      mount.querySelectorAll<HTMLElement>('[data-popover-target]').forEach((b) => {
+        b.setAttribute('aria-expanded', 'false');
+      });
+    };
+
+    mount.querySelectorAll<HTMLButtonElement>('[data-action="popover-toggle"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const target = btn.dataset.popoverTarget;
+        const pop = mount.querySelector<HTMLElement>(`.popover[data-popover-id="${target}"]`);
+        if (!pop) return;
+        const isOpen = !pop.hasAttribute('hidden');
+        closeAll();
+        if (!isOpen) {
+          pop.removeAttribute('hidden');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+    mount.querySelectorAll<HTMLButtonElement>('[data-popover-close]').forEach((btn) => {
+      btn.addEventListener('click', closeAll);
+    });
+    document.addEventListener('click', (e) => {
+      if (!(e.target instanceof Node)) return;
+      if (!mount.contains(e.target)) closeAll();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAll();
+    });
+
+    // Cite copy buttons.
+    mount.querySelectorAll<HTMLButtonElement>('.cite-block__copy').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const key = btn.dataset.copy;
+        const pre = mount.querySelector<HTMLElement>(`[data-cite="${key}"]`);
+        if (!pre) return;
+        try {
+          await navigator.clipboard.writeText(pre.textContent ?? '');
+          btn.dataset.copied = 'true';
+          btn.textContent = 'Copied';
+          setTimeout(() => {
+            delete btn.dataset.copied;
+            btn.textContent = 'Copy';
+          }, 1400);
+        } catch {
+          btn.textContent = 'Press Ctrl+C';
+        }
+      });
+    });
+
+    // Share buttons.
+    mount.querySelectorAll<HTMLButtonElement>('[data-share]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const kind = btn.dataset.share;
+        const url = btn.dataset.url || location.href;
+        const title = btn.dataset.title || document.title;
+        let text = url;
+        if (kind === 'copy-selection') {
+          const sel = window.getSelection()?.toString().trim();
+          text = sel ? `"${sel}" — ${title}\n${url}` : `${title}\n${url}`;
+        }
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.dataset.copied = 'true';
+          setTimeout(() => delete btn.dataset.copied, 1400);
+        } catch {}
+      });
+    });
+
+    // Export buttons.
+    const exportPop = mount.querySelector<HTMLElement>('.popover[data-popover-id="export"]');
+    if (exportPop) {
+      const bundle = exportPop.dataset.exportBundle || '';
+      const md = exportPop.dataset.exportMd || '';
+      const filename = exportPop.dataset.exportFilename || 'case.md';
+
+      exportPop.querySelectorAll<HTMLButtonElement>('[data-export]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const kind = btn.dataset.export;
+          if (kind === 'download-md') {
+            const blob = new Blob([md], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            btn.dataset.copied = 'true';
+            setTimeout(() => delete btn.dataset.copied, 1400);
+            return;
+          }
+          // The four LLM targets.
+          const target = btn.dataset.url;
+          try {
+            await navigator.clipboard.writeText(bundle);
+            btn.dataset.copied = 'true';
+            setTimeout(() => delete btn.dataset.copied, 1800);
+          } catch {}
+          if (target) window.open(target, '_blank', 'noopener');
+        });
+      });
+    }
+
+    // Collapse the bar past hero on desktop.
+    if (matchMedia('(min-width: 721px)').matches) {
+      const bar = mount.querySelector<HTMLElement>('.case-actions');
+      const onScroll = () => {
+        if (!bar) return;
+        const collapsed = window.scrollY > 240;
+        bar.dataset.collapsed = collapsed ? 'true' : 'false';
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('.case-actions-mount').forEach(wireMount);
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.case-actions-mount').forEach((m) => {
+      if (m.dataset.wired === 'true') return;
+      m.dataset.wired = 'true';
+      wireMount(m);
+    });
+  });
+</script>

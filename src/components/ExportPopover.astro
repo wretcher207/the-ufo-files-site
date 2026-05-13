@@ -1,0 +1,171 @@
+---
+/**
+ * ExportPopover.astro
+ *
+ * Five export destinations.
+ *   - NotebookLM, ChatGPT, Claude, Perplexity: copy formatted bundle to
+ *     clipboard, then open the destination tab.
+ *   - Download .md: assemble the source bundle and trigger Blob download.
+ *
+ * The bundle text and download body are pre-rendered server-side as a
+ * data attribute so the client script doesn't have to know about the
+ * frontmatter shape.
+ */
+import type { AnyCase } from '../lib/case-utils';
+import { archiveOf, headlineDate, tidyTitle } from '../lib/case-utils';
+
+interface Props {
+  entry: AnyCase;
+  pageUrl: string;
+  body: string;
+}
+const { entry, pageUrl, body } = Astro.props;
+const data = entry.data;
+const archive = archiveOf(entry);
+const title = tidyTitle(data.title);
+const date = headlineDate(entry) ?? '';
+const src = data.source && typeof data.source === 'object' ? data.source : null;
+const officialUrl =
+  (src && typeof src.officialUrl === 'string' && src.officialUrl) ||
+  (typeof data.origin_url === 'string' ? data.origin_url : '');
+const officialName =
+  (src && typeof src.officialName === 'string' && src.officialName) ||
+  (typeof data.publisher === 'string' ? data.publisher : '');
+const retrieved =
+  src && typeof src.retrievedDate === 'string' ? src.retrievedDate : '';
+const archiveCommit =
+  src && typeof src.archiveCommit === 'string' ? src.archiveCommit : '';
+const caseId =
+  (typeof data.caseId === 'string' && data.caseId) ||
+  `${archive === 'pursue' ? 'PURSUE' : 'FBI-62HQ-83894'}/${entry.id}`;
+
+// Source bundle (copied to clipboard + sent to LLM tabs).
+const bundle = [
+  `Title: ${title}`,
+  `Case ID: ${caseId}`,
+  officialName ? `Agency: ${officialName}` : '',
+  date ? `Date: ${date}` : '',
+  officialUrl ? `Official source: ${officialUrl}` : '',
+  retrieved ? `Retrieved: ${retrieved}` : '',
+  archiveCommit ? `Archive commit: ${archiveCommit}` : '',
+  `Mirror: ${pageUrl}`,
+  '',
+  '--- Case body ---',
+  body,
+  '',
+  '--- Note ---',
+  'Mirrored on The UFO Files, an archive by Dead Pixel Design. The file is the source of truth. Any AI analysis should be checked against the original.',
+].filter(Boolean).join('\n');
+
+// Markdown file body (frontmatter + body).
+const yamlEscape = (s: string) => s.replace(/"/g, '\\"');
+const md = [
+  '---',
+  `title: "${yamlEscape(title)}"`,
+  `caseId: "${yamlEscape(caseId)}"`,
+  officialName ? `agency: "${yamlEscape(officialName)}"` : '',
+  date ? `date: "${date}"` : '',
+  officialUrl ? `officialUrl: "${officialUrl}"` : '',
+  retrieved ? `retrievedDate: "${retrieved}"` : '',
+  archiveCommit ? `archiveCommit: "${archiveCommit}"` : '',
+  `mirroredFrom: "${pageUrl}"`,
+  '---',
+  '',
+  body,
+].filter(Boolean).join('\n');
+---
+<div
+  class="popover"
+  data-popover-id="export"
+  role="dialog"
+  aria-label="Export"
+  hidden
+  data-export-bundle={bundle}
+  data-export-md={md}
+  data-export-filename={`${entry.id}.md`}
+>
+  <div class="popover__inner">
+    <header class="popover__head">
+      <span class="popover__label">EXPORT</span>
+      <button class="popover__close" data-popover-close type="button" aria-label="Close">×</button>
+    </header>
+
+    <ul class="export-list">
+      <li>
+        <button type="button" class="export-list__item" data-export="notebooklm" data-url="https://notebooklm.google.com/">
+          <span class="export-list__label">Send to NotebookLM</span>
+          <span class="export-list__sub">Copies a source bundle. Opens NotebookLM. Paste as a new source.</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="export-list__item" data-export="chatgpt" data-url="https://chat.openai.com/">
+          <span class="export-list__label">Send to ChatGPT</span>
+          <span class="export-list__sub">Copies a source bundle. Opens ChatGPT.</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="export-list__item" data-export="claude" data-url="https://claude.ai/">
+          <span class="export-list__label">Send to Claude</span>
+          <span class="export-list__sub">Copies a source bundle. Opens Claude.</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="export-list__item" data-export="perplexity" data-url="https://www.perplexity.ai/">
+          <span class="export-list__label">Send to Perplexity</span>
+          <span class="export-list__sub">Copies a source bundle. Opens Perplexity.</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="export-list__item" data-export="download-md">
+          <span class="export-list__label">Download as .md</span>
+          <span class="export-list__sub">Self-contained markdown file with frontmatter and body.</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<style>
+  .export-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .export-list li + li { border-top: 1px solid var(--rule); }
+  .export-list__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    padding: var(--sp-3) 0;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink-primary);
+    font-family: var(--font-body);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .export-list__item:hover { color: var(--accent-amber); }
+  .export-list__item:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  .export-list__item[data-copied="true"] .export-list__label::after {
+    content: " · copied, opening tab";
+    color: var(--accent-amber);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+  }
+  .export-list__label {
+    font-weight: var(--weight-body-sb);
+    font-size: var(--fs-base);
+  }
+  .export-list__sub {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--ink-muted);
+  }
+</style>

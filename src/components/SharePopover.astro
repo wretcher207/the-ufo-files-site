@@ -1,0 +1,131 @@
+---
+/**
+ * SharePopover.astro
+ *
+ * Six share destinations. URL copy + URL+selection copy + five composer
+ * pre-fills (X, Bluesky, Reddit, Facebook, LinkedIn).
+ */
+import type { AnyCase } from '../lib/case-utils';
+import { tidyTitle } from '../lib/case-utils';
+
+interface Props {
+  entry: AnyCase;
+  pageUrl: string;
+}
+const { entry, pageUrl } = Astro.props;
+const title = tidyTitle(entry.data.title);
+const shareText = `${title} — The UFO Files`;
+
+const enc = encodeURIComponent;
+const x        = `https://twitter.com/intent/tweet?text=${enc(shareText)}&url=${enc(pageUrl)}`;
+const bsky     = `https://bsky.app/intent/compose?text=${enc(shareText + ' ' + pageUrl)}`;
+const reddit   = `https://www.reddit.com/submit?url=${enc(pageUrl)}&title=${enc(shareText)}`;
+const facebook = `https://www.facebook.com/sharer/sharer.php?u=${enc(pageUrl)}`;
+const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`;
+---
+<div class="popover" data-popover-id="share" role="dialog" aria-label="Share" hidden>
+  <div class="popover__inner">
+    <header class="popover__head">
+      <span class="popover__label">SHARE</span>
+      <button class="popover__close" data-popover-close type="button" aria-label="Close">×</button>
+    </header>
+
+    <ul class="share-list">
+      <li>
+        <button type="button" class="share-list__item" data-share="copy-url" data-url={pageUrl}>
+          <span class="share-list__label">Copy link</span>
+          <span class="share-list__sub">{pageUrl.replace(/^https?:\/\//, '')}</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="share-list__item" data-share="copy-selection" data-url={pageUrl} data-title={shareText}>
+          <span class="share-list__label">Copy link with selection</span>
+          <span class="share-list__sub">Highlights the passage you have selected. Falls back to the title.</span>
+        </button>
+      </li>
+      <li>
+        <a class="share-list__item" href={x} target="_blank" rel="noopener noreferrer">
+          <span class="share-list__label">X composer</span>
+          <span class="share-list__sub">Pre-filled with title plus link.</span>
+        </a>
+      </li>
+      <li>
+        <a class="share-list__item" href={bsky} target="_blank" rel="noopener noreferrer">
+          <span class="share-list__label">Bluesky composer</span>
+          <span class="share-list__sub">Pre-filled with title plus link.</span>
+        </a>
+      </li>
+      <li>
+        <a class="share-list__item" href={reddit} target="_blank" rel="noopener noreferrer">
+          <span class="share-list__label">Reddit submit</span>
+          <span class="share-list__sub">URL-prefilled link post.</span>
+        </a>
+      </li>
+      <li>
+        <a class="share-list__item" href={facebook} target="_blank" rel="noopener noreferrer">
+          <span class="share-list__label">Facebook share</span>
+          <span class="share-list__sub">Opens the Facebook sharer dialog.</span>
+        </a>
+      </li>
+      <li>
+        <a class="share-list__item" href={linkedin} target="_blank" rel="noopener noreferrer">
+          <span class="share-list__label">LinkedIn share</span>
+          <span class="share-list__sub">Opens the LinkedIn share dialog.</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<style>
+  .share-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .share-list li + li {
+    border-top: 1px solid var(--rule);
+  }
+  .share-list__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    padding: var(--sp-3) 0;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink-primary);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+    font-family: var(--font-body);
+  }
+  .share-list__item:hover {
+    color: var(--accent-amber);
+  }
+  .share-list__item:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  .share-list__item[data-copied="true"] .share-list__label::after {
+    content: " · copied";
+    color: var(--accent-amber);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+  }
+  .share-list__label {
+    font-weight: var(--weight-body-sb);
+    font-size: var(--fs-base);
+  }
+  .share-list__sub {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--ink-muted);
+  }
+</style>

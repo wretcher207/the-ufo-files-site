@@ -1,0 +1,551 @@
+---
+/**
+ * /saved — DARK mode.
+ *
+ * Reads localStorage key `the-ufo-files:saved-cases` (JSON string array of
+ * caseIds). Cross-references against the build-time case collections to
+ * render full cards. Groups by collection (FBI, PURSUE, Entities).
+ *
+ * Per-row actions: unsave, Cite, Share, Export. Reuses the same popovers
+ * via inline anchor links to the dossier and a single Export-all-zip button
+ * that bundles every saved case as .md plus a README and a CITATIONS.bib.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { headlineDate, tidyTitle } from '../lib/case-utils';
+
+const fbi    = await getCollection('fbiCases');
+const pursue = await getCollection('pursueCases');
+const ents   = await getCollection('entities');
+
+// Build a manifest the client can use to look up entries by both `id` and
+// the canonical `caseId` (if present in frontmatter). We pre-serialize the
+// full set so the page can render saved entries without re-querying.
+type Row = {
+  id: string;
+  caseId: string;
+  collection: 'fbi' | 'pursue' | 'entity';
+  title: string;
+  date: string;
+  agency: string;
+  href: string;
+  body: string;
+  source: {
+    officialUrl: string;
+    officialName: string;
+    retrievedDate: string;
+    archiveCommit: string;
+  };
+};
+
+function rowFrom(entry: typeof fbi[number] | typeof pursue[number], coll: 'fbi' | 'pursue'): Row {
+  const data = entry.data;
+  const src = data.source && typeof data.source === 'object' ? data.source : null;
+  return {
+    id: entry.id,
+    caseId: (typeof data.caseId === 'string' && data.caseId) || entry.id,
+    collection: coll,
+    title: tidyTitle(data.title),
+    date: headlineDate(entry) ?? '',
+    agency:
+      (typeof data.agency === 'string' && data.agency) ||
+      (typeof data.publisher === 'string' && data.publisher) ||
+      (coll === 'pursue' ? 'WAR.GOV / PURSUE' : 'FBI'),
+    href: `/dossier/${entry.id}`,
+    body: (entry as unknown as { body?: string }).body ?? '',
+    source: {
+      officialUrl: (src && typeof src.officialUrl === 'string' && src.officialUrl) ||
+        (typeof data.origin_url === 'string' ? data.origin_url : ''),
+      officialName: (src && typeof src.officialName === 'string' && src.officialName) ||
+        (typeof data.publisher === 'string' ? data.publisher : ''),
+      retrievedDate: src && typeof src.retrievedDate === 'string' ? src.retrievedDate : '',
+      archiveCommit: src && typeof src.archiveCommit === 'string' ? src.archiveCommit : '',
+    },
+  };
+}
+
+const fbiRows = fbi.filter((e) => e.data.title).map((e) => rowFrom(e, 'fbi'));
+const pursueRows = pursue.filter((e) => e.data.title).map((e) => rowFrom(e, 'pursue'));
+
+const entityRows: Row[] = ents
+  .filter((e) => e.data.title)
+  .map((e) => ({
+    id: e.id,
+    caseId: (typeof e.data.caseId === 'string' && e.data.caseId) || e.id,
+    collection: 'entity',
+    title: tidyTitle(e.data.title),
+    date: '',
+    agency: '',
+    href: `/entity/${e.id}`,
+    body: (e as unknown as { body?: string }).body ?? '',
+    source: { officialUrl: '', officialName: '', retrievedDate: '', archiveCommit: '' },
+  }));
+
+const manifest = [...fbiRows, ...pursueRows, ...entityRows];
+
+// Serialize the manifest to the page. The browser filters it by saved IDs.
+const manifestJson = JSON.stringify(manifest);
+---
+<Base title="Saved" section="SAVED">
+  <article class="saved" data-saved-root>
+    <header class="saved__head">
+      <span class="saved__label">SAVED</span>
+      <h1 class="saved__title">Your saved cases</h1>
+      <p class="saved__lede">
+        Lives in your browser. No account, no sync. Clear your storage and the list is gone.
+      </p>
+      <div class="saved__actions">
+        <button type="button" class="btn btn--primary" data-export-zip disabled>Export all as .zip</button>
+        <button type="button" class="btn" data-clear-saved>Clear all</button>
+      </div>
+    </header>
+
+    <div class="saved__body" data-saved-body hidden>
+      <section class="saved__group" data-group="fbi" hidden>
+        <header class="saved__group-head">
+          <span class="saved__group-label">FBI 62-HQ-83894</span>
+          <span class="saved__group-count" data-count></span>
+        </header>
+        <ul class="saved__list" data-list></ul>
+      </section>
+      <section class="saved__group" data-group="pursue" hidden>
+        <header class="saved__group-head">
+          <span class="saved__group-label">PURSUE Release 01</span>
+          <span class="saved__group-count" data-count></span>
+        </header>
+        <ul class="saved__list" data-list></ul>
+      </section>
+      <section class="saved__group" data-group="entity" hidden>
+        <header class="saved__group-head">
+          <span class="saved__group-label">Entities</span>
+          <span class="saved__group-count" data-count></span>
+        </header>
+        <ul class="saved__list" data-list></ul>
+      </section>
+    </div>
+
+    <div class="saved__empty" data-saved-empty>
+      <p class="saved__empty-text">
+        Nothing saved yet. Open a dossier, hit save, come back. The list lives in your browser. You do not need an account.
+      </p>
+      <a href="/" class="btn btn--primary">Browse the archive</a>
+    </div>
+  </article>
+
+  <script type="application/json" data-saved-manifest set:html={manifestJson}></script>
+</Base>
+
+<script>
+  type Row = {
+    id: string;
+    caseId: string;
+    collection: 'fbi' | 'pursue' | 'entity';
+    title: string;
+    date: string;
+    agency: string;
+    href: string;
+    body: string;
+    source: {
+      officialUrl: string;
+      officialName: string;
+      retrievedDate: string;
+      archiveCommit: string;
+    };
+  };
+
+  const SAVED_KEY = 'the-ufo-files:saved-cases';
+
+  function getSaved(): string[] {
+    try {
+      const raw = localStorage.getItem(SAVED_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+  function setSaved(ids: string[]) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(ids));
+  }
+
+  function buildRowEl(r: Row): HTMLLIElement {
+    const li = document.createElement('li');
+    li.className = 'saved__row';
+    li.dataset.id = r.id;
+    li.dataset.caseid = r.caseId;
+    li.innerHTML = `
+      <a class="saved__row-title" href="${r.href}">${escapeHtml(r.title)}</a>
+      <div class="saved__row-meta">
+        <span>${escapeHtml(r.date || '—')}</span>
+        ${r.agency ? `<span class="saved__sep">·</span><span>${escapeHtml(r.agency)}</span>` : ''}
+        <span class="saved__sep">·</span>
+        <span class="saved__row-id">${escapeHtml(r.caseId)}</span>
+      </div>
+      <div class="saved__row-actions">
+        <button type="button" data-action="unsave" aria-label="Remove from saved">Remove</button>
+        <button type="button" data-action="cite">Cite</button>
+        <button type="button" data-action="share">Share</button>
+        <button type="button" data-action="export">Export .md</button>
+      </div>
+    `;
+    return li;
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]!));
+  }
+
+  async function copy(s: string) {
+    try { await navigator.clipboard.writeText(s); } catch {}
+  }
+
+  function downloadMd(r: Row) {
+    const yaml = (s: string) => s.replace(/"/g, '\\"');
+    const md = [
+      '---',
+      `title: "${yaml(r.title)}"`,
+      `caseId: "${yaml(r.caseId)}"`,
+      r.agency ? `agency: "${yaml(r.agency)}"` : '',
+      r.date ? `date: "${r.date}"` : '',
+      r.source.officialUrl ? `officialUrl: "${r.source.officialUrl}"` : '',
+      r.source.retrievedDate ? `retrievedDate: "${r.source.retrievedDate}"` : '',
+      r.source.archiveCommit ? `archiveCommit: "${r.source.archiveCommit}"` : '',
+      `mirroredFrom: "${location.origin}${r.href}"`,
+      '---',
+      '',
+      r.body,
+    ].filter(Boolean).join('\n');
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${r.id}.md`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function render() {
+    const root = document.querySelector<HTMLElement>('[data-saved-root]');
+    if (!root) return;
+    const manifestEl = root.querySelector<HTMLElement>('[data-saved-manifest]');
+    const manifest: Row[] = manifestEl ? JSON.parse(manifestEl.textContent || '[]') : [];
+    const body = root.querySelector<HTMLElement>('[data-saved-body]');
+    const empty = root.querySelector<HTMLElement>('[data-saved-empty]');
+    const zipBtn = root.querySelector<HTMLButtonElement>('[data-export-zip]');
+    const clearBtn = root.querySelector<HTMLButtonElement>('[data-clear-saved]');
+
+    const ids = new Set(getSaved());
+    const rows = manifest.filter((r) => ids.has(r.id) || ids.has(r.caseId));
+
+    if (rows.length === 0) {
+      body?.setAttribute('hidden', '');
+      empty?.removeAttribute('hidden');
+      if (zipBtn) zipBtn.disabled = true;
+      return;
+    }
+    body?.removeAttribute('hidden');
+    empty?.setAttribute('hidden', '');
+    if (zipBtn) zipBtn.disabled = false;
+
+    const groups: Record<string, Row[]> = { fbi: [], pursue: [], entity: [] };
+    for (const r of rows) groups[r.collection].push(r);
+
+    for (const key of ['fbi', 'pursue', 'entity']) {
+      const section = body?.querySelector<HTMLElement>(`[data-group="${key}"]`);
+      if (!section) continue;
+      const list = section.querySelector<HTMLElement>('[data-list]')!;
+      const count = section.querySelector<HTMLElement>('[data-count]')!;
+      const gRows = groups[key];
+      if (gRows.length === 0) {
+        section.setAttribute('hidden', '');
+        continue;
+      }
+      section.removeAttribute('hidden');
+      count.textContent = `${gRows.length}`;
+      list.innerHTML = '';
+      for (const r of gRows) list.appendChild(buildRowEl(r));
+    }
+
+    body?.addEventListener('click', async (e) => {
+      const t = e.target as HTMLElement;
+      const action = t.dataset?.action;
+      if (!action) return;
+      const row = t.closest<HTMLElement>('.saved__row');
+      if (!row) return;
+      const id = row.dataset.id!;
+      const caseId = row.dataset.caseid!;
+      const r = manifest.find((x) => x.id === id);
+      if (!r) return;
+      const pageUrl = `${location.origin}${r.href}`;
+
+      if (action === 'unsave') {
+        const next = getSaved().filter((x) => x !== id && x !== caseId);
+        setSaved(next);
+        render();
+        return;
+      }
+      if (action === 'cite') {
+        const year = r.date.slice(0, 4);
+        const apa = `${r.source.officialName || r.agency || 'Unknown agency'} ${year ? `(${year}).` : ''} ${r.title}. The UFO Files. ${pageUrl}`;
+        await copy(apa);
+        t.textContent = 'Copied'; setTimeout(() => (t.textContent = 'Cite'), 1400);
+        return;
+      }
+      if (action === 'share') {
+        await copy(`${r.title} — ${pageUrl}`);
+        t.textContent = 'Copied'; setTimeout(() => (t.textContent = 'Share'), 1400);
+        return;
+      }
+      if (action === 'export') {
+        downloadMd(r);
+        return;
+      }
+    });
+
+    zipBtn?.addEventListener('click', async () => {
+      zipBtn.disabled = true;
+      zipBtn.textContent = 'Bundling...';
+      try {
+        // @ts-ignore - dynamic import, no type resolution needed
+        const { default: JSZip } = await import('jszip');
+        const zip = new JSZip();
+        const bib: string[] = [];
+        const indexLines: string[] = [
+          '# Your UFO Files bundle',
+          '',
+          'Mirrored from The UFO Files, an archive by Dead Pixel Design.',
+          '',
+          'Cases pulled from your saved list, one .md per case. Frontmatter carries the source URL, retrieval date, and the archive commit pointer for verification. The .bib file is BibTeX entries for the same set.',
+          '',
+          '## Cases',
+          '',
+        ];
+        for (const r of rows) {
+          const yaml = (s: string) => s.replace(/"/g, '\\"');
+          const md = [
+            '---',
+            `title: "${yaml(r.title)}"`,
+            `caseId: "${yaml(r.caseId)}"`,
+            r.agency ? `agency: "${yaml(r.agency)}"` : '',
+            r.date ? `date: "${r.date}"` : '',
+            r.source.officialUrl ? `officialUrl: "${r.source.officialUrl}"` : '',
+            r.source.retrievedDate ? `retrievedDate: "${r.source.retrievedDate}"` : '',
+            r.source.archiveCommit ? `archiveCommit: "${r.source.archiveCommit}"` : '',
+            `mirroredFrom: "${location.origin}${r.href}"`,
+            '---',
+            '',
+            r.body,
+          ].filter(Boolean).join('\n');
+          zip.file(`cases/${r.collection}/${r.id}.md`, md);
+          indexLines.push(`- ${r.title} (${r.caseId}) — \`cases/${r.collection}/${r.id}.md\``);
+          const key = r.id.replace(/[^A-Za-z0-9]/g, '');
+          const year = r.date.slice(0, 4) || 'n.d.';
+          bib.push(
+            `@misc{${key},`,
+            `  title  = {${r.title}},`,
+            `  author = {${r.source.officialName || r.agency || 'Unknown'}},`,
+            `  year   = {${year}},`,
+            `  url    = {${r.source.officialUrl || `${location.origin}${r.href}`}},`,
+            r.source.retrievedDate ? `  note   = {Retrieved ${r.source.retrievedDate}}` : '',
+            `}`,
+            '',
+          );
+        }
+        zip.file('README.md', indexLines.join('\n'));
+        zip.file('CITATIONS.bib', bib.join('\n'));
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `the-ufo-files-saved-${new Date().toISOString().slice(0, 10)}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } finally {
+        zipBtn.disabled = false;
+        zipBtn.textContent = 'Export all as .zip';
+      }
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      if (!confirm('Clear all saved cases. Are you sure?')) return;
+      setSaved([]);
+      render();
+    });
+  }
+
+  render();
+  document.addEventListener('astro:page-load', render);
+</script>
+
+<style is:global>
+  .saved { display: block; }
+  .saved__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding-bottom: var(--sp-6);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: var(--sp-7);
+  }
+  .saved__label {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .saved__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    line-height: var(--lh-snug);
+    letter-spacing: var(--tracking-tight);
+    color: var(--ink-primary);
+    margin: 0;
+  }
+  .saved__lede {
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    color: var(--ink-secondary);
+    line-height: var(--lh-loose);
+    margin: 0;
+    max-width: 60ch;
+  }
+  .saved__actions {
+    display: flex;
+    gap: var(--sp-3);
+    margin-top: var(--sp-3);
+  }
+
+  .saved__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-7);
+  }
+  .saved__group-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: var(--sp-4);
+  }
+  .saved__group-label {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-primary);
+  }
+  .saved__group-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-muted);
+  }
+  .saved__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .saved__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    column-gap: var(--sp-5);
+    row-gap: var(--sp-1);
+    padding: var(--sp-4) 0;
+    border-top: 1px solid var(--rule);
+  }
+  .saved__row:last-child { border-bottom: 1px solid var(--rule); }
+  .saved__row-title {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    color: var(--ink-primary);
+    text-decoration: none;
+  }
+  .saved__row-title:hover { color: var(--accent-amber); }
+  .saved__row-meta {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--ink-muted);
+    align-items: center;
+  }
+  .saved__row-id { color: var(--ink-secondary); }
+  .saved__sep { opacity: 0.5; }
+  .saved__row-actions {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: flex;
+    gap: var(--sp-1);
+    flex-wrap: wrap;
+    align-self: center;
+  }
+  .saved__row-actions button {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-secondary);
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius-1);
+    transition: color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
+  }
+  .saved__row-actions button:hover {
+    color: var(--accent-amber);
+    border-color: var(--accent-amber);
+  }
+  .saved__row-actions button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  @media (max-width: 720px) {
+    .saved__row {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .saved__row-actions {
+      grid-column: 1;
+      grid-row: 3;
+    }
+  }
+
+  .saved__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-5);
+    padding: var(--sp-8) 0;
+    max-width: 60ch;
+  }
+  .saved__empty[hidden] { display: none; }
+  .saved__empty-text {
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    color: var(--ink-secondary);
+    line-height: var(--lh-loose);
+    margin: 0;
+  }
+</style>

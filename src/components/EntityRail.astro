@@ -1,0 +1,126 @@
+---
+/**
+ * EntityRail.astro
+ *
+ * Right column rail on dossier pages, desktop only. Lists entities for the
+ * current case. Hover amber outline. Click → /entity/[slug].
+ */
+import type { AnyCase } from '../lib/case-utils';
+
+interface Props { entry: AnyCase; }
+const { entry } = Astro.props;
+
+const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+function toSlug(raw: string): string | null {
+  if (!raw) return null;
+  if (SLUG_RE.test(raw)) return raw;
+  const s = raw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return s.length >= 2 ? s : null;
+}
+function humanize(slug: string): string {
+  return slug
+    .split('-')
+    .map((p) =>
+      ['cic', 'fbi', 'aaro', 'osi', 'sac', 'aaf', 'usaf', 'oni', 'nasa', 'us', 'cia'].includes(p)
+        ? p.toUpperCase()
+        : p.charAt(0).toUpperCase() + p.slice(1)
+    )
+    .join(' ');
+}
+
+// Phase 6 prefers `entities`. Fall back to `entities_mentioned`.
+const raws: Array<string | number | boolean> =
+  ((entry.data.entities as Array<string | number | boolean> | undefined) ??
+    (entry.data.entities_mentioned as Array<string | number | boolean> | undefined) ??
+    []);
+
+const entities = Array.from(
+  raws.reduce<Map<string, string>>((m, r) => {
+    const raw = String(r);
+    const slug = toSlug(raw);
+    if (!slug) return m;
+    if (!m.has(slug)) m.set(slug, /[A-Z. ]/.test(raw) ? raw : humanize(slug));
+    return m;
+  }, new Map())
+).map(([slug, label]) => ({ slug, label }));
+
+entities.sort((a, b) => a.label.localeCompare(b.label));
+---
+{entities.length > 0 && (
+  <aside class="entity-rail" aria-labelledby="entity-rail-heading">
+    <header class="entity-rail__head">
+      <span class="entity-rail__label" id="entity-rail-heading">ENTITIES IN THIS CASE</span>
+    </header>
+    <ul class="entity-rail__list">
+      {entities.map((e) => (
+        <li class="entity-rail__item">
+          <a href={`/entity/${e.slug}`}>
+            <span class="entity-rail__thumb" aria-hidden="true">
+              {e.label.slice(0, 1).toUpperCase()}
+            </span>
+            <span class="entity-rail__name">{e.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}
+
+<style>
+  .entity-rail {
+    border-top: 1px solid var(--rule);
+    padding-top: var(--sp-4);
+  }
+  .entity-rail__head { margin-bottom: var(--sp-3); }
+  .entity-rail__label {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .entity-rail__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .entity-rail__item + .entity-rail__item {
+    border-top: 1px solid var(--rule);
+  }
+  .entity-rail__item a {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-2) 0;
+    color: var(--ink-primary);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .entity-rail__item a:hover { color: var(--accent-amber); }
+  .entity-rail__item a:hover .entity-rail__thumb {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+  }
+  .entity-rail__thumb {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    color: var(--ink-secondary);
+    background: var(--bg-raised);
+  }
+  .entity-rail__name {
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+  }
+</style>

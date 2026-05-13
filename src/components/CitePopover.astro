@@ -1,0 +1,155 @@
+---
+/**
+ * CitePopover.astro
+ *
+ * Three citation formats with one-click copy.
+ * Toggled by the parent CaseActions bar via data-popover-id="cite".
+ */
+import type { AnyCase } from '../lib/case-utils';
+import { archiveOf, headlineDate, tidyTitle } from '../lib/case-utils';
+
+interface Props {
+  entry: AnyCase;
+  pageUrl: string;
+}
+const { entry, pageUrl } = Astro.props;
+
+const data = entry.data;
+const archive = archiveOf(entry);
+const title = tidyTitle(data.title);
+const date = headlineDate(entry) ?? '';
+const year = date ? date.slice(0, 4) : '';
+const src = data.source && typeof data.source === 'object' ? data.source : null;
+const officialUrl =
+  (src && typeof src.officialUrl === 'string' && src.officialUrl) ||
+  (typeof data.origin_url === 'string' ? data.origin_url : '') ||
+  pageUrl;
+const officialName =
+  (src && typeof src.officialName === 'string' && src.officialName) ||
+  (typeof data.publisher === 'string' ? data.publisher : '') ||
+  (archive === 'pursue' ? 'Department of War, PURSUE release' : 'Federal Bureau of Investigation');
+const retrieved =
+  src && typeof src.retrievedDate === 'string' ? src.retrievedDate : '';
+const archiveCommit =
+  src && typeof src.archiveCommit === 'string' ? src.archiveCommit : '';
+const caseId =
+  (typeof data.caseId === 'string' && data.caseId) ||
+  `${archive === 'pursue' ? 'PURSUE' : 'FBI-62HQ-83894'}/${entry.id}`;
+
+const apa = [
+  officialName,
+  year ? `(${year}).` : '',
+  `${title}.`,
+  'The UFO Files.',
+  pageUrl,
+].filter(Boolean).join(' ');
+
+const chicago = [
+  `"${title}."`,
+  `${officialName}.`,
+  year ? `${year}.` : '',
+  `${pageUrl}.`,
+].filter(Boolean).join(' ');
+
+const researcher = [
+  title,
+  `Case ID: ${caseId}`,
+  `Agency: ${officialName}`,
+  date ? `Date: ${date}` : '',
+  `Source: ${officialUrl}`,
+  retrieved ? `Retrieved: ${retrieved}` : '',
+  archiveCommit ? `Archive commit: ${archiveCommit}` : '',
+  '',
+  `Mirrored on The UFO Files, an archive by Dead Pixel Design. The file is the file. Anything in question is one click from the original.`,
+].filter(Boolean).join('\n');
+---
+<div class="popover" data-popover-id="cite" role="dialog" aria-label="Citation formats" hidden>
+  <div class="popover__inner">
+    <header class="popover__head">
+      <span class="popover__label">CITE</span>
+      <button class="popover__close" data-popover-close type="button" aria-label="Close">×</button>
+    </header>
+
+    <section class="cite-block">
+      <div class="cite-block__head">
+        <span class="cite-block__label">APA</span>
+        <button class="cite-block__copy" type="button" data-copy="apa">Copy</button>
+      </div>
+      <pre class="cite-block__code" data-cite="apa">{apa}</pre>
+    </section>
+
+    <section class="cite-block">
+      <div class="cite-block__head">
+        <span class="cite-block__label">CHICAGO</span>
+        <button class="cite-block__copy" type="button" data-copy="chicago">Copy</button>
+      </div>
+      <pre class="cite-block__code" data-cite="chicago">{chicago}</pre>
+    </section>
+
+    <section class="cite-block">
+      <div class="cite-block__head">
+        <span class="cite-block__label">RESEARCHER BLOCK</span>
+        <button class="cite-block__copy" type="button" data-copy="researcher">Copy</button>
+      </div>
+      <pre class="cite-block__code" data-cite="researcher">{researcher}</pre>
+    </section>
+  </div>
+</div>
+
+<style>
+  .cite-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+  .cite-block__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+  .cite-block__label {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-mono-md);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .cite-block__copy {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-secondary);
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: var(--radius-1);
+    transition: border-color var(--dur-fast) var(--ease-out),
+                color var(--dur-fast) var(--ease-out),
+                background var(--dur-fast) var(--ease-out);
+  }
+  .cite-block__copy:hover {
+    color: var(--accent-amber);
+    border-color: var(--accent-amber);
+  }
+  .cite-block__copy[data-copied="true"] {
+    color: var(--bg-base);
+    background: var(--accent-amber);
+    border-color: var(--accent-amber);
+  }
+  .cite-block__code {
+    margin: 0;
+    padding: var(--sp-3);
+    background: var(--bg-overlay);
+    border: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+    color: var(--ink-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
