@@ -7,7 +7,7 @@
  * into frontmatter without overwriting any existing value (unless --force).
  *
  * Provider: OpenRouter (NOT Anthropic SDK).
- * Model:    openrouter/owl-alpha
+ * Model:    deepseek/deepseek-v4-pro
  * Env var:  OPENROUTER_API_KEY
  *
  * Run:   npx tsx scripts/extract/extract-ai.ts [--force] [--dry-run] [--limit=N]
@@ -35,7 +35,7 @@ const LIMIT = (() => {
 })();
 
 const API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = 'openrouter/owl-alpha';
+const MODEL = 'deepseek/deepseek-v4-pro';
 const ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Conservative throttle: 1 req/sec.
