@@ -8,10 +8,10 @@ import {
 } from '../lib/case-utils';
 import { THREADS } from '../lib/threads';
 import { caseImage } from '../lib/case-images';
+import { getArchiveStats } from '../lib/archive-stats';
 
 const renderable = await getRenderableCases();
-const fbiCount = renderable.filter((c) => archiveOf(c) === 'fbi').length;
-const pursueCount = renderable.filter((c) => archiveOf(c) === 'pursue').length;
+const stats = await getArchiveStats();
 
 function caseDate(c: typeof renderable[number]) {
   const d = headlineDate(c);
@@ -40,26 +40,39 @@ for (const c of renderable) {
   countByThread.set(String(t), (countByThread.get(String(t)) ?? 0) + 1);
 }
 
-const totalCases = renderable.length;
+// Specific dossier slugs for hero figures (linked from homepage).
+const HOTTEL_SLUG = 'guy-hottel-three-saucers-new-mexico-1950';
+const ARNOLD_SLUG = featured?.id ?? 'kenneth-arnold-sighting-narrative-cascade-june-1947';
+const APOLLO_SLUG = 'apollo-17-vm6';
+const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
+const hasHottel = renderable.some((c) => c.id === HOTTEL_SLUG);
 ---
 <Base title="The UFO Files">
 
   <section class="masthead">
     <div class="masthead__grid">
-      <figure class="masthead__figure">
-        <img
-          src="/img/archive/hottel-memo-1950.jpg"
-          alt="FBI memorandum from Guy Hottel to J. Edgar Hoover, March 22, 1950, reporting three flying saucers recovered in New Mexico."
-          width="1200"
-          height="1554"
-          fetchpriority="high"
-        />
-        <figcaption>
-          GUY HOTTEL TO HOOVER &nbsp;/&nbsp; 22 MARCH 1950 &nbsp;/&nbsp; FBI 62-83894
-        </figcaption>
-      </figure>
+      <a class="ufo-figure-link masthead__figure-link" href={`/dossier/${HOTTEL_SLUG}`} aria-label="Open the Guy Hottel memo dossier">
+        <figure class="masthead__figure">
+          <img
+            src="/img/archive/hottel-memo-1950.jpg"
+            alt="FBI memorandum from Guy Hottel to J. Edgar Hoover, March 22, 1950, reporting three flying saucers recovered in New Mexico."
+            width="1200"
+            height="1554"
+            fetchpriority="high"
+          />
+          <figcaption>
+            GUY HOTTEL TO HOOVER &nbsp;/&nbsp; 22 MARCH 1950 &nbsp;/&nbsp; FBI 62-83894
+          </figcaption>
+        </figure>
+      </a>
       <div class="masthead__text">
-        <p class="masthead__eyebrow">RELEASED 2026-05-08 &nbsp;/&nbsp; {totalCases} CASES INDEXED</p>
+        <p class="masthead__eyebrow">
+          <a href="/about">RELEASED {stats.releaseDate}</a>
+          <span class="masthead__eyebrow-sep">·</span>
+          <a href="/timeline">{stats.totalCases} INDEXED</a>
+          <span class="masthead__eyebrow-sep">·</span>
+          <a href="/threads">{String(stats.threadCount).padStart(2, '0')} THREADS</a>
+        </p>
         <h1 class="masthead__title">
           The files,<br />in one place.
         </h1>
@@ -71,7 +84,7 @@ const totalCases = renderable.length;
         <p class="masthead__links">
           <a href="/threads">Read by thread</a>
           <span class="masthead__sep">·</span>
-          <a href={`/dossier/${featured?.id}`}>Open a case</a>
+          <a href={`/dossier/${ARNOLD_SLUG}`}>Open a case</a>
           <span class="masthead__sep">·</span>
           <a href="/board">Open the board</a>
         </p>
@@ -81,20 +94,24 @@ const totalCases = renderable.length;
 
   <section class="pull">
     <div class="pull__grid">
-      <figure class="pull__figure">
-        <img
-          src="/img/archive/arnold-aaf-document.jpg"
-          alt="Kenneth Arnold's hand-drawn sketch from his July 12, 1947 Army Air Forces intelligence report, showing the nine objects he observed near Mount Rainier."
-          width="700"
-          height="900"
-          loading="lazy"
-        />
-        <figcaption>
-          ARNOLD AAF REPORT &nbsp;/&nbsp; 12 JULY 1947
-        </figcaption>
-      </figure>
+      <a class="ufo-figure-link pull__figure-link" href={`/dossier/${featured?.id}`} aria-label={`Open ${tidyTitle(featured?.data.title)}`}>
+        <figure class="pull__figure">
+          <img
+            src="/img/archive/arnold-aaf-document.jpg"
+            alt="Kenneth Arnold's hand-drawn sketch from his July 12, 1947 Army Air Forces intelligence report, showing the nine objects he observed near Mount Rainier."
+            width="700"
+            height="900"
+            loading="lazy"
+          />
+          <figcaption>
+            ARNOLD AAF REPORT &nbsp;/&nbsp; 12 JULY 1947
+          </figcaption>
+        </figure>
+      </a>
       <div class="pull__text">
-        <p class="pull__case-id">{(featured?.data as any)?.caseId ?? featured?.id}</p>
+        <p class="pull__case-id">
+          <a href={`/dossier/${featured?.id}`}>{(featured?.data as any)?.caseId ?? featured?.id}</a>
+        </p>
         <a href={`/dossier/${featured?.id}`} class="pull__title-link">
           <h2 class="pull__title">{tidyTitle(featured?.data.title)}</h2>
         </a>
@@ -102,75 +119,92 @@ const totalCases = renderable.length;
           {(featured?.data as any)?.excerpt ?? (featured?.data as any)?.summary ?? ''}
         </p>
         <p class="pull__meta">
-          {(featured?.data as any)?.agency ?? 'FBI'} &nbsp;/&nbsp; {caseDate(featured)} &nbsp;/&nbsp; CONFIDENCE {String((featured?.data as any)?.confidence ?? 'low').toUpperCase()}
+          <a href="/timeline">{(featured?.data as any)?.agency ?? 'FBI'}</a>
+          &nbsp;/&nbsp;
+          <a href="/timeline">{caseDate(featured)}</a>
+          &nbsp;/&nbsp;
+          <span>CONFIDENCE {String((featured?.data as any)?.confidence ?? 'low').toUpperCase()}</span>
         </p>
       </div>
     </div>
   </section>
 
   <section class="frontpage">
-    <p class="frontpage__eyebrow">ONE PAGE FROM THE RECORD</p>
-    <figure class="frontpage__figure">
-      <img
-        src="/img/archive/roswell-daily-record-july-8-1947.jpg"
-        alt="Front page of the Roswell Daily Record, July 8, 1947, with the headline 'RAAF Captures Flying Saucer On Ranch in Roswell Region.'"
-        width="1600"
-        height="900"
-        loading="lazy"
-      />
-      <figcaption>
-        ROSWELL DAILY RECORD &nbsp;/&nbsp; 8 JULY 1947 &nbsp;/&nbsp; PUBLIC DOMAIN
-      </figcaption>
-    </figure>
+    <p class="frontpage__eyebrow">
+      <a href="/thread/1947-origin">ONE PAGE FROM THE RECORD &nbsp;/&nbsp; 1947 ORIGIN ↗</a>
+    </p>
+    <a class="ufo-figure-link frontpage__figure-link" href="/thread/1947-origin" aria-label="Read the 1947 origin thread">
+      <figure class="frontpage__figure">
+        <img
+          src="/img/archive/roswell-daily-record-july-8-1947.jpg"
+          alt="Front page of the Roswell Daily Record, July 8, 1947, with the headline 'RAAF Captures Flying Saucer On Ranch in Roswell Region.'"
+          width="1600"
+          height="900"
+          loading="lazy"
+        />
+        <figcaption>
+          ROSWELL DAILY RECORD &nbsp;/&nbsp; 8 JULY 1947 &nbsp;/&nbsp; PUBLIC DOMAIN
+        </figcaption>
+      </figure>
+    </a>
     <p class="frontpage__note">
-      The headline ran one day. The retraction ran the next. Both pages are in
-      the file. So is the press release the RAAF issued before the retraction.
+      The headline ran one day. The <a href="/thread/1947-origin">retraction</a>
+      ran the next. Both pages are in the file. So is the press release the
+      RAAF issued before the retraction.
     </p>
   </section>
 
   <section class="index">
-    <header class="index__head">
-      <p class="index__eyebrow">LATEST IN THE ARCHIVE</p>
-      <p class="index__meta">{latest.length} of {totalCases}</p>
-    </header>
+    <a class="ufo-section-anchor index__anchor" href="/timeline">
+      <span class="ufo-section-anchor__num">{stats.totalCases}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Files in the archive</span>
+        <span class="ufo-section-anchor__sublabel">Latest {latest.length} below &nbsp;/&nbsp; {stats.fbiCount} FBI &nbsp;/&nbsp; {stats.pursueCount} PURSUE</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Full timeline</span>
+    </a>
     <ol class="index__list">
       {latest.map((c, i) => {
         const img = caseImage(c.id);
         return (
           <li class="index-row" data-has-image={img ? 'true' : undefined}>
-            <a href={`/dossier/${c.id}`} class="index-row__link">
-              <span class="index-row__num">{String(i + 1).padStart(2, '0')}</span>
+            <a href={`/dossier/${c.id}`} class="index-row__link ufo-row-link">
+              <span class="index-row__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
               <span class="index-row__thumb">
                 {img && (
                   <img src={img.src} alt="" width="80" height="56" loading="lazy" />
                 )}
               </span>
-              <span class="index-row__date">{caseDate(c) || '----'}</span>
-              <span class="index-row__title">{tidyTitle(c.data.title)}</span>
-              <span class="index-row__agency">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+              <span class="index-row__date ufo-row-link__mid">{caseDate(c) || '----'}</span>
+              <span class="index-row__title ufo-row-link__fg">{tidyTitle(c.data.title)}</span>
+              <span class="index-row__agency ufo-row-link__dim">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
             </a>
           </li>
         );
       })}
     </ol>
     <p class="index__more">
-      <a href="/timeline">View all on the timeline</a>
+      <a href="/timeline">View all on the timeline ↗</a>
     </p>
   </section>
 
   <section class="threads-section">
-    <header class="index__head">
-      <p class="index__eyebrow">FIVE THREADS</p>
-      <p class="index__meta">{THREADS.length}</p>
-    </header>
+    <a class="ufo-section-anchor threads-section__anchor" href="/threads">
+      <span class="ufo-section-anchor__num">{String(stats.threadCount).padStart(2, '0')}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Threads run through it</span>
+        <span class="ufo-section-anchor__sublabel">Spines that pull cases together</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Read by thread</span>
+    </a>
     <ol class="threads-section__list">
       {THREADS.map((t, i) => (
         <li class="threads-row">
-          <a href={`/thread/${t.id}`} class="threads-row__link">
-            <span class="threads-row__num">{String(i + 1).padStart(2, '0')}</span>
-            <span class="threads-row__title">{t.title}</span>
-            <span class="threads-row__span">{t.span}</span>
-            <span class="threads-row__count">{countByThread.get(t.id) ?? 0}</span>
+          <a href={`/thread/${t.id}`} class="threads-row__link ufo-row-link">
+            <span class="threads-row__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
+            <span class="threads-row__title ufo-row-link__fg">{t.title}</span>
+            <span class="threads-row__span ufo-row-link__dim">{t.span}</span>
+            <span class="threads-row__count ufo-row-link__mid">{countByThread.get(t.id) ?? 0}</span>
           </a>
         </li>
       ))}
@@ -178,19 +212,28 @@ const totalCases = renderable.length;
   </section>
 
   <section class="archivist">
-    <p class="archivist__eyebrow">THE ARCHIVIST</p>
+    <p class="archivist__eyebrow">
+      <a href="/about">THE ARCHIVIST ↗</a>
+    </p>
     <p class="archivist__body">
-      I was eight years old when I first heard Roswell. Thirty years later the
-      government published the file. I read it cover to cover. There are cases
-      in there nobody on cable news got to. There are cases that contradict
-      each other. There is one photo from the lunar surface nobody has cleanly
-      explained.
+      I was eight years old when I first heard
+      <a href="/thread/1947-origin">Roswell</a>.
+      Thirty years later the government
+      <a href="/timeline">published the file</a>.
+      I read it cover to cover. There are cases in there nobody on cable news
+      got to. There are cases that contradict each other.
+      {hasApollo
+        ? <>There is <a href={`/dossier/${APOLLO_SLUG}`}>one photo from the lunar surface</a> nobody has cleanly explained.</>
+        : <>There is one photo from the lunar surface nobody has cleanly explained.</>
+      }
     </p>
     <p class="archivist__body">
       This archive puts every page in one place so a stranger can land at the
-      start, follow the files, and decide for themselves.
+      start, <a href="/threads">follow the files</a>, and decide for themselves.
     </p>
-    <p class="archivist__sign">David Russell · Houlton, Maine</p>
+    <p class="archivist__sign">
+      <a href="/about">David Russell · Houlton, Maine ↗</a>
+    </p>
   </section>
 
 </Base>
@@ -230,24 +273,14 @@ const totalCases = renderable.length;
       gap: 32px;
     }
   }
-  .masthead__figure {
-    margin: 0;
-    position: relative;
-  }
+  .masthead__figure-link { margin: 0; }
+  .masthead__figure { margin: 0; position: relative; }
   .masthead__figure img {
     width: 100%;
     height: auto;
     display: block;
     filter: grayscale(1) contrast(1.08);
     background: var(--fg);
-  }
-  .masthead__figure figcaption {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--fg-dim);
-    margin-top: 10px;
-    text-transform: uppercase;
   }
   @media (max-width: 900px) {
     .masthead__figure { max-height: 70vh; overflow: hidden; }
@@ -267,7 +300,24 @@ const totalCases = renderable.length;
     letter-spacing: 0.22em;
     color: var(--fg-dim);
     margin: 0 0 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 12px;
+    align-items: center;
+    text-transform: uppercase;
   }
+  .masthead__eyebrow a {
+    color: var(--fg-mid);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .masthead__eyebrow a:hover,
+  .masthead__eyebrow a:focus-visible {
+    color: var(--fg);
+    border-bottom-color: var(--fg);
+  }
+  .masthead__eyebrow-sep { color: var(--fg-dim); opacity: 0.6; }
   .masthead__title {
     font-family: var(--font-display);
     font-weight: 300;
@@ -328,6 +378,7 @@ const totalCases = renderable.length;
       gap: 32px;
     }
   }
+  .pull__figure-link { max-width: 480px; }
   .pull__figure { margin: 0; }
   .pull__figure img {
     width: 100%;
@@ -337,13 +388,7 @@ const totalCases = renderable.length;
     filter: grayscale(1) contrast(1.1) invert(1);
     background: var(--bg);
   }
-  .pull__figure figcaption {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--fg-dim);
-    margin-top: 10px;
-    text-transform: uppercase;
+  .pull__figure-link figcaption {
     max-width: 480px;
   }
   .pull__case-id {
@@ -353,6 +398,17 @@ const totalCases = renderable.length;
     text-transform: uppercase;
     color: var(--fg-dim);
     margin: 0 0 20px;
+  }
+  .pull__case-id a {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .pull__case-id a:hover,
+  .pull__case-id a:focus-visible {
+    color: var(--fg);
+    border-bottom-color: var(--fg);
   }
   .pull__title-link {
     text-decoration: none;
@@ -388,6 +444,21 @@ const totalCases = renderable.length;
     text-transform: uppercase;
     color: var(--fg-dim);
     margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    align-items: center;
+  }
+  .pull__meta a {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .pull__meta a:hover,
+  .pull__meta a:focus-visible {
+    color: var(--fg);
+    border-bottom-color: var(--fg);
   }
 
   /* ── FRONT PAGE ───────────────────────────────────────── */
@@ -407,24 +478,26 @@ const totalCases = renderable.length;
     margin: 0 0 40px;
     padding-bottom: 24px;
     border-bottom: 1px solid var(--rule);
+    text-transform: uppercase;
   }
-  .frontpage__figure {
-    margin: 0 0 32px;
+  .frontpage__eyebrow a {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
   }
+  .frontpage__eyebrow a:hover,
+  .frontpage__eyebrow a:focus-visible {
+    border-bottom-color: var(--fg);
+  }
+  .frontpage__figure-link { display: block; margin: 0 0 32px; }
+  .frontpage__figure { margin: 0; }
   .frontpage__figure img {
     width: 100%;
     height: auto;
     display: block;
     filter: grayscale(1) contrast(1.05);
     background: var(--fg);
-  }
-  .frontpage__figure figcaption {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--fg-dim);
-    margin-top: 14px;
-    text-transform: uppercase;
   }
   .frontpage__note {
     font-family: var(--font-display);
@@ -434,6 +507,17 @@ const totalCases = renderable.length;
     color: var(--fg);
     max-width: 40ch;
     margin: 0;
+  }
+  .frontpage__note a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--fg-dim);
+    text-underline-offset: 4px;
+    font-style: italic;
+  }
+  .frontpage__note a:hover,
+  .frontpage__note a:focus-visible {
+    text-decoration-color: var(--fg);
   }
 
   /* ── INDEX (latest list) ──────────────────────────────── */
@@ -446,44 +530,11 @@ const totalCases = renderable.length;
       padding-top: 56px;
     }
   }
-  .index__head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--fg);
-    margin-bottom: 0;
-  }
-  .index__eyebrow {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    color: var(--fg);
-    margin: 0;
-  }
-  .index__meta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    color: var(--fg-dim);
-    margin: 0;
-  }
-
   .index__list { margin: 0; padding: 0; }
   .index-row { border-bottom: 1px solid var(--rule); }
   .index-row__link {
-    display: grid;
     grid-template-columns: 48px 96px 110px 1fr 70px;
     gap: 20px;
-    align-items: center;
-    padding: 12px 0;
-    text-decoration: none;
-    color: inherit;
-  }
-  .index-row__link:hover .index-row__title {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 4px;
   }
   .index-row__num,
   .index-row__date,
@@ -517,11 +568,15 @@ const totalCases = renderable.length;
     filter: grayscale(1) contrast(1.05);
     display: block;
   }
+  /* Hover-invert handles its own contrast for the inner thumb. */
+  .index-row__link:hover .index-row__thumb img,
+  .index-row__link:focus-visible .index-row__thumb img {
+    filter: grayscale(1) contrast(1.05) invert(1);
+  }
   @media (max-width: 720px) {
     .index-row__link {
       grid-template-columns: 32px 64px 1fr;
       gap: 12px;
-      padding: 12px 0;
     }
     .index-row__date,
     .index-row__agency { display: none; }
@@ -547,18 +602,9 @@ const totalCases = renderable.length;
   .threads-section__list { margin: 0; padding: 0; }
   .threads-row { border-bottom: 1px solid var(--rule); }
   .threads-row__link {
-    display: grid;
     grid-template-columns: 56px 1fr auto 60px;
     gap: 20px;
     align-items: baseline;
-    padding: 14px 0;
-    text-decoration: none;
-    color: inherit;
-  }
-  .threads-row__link:hover .threads-row__title {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 4px;
   }
   .threads-row__num {
     font-family: var(--font-mono);
@@ -590,7 +636,6 @@ const totalCases = renderable.length;
     .threads-row__link {
       grid-template-columns: 36px 1fr;
       gap: 12px;
-      padding: 12px 0;
     }
     .threads-row__span,
     .threads-row__count { display: none; }
@@ -608,10 +653,20 @@ const totalCases = renderable.length;
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.22em;
-    color: var(--fg-dim);
     margin: 0 0 32px;
     padding-bottom: 24px;
     border-bottom: 1px solid var(--rule);
+    text-transform: uppercase;
+  }
+  .archivist__eyebrow a {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .archivist__eyebrow a:hover,
+  .archivist__eyebrow a:focus-visible {
+    border-bottom-color: var(--fg);
   }
   .archivist__body {
     font-family: var(--font-display);
@@ -623,6 +678,17 @@ const totalCases = renderable.length;
     max-width: 32ch;
     margin: 0 0 24px;
   }
+  .archivist__body a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--fg-dim);
+    text-underline-offset: 6px;
+  }
+  .archivist__body a:hover,
+  .archivist__body a:focus-visible {
+    text-decoration-color: var(--fg);
+  }
   .archivist__sign {
     font-family: var(--font-mono);
     font-size: 11px;
@@ -630,5 +696,16 @@ const totalCases = renderable.length;
     text-transform: uppercase;
     color: var(--fg-dim);
     margin: 48px 0 0;
+  }
+  .archivist__sign a {
+    color: var(--fg-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .archivist__sign a:hover,
+  .archivist__sign a:focus-visible {
+    color: var(--fg);
+    border-bottom-color: var(--fg);
   }
 </style>

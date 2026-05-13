@@ -2,6 +2,7 @@
 import '../styles/globals.css';
 import OperatorChrome from '../components/OperatorChrome.astro';
 import { ClientRouter } from 'astro:transitions';
+import { getArchiveStats } from '../lib/archive-stats';
 
 interface Props {
   title: string;
@@ -18,6 +19,10 @@ const {
 const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : Astro.url.pathname;
 const pathname = Astro.url.pathname;
+
+const stats = await getArchiveStats();
+const commitHref = `https://github.com/wretcher207/the-ufo-files-site/commit/${stats.commitHash}`;
+const branchHref = `https://github.com/wretcher207/the-ufo-files-site/tree/${stats.branch}`;
 
 /**
  * Route to mode mapping.
@@ -62,18 +67,28 @@ const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="page-shell">
-      <OperatorChrome pathname={pathname} />
+      <OperatorChrome pathname={pathname} stats={stats} />
       <main id="main" class="page-main">
         <slot />
       </main>
       <footer class="page-footer">
-        <span>The UFO Files</span>
-        <span class="page-footer__sep">/</span>
-        <span>An archive by <a href="https://deadpixeldesign.com" rel="noopener external">Dead Pixel Design</a></span>
-        <span class="page-footer__sep">/</span>
-        <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">Github</a>
-        <span class="page-footer__sep">/</span>
-        <span>Released May 8 2026</span>
+        <div class="page-footer__record">
+          <a href="/timeline">INDEX {stats.buildDate}</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href="/timeline">{stats.totalCases} FILES</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href="/threads">{String(stats.threadCount).padStart(2, '0')} THREADS</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href="/about">RELEASED {stats.releaseDate}</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href={commitHref} rel="noopener external">BUILD {stats.commitHash}</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href={branchHref} rel="noopener external">{stats.branch}</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href="https://github.com/wretcher207/the-ufo-files" rel="noopener external">CORPUS</a>
+          <span class="page-footer__record-divider">·</span>
+          <a href="https://deadpixeldesign.com" rel="noopener external">DEAD PIXEL DESIGN</a>
+        </div>
       </footer>
     </div>
   </body>

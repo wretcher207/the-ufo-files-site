@@ -89,7 +89,45 @@
 .operator-chrome__right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
+}
+
+.operator-chrome__counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  white-space: nowrap;
+}
+.operator-chrome__counter:hover,
+.operator-chrome__counter:focus-visible {
+  border-bottom-color: var(--fg);
+  outline: none;
+}
+.operator-chrome__counter-num {
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+.operator-chrome__counter-label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-mid);
+}
+.operator-chrome__counter:hover .operator-chrome__counter-label,
+.operator-chrome__counter:focus-visible .operator-chrome__counter-label {
+  color: var(--fg);
+}
+@media (max-width: 768px) {
+  .operator-chrome__counter { display: none; }
 }
 
 .operator-chrome__search {
@@ -310,6 +348,224 @@
   border: 1px solid var(--fg);
 }
 .skip-link:focus { top: 8px; }
+
+/* ── REUSABLE PATTERNS ──────────────────────────────────── */
+/* These give the site its identity without violating the rules:
+   no glow, no boxed cards, no warm tones. Sharp inversions and
+   live counters do the work. */
+
+/* Hover-invert row. Apply to <a> on case/thread/etc rows.
+   The whole row inverts on hover; no underline glow. The slight
+   horizontal pull-out makes the inversion register as a "stamp"
+   without the row physically growing on hover. */
+.ufo-row-link {
+  display: grid;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  padding: 14px 12px;
+  margin: 0 -12px;
+  transition: background-color var(--dur-quick) linear,
+              color var(--dur-quick) linear;
+}
+.ufo-row-link:hover,
+.ufo-row-link:focus-visible {
+  background: var(--fg);
+  color: var(--bg);
+  outline: none;
+}
+.ufo-row-link:hover .ufo-row-link__dim,
+.ufo-row-link:focus-visible .ufo-row-link__dim,
+.ufo-row-link:hover .ufo-row-link__mid,
+.ufo-row-link:focus-visible .ufo-row-link__mid,
+.ufo-row-link:hover .ufo-row-link__fg,
+.ufo-row-link:focus-visible .ufo-row-link__fg {
+  color: var(--bg);
+}
+
+/* Figure link. Wraps a <figure> + <figcaption> so the image clicks.
+   Hover state: 2px outline + small "OPEN" mono indicator, no glow. */
+.ufo-figure-link {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+.ufo-figure-link img {
+  display: block;
+  outline: 0 solid transparent;
+  outline-offset: 0;
+  transition: outline-color var(--dur-quick) linear,
+              outline-width var(--dur-quick) linear;
+}
+.ufo-figure-link::after {
+  content: "↗ OPEN";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--fg);
+  padding: 5px 8px;
+  opacity: 0;
+  transition: opacity var(--dur-quick) linear;
+  pointer-events: none;
+}
+.ufo-figure-link:hover img,
+.ufo-figure-link:focus-visible img {
+  outline: 2px solid var(--fg);
+  outline-offset: -1px;
+}
+.ufo-figure-link:hover::after,
+.ufo-figure-link:focus-visible::after {
+  opacity: 1;
+}
+.ufo-figure-link:focus-visible {
+  outline: none;
+}
+.ufo-figure-link figcaption {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--fg-dim);
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+.ufo-figure-link:hover figcaption,
+.ufo-figure-link:focus-visible figcaption {
+  color: var(--fg);
+}
+
+/* Section anchor. Replaces tiny eyebrow + meta with a big Fraunces
+   numeral that's also a link to the section's drill-in page. */
+.ufo-section-anchor {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--fg);
+  margin-bottom: 0;
+  text-decoration: none;
+  color: inherit;
+}
+.ufo-section-anchor__num {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(56px, 9vw, 132px);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  color: var(--fg);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+.ufo-section-anchor__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: end;
+  padding-bottom: 8px;
+}
+.ufo-section-anchor__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.ufo-section-anchor__sublabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.ufo-section-anchor__arrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  align-self: end;
+  padding-bottom: 14px;
+  white-space: nowrap;
+}
+a.ufo-section-anchor:hover .ufo-section-anchor__arrow,
+a.ufo-section-anchor:focus-visible .ufo-section-anchor__arrow {
+  color: var(--fg);
+}
+a.ufo-section-anchor:hover .ufo-section-anchor__label,
+a.ufo-section-anchor:focus-visible .ufo-section-anchor__label {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+}
+@media (max-width: 640px) {
+  .ufo-section-anchor {
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+  }
+  .ufo-section-anchor__arrow { display: none; }
+}
+
+/* Live counter cell, used in chrome and inline. */
+.ufo-counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+}
+.ufo-counter:hover { color: var(--fg); }
+.ufo-counter__value {
+  color: var(--fg);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+.ufo-counter__label {
+  color: var(--fg-mid);
+}
+.ufo-counter:hover .ufo-counter__label,
+.ufo-counter:focus-visible .ufo-counter__label {
+  color: var(--fg);
+}
+
+/* Record-of-record footer line. Replaces the boilerplate footer with
+   a single live status line, like an instrument readout. */
+.page-footer__record {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 14px;
+  align-items: center;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.page-footer__record a {
+  color: var(--fg-mid);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+}
+.page-footer__record a:hover,
+.page-footer__record a:focus-visible {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+}
+.page-footer__record-divider { color: var(--fg-dim); opacity: 0.5; }
 
 /* ── REDUCED MOTION ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

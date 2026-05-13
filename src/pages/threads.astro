@@ -10,13 +10,19 @@ for (const c of cases) {
   if (!t) continue;
   countByThread.set(String(t), (countByThread.get(String(t)) ?? 0) + 1);
 }
+
+const numberWord = (n: number): string => {
+  const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+  return words[n] ?? String(n);
+};
+const threadCountWord = numberWord(THREADS.length);
 ---
 <Base title="Threads" pathname="/threads">
   <main class="threads-main" id="main">
 
     <header class="threads-head">
       <p class="threads-eyebrow">THREADS</p>
-      <h1 class="threads-title">Five threads run through the archive.</h1>
+      <h1 class="threads-title">{threadCountWord.charAt(0).toUpperCase() + threadCountWord.slice(1)} threads run through the archive.</h1>
       <p class="threads-lede">
         The files belong to one of these. Pick one and read straight through, or
         pick a single case and let the threads pull you sideways.

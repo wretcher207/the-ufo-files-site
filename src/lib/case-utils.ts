@@ -12,7 +12,12 @@ export async function getAllCases(): Promise<AnyCase[]> {
 
 export async function getRenderableCases(): Promise<AnyCase[]> {
   const all = await getAllCases();
-  return all.filter((c) => c.data.thread && c.data.title);
+  return all.filter((c) => (c.data.threads?.[0] ?? c.data.thread) && c.data.title);
+}
+
+export function primaryThreadId(c: AnyCase): string | undefined {
+  const t = c.data.threads?.[0] ?? c.data.thread;
+  return t ? String(t) : undefined;
 }
 
 export function archiveOf(c: AnyCase): 'fbi' | 'pursue' {
@@ -24,7 +29,9 @@ export function caseUrl(c: AnyCase): string {
 }
 
 export function threadOf(c: AnyCase) {
-  return THREADS.find((t) => t.id === c.data.thread);
+  const tid = c.data.threads?.[0] ?? c.data.thread;
+  if (!tid) return undefined;
+  return THREADS.find((t) => t.id === tid);
 }
 
 export function shortDate(input: unknown): string | null {

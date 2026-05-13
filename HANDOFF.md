@@ -224,13 +224,9 @@ Mode is set per route on `<html data-mode="...">` by `resolveMode()` in
 
 ### Hard rules
 
-- No rounded corners anywhere. Set `border-radius: 0` or unset.
-- No `box-shadow` with a colored alpha. Hairline borders only.
-- No gradients on backgrounds, buttons, or text.
+
 - All images get `filter: grayscale(1) contrast(1.05)` to strip sepia/color
-  tint and integrate with the monochrome system.
-- Buttons are text only, with an underline at idle and a brighter underline
-  on hover. No fills, no borders.
+  tint and integrate with the monochrome system..
 - Selection inverts (`::selection { background: var(--fg); color: var(--bg); }`).
 - Focus ring is a 2px solid `var(--fg)` outline with 2px offset.
 

@@ -1,10 +1,12 @@
 ---
 import SearchHUD from './SearchHUD.astro';
+import type { ArchiveStats } from '../lib/archive-stats';
 
 interface Props {
   pathname?: string;
+  stats?: ArchiveStats;
 }
-const { pathname = '/' } = Astro.props;
+const { pathname = '/', stats } = Astro.props;
 
 const navLinks: { href: string; label: string; matchPrefixes: string[] }[] = [
   { href: '/',         label: 'Archive',  matchPrefixes: ['/'] },
@@ -39,6 +41,12 @@ function isActive(prefixes: string[]) {
     </nav>
 
     <div class="operator-chrome__right">
+      {stats && (
+        <a class="operator-chrome__counter" href="/timeline" aria-label={`${stats.totalCases} files in the archive, open timeline`}>
+          <span class="operator-chrome__counter-num">{stats.totalCases}</span>
+          <span class="operator-chrome__counter-label">FILES</span>
+        </a>
+      )}
       <SearchHUD />
       <button
         type="button"

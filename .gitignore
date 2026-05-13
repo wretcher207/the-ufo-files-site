@@ -31,7 +31,9 @@ Thumbs.db
 .netlify/
 
 # Claude Code
-.claude/worktrees/
+.claude/
 
 # QA captures
 qa-snapshots/
+.playwright-mcp/
+design-extract-output/
