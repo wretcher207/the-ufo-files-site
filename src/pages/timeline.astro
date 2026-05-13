@@ -57,20 +57,26 @@ for (let y = earliest; y <= latest; y++) {
 <Base
   title="Timeline"
   description="Every dated case in the archive, 1944 to 2026."
-  serial="TIMELINE"
   section="ALL THREADS"
 >
-  <header class="tl-hero">
-    <div class="tl-hero__breadcrumb">
-      <a href="/">Case board</a> <span aria-hidden="true">/</span> <span>Timeline</span>
-    </div>
-    <p class="tl-hero__eyebrow">{marks.length} dated cases plotted</p>
-    <h1 class="tl-hero__title">Eighty years of the file.</h1>
-    <p class="tl-hero__lede">
-      Every case in the archive with an extractable date. Hover or focus a marker to read the title;
-      click to open the dossier. PURSUE markers glow.
-    </p>
-  </header>
+  <main class="tl-main" id="main">
+
+    <a class="ufo-section-anchor tl-anchor" href="/threads">
+      <span class="ufo-section-anchor__num">{marks.length}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">Dated cases plotted</span>
+        <span class="ufo-section-anchor__sublabel">1944 → 2026 &nbsp;/&nbsp; 82-year span</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ Read by thread</span>
+    </a>
+
+    <header class="tl-hero">
+      <h1 class="tl-hero__title">Eighty years of the file.</h1>
+      <p class="tl-hero__lede">
+        Every case with an extractable date. Hover or focus a marker for the title.
+        Click to open. The empty stretch between 1973 and 2025 is deliberate; no archive ran there.
+      </p>
+    </header>
 
   <div class="tl-board" role="region" aria-label="Timeline of UFO cases">
     <div class="tl-board__axis" aria-hidden="true">
@@ -105,45 +111,200 @@ for (let y = earliest; y <= latest; y++) {
       <li><span class="tl-mark__dot tl-mark--fbi tl-mark--high"></span> FBI high-signal</li>
       <li><span class="tl-mark__dot tl-mark--fbi tl-mark--medium"></span> FBI medium</li>
       <li><span class="tl-mark__dot tl-mark--fbi tl-mark--low"></span> FBI low</li>
-      <li><span class="tl-mark__dot tl-mark--pursue tl-mark--high"></span> PURSUE</li>
+      <li><span class="tl-mark__dot tl-mark--pursue tl-mark--high"></span> PURSUE (outlined)</li>
     </ul>
   </section>
+
+  </main>
 </Base>
 
 <style>
-  .tl-hero { padding: var(--sp-5) 0 var(--sp-6); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--sp-6); }
-  .tl-hero__breadcrumb { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wide); color: var(--fg-3); display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4); }
-  .tl-hero__breadcrumb a { color: var(--fg-2); }
-  .tl-hero__eyebrow { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-3); }
-  .tl-hero__title { font-family: var(--font-display); font-size: var(--fs-3xl); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); margin: 0 0 var(--sp-4); font-weight: 500; max-width: 22ch; }
-  @media (max-width: 640px) { .tl-hero__title { font-size: var(--fs-2xl); } }
-  .tl-hero__lede { font-family: var(--font-ui); font-size: var(--fs-md); line-height: var(--lh-loose); color: var(--fg-2); max-width: 70ch; margin: 0; }
-  .tl-board { position: relative; overflow-x: auto; overflow-y: visible; padding: var(--sp-6) 0 var(--sp-8); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-1); }
-  .tl-board__axis { position: relative; height: 36px; margin: 0 var(--sp-5) var(--sp-4); min-width: 1200px; border-bottom: 1px solid var(--border); }
-  .tl-tick { position: absolute; top: 0; width: 1px; height: 16px; background: var(--border-strong); }
-  .tl-tick__label { position: absolute; top: 18px; left: 0; transform: translateX(-50%); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-3); letter-spacing: var(--tracking-wide); }
-  .tl-board__marks { position: relative; height: 130px; margin: 0 var(--sp-5); list-style: none; padding: 0; min-width: 1200px; }
+  .tl-main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+  @media (max-width: 720px) {
+    .tl-main { padding: 48px 16px 80px; }
+  }
+
+  .tl-anchor { margin-bottom: 56px; }
+  @media (max-width: 720px) {
+    .tl-anchor { margin-bottom: 40px; }
+  }
+
+  .tl-hero { margin: 0 0 64px; max-width: 70ch; }
+  .tl-hero__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
+    max-width: 18ch;
+  }
+  .tl-hero__lede {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--fg-mid);
+    margin: 0;
+  }
+
+  .tl-board {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 56px 0 64px;
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--fg);
+    background: var(--bg);
+  }
+  .tl-board__axis {
+    position: relative;
+    height: 36px;
+    margin: 0 24px 32px;
+    min-width: 1200px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .tl-tick {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 16px;
+    background: var(--fg);
+  }
+  .tl-tick__label {
+    position: absolute;
+    top: 18px;
+    left: 0;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mid);
+    letter-spacing: 0.18em;
+  }
+  .tl-board__marks {
+    position: relative;
+    height: 160px;
+    margin: 0 24px;
+    list-style: none;
+    padding: 0;
+    min-width: 1200px;
+  }
   .tl-mark { position: absolute; transform: translate(-50%, -50%); }
-  .tl-mark a { display: block; width: 14px; height: 14px; position: relative; }
+  .tl-mark a {
+    display: block;
+    width: 14px;
+    height: 14px;
+    position: relative;
+  }
   .tl-mark a:focus-visible { outline: none; }
-  .tl-mark a:focus-visible .tl-mark__dot { box-shadow: var(--focus-ring); }
-  .tl-mark__dot { position: absolute; inset: 4px; background: var(--fg-3); transition: inset var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
-  .tl-mark--fbi .tl-mark__dot { background: var(--dead-silver); }
-  .tl-mark--pursue .tl-mark__dot { background: var(--crt-glow); box-shadow: 0 0 6px rgba(199, 247, 255, 0.6); }
-  .tl-mark--high .tl-mark__dot { inset: 2px; }
-  .tl-mark--low .tl-mark__dot { inset: 5px; opacity: 0.7; }
-  .tl-mark a:hover .tl-mark__dot, .tl-mark a:focus-visible .tl-mark__dot { inset: 1px; background: var(--crt-glow); box-shadow: 0 0 10px rgba(199, 247, 255, 0.6); }
-  .tl-mark__tip { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg-2); border: 1px solid var(--border-strong); padding: var(--sp-2) var(--sp-3); min-width: 240px; max-width: 320px; opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease-out); display: flex; flex-direction: column; gap: 2px; z-index: 5; }
-  .tl-mark a:hover .tl-mark__tip, .tl-mark a:focus-visible .tl-mark__tip { opacity: 1; pointer-events: auto; }
-  .tl-mark__tip-date { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-wide); color: var(--fg-3); }
-  .tl-mark__tip-archive { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-wider); color: var(--fg-2); }
-  .tl-mark__tip-title { font-family: var(--font-ui); font-size: var(--fs-sm); color: var(--fg-1); line-height: var(--lh-snug); }
-  .tl-help { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-3); margin: var(--sp-4) 0 var(--sp-7); letter-spacing: var(--tracking-wide); }
-  .tl-legend { border-top: 1px solid var(--border); padding-top: var(--sp-5); }
-  .tl-legend__title { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--fg-3); margin: 0 0 var(--sp-4); font-weight: 500; }
-  .tl-legend__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-5); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--fg-2); letter-spacing: var(--tracking-wide); }
-  .tl-legend__list li { display: flex; align-items: center; gap: var(--sp-2); }
-  .tl-legend__list .tl-mark__dot { position: relative; inset: auto; width: 12px; height: 12px; display: inline-block; }
+  .tl-mark__dot {
+    position: absolute;
+    inset: 4px;
+    background: var(--fg-mid);
+    transition: inset var(--dur-quick) linear,
+                background var(--dur-quick) linear;
+  }
+  .tl-mark--fbi .tl-mark__dot { background: var(--fg-mid); }
+  .tl-mark--pursue .tl-mark__dot {
+    background: var(--bg);
+    box-shadow: inset 0 0 0 1.5px var(--fg);
+  }
+  .tl-mark--high .tl-mark__dot { inset: 1px; }
+  .tl-mark--low .tl-mark__dot { inset: 5px; opacity: 0.6; }
+  .tl-mark a:hover .tl-mark__dot,
+  .tl-mark a:focus-visible .tl-mark__dot {
+    inset: 0;
+    background: var(--fg);
+    box-shadow: none;
+  }
+  .tl-mark__tip {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    border: 1px solid var(--fg);
+    padding: 10px 14px;
+    min-width: 240px;
+    max-width: 320px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-quick) linear;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 5;
+  }
+  .tl-mark a:hover .tl-mark__tip,
+  .tl-mark a:focus-visible .tl-mark__tip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .tl-mark__tip-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--fg-mid);
+  }
+  .tl-mark__tip-archive {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg);
+  }
+  .tl-mark__tip-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    color: var(--fg);
+    line-height: 1.25;
+  }
+  .tl-help {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-dim);
+    margin: 24px 0 64px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .tl-legend {
+    border-top: 1px solid var(--rule);
+    padding-top: 32px;
+  }
+  .tl-legend__title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 24px;
+    font-weight: 500;
+  }
+  .tl-legend__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mid);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .tl-legend__list li { display: flex; align-items: center; gap: 8px; }
+  .tl-legend__list .tl-mark__dot {
+    position: relative;
+    inset: auto;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+  }
   .tl-legend__list .tl-mark--high.tl-mark__dot { width: 14px; height: 14px; }
-  .tl-legend__list .tl-mark--low.tl-mark__dot { opacity: 0.7; }
+  .tl-legend__list .tl-mark--low.tl-mark__dot { opacity: 0.6; }
 </style>

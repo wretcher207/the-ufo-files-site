@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { THREADS, type ThreadId } from '../../lib/threads';
-import { getRenderableCases, archiveOf, caseUrl, headlineDate, tidyTitle } from '../../lib/case-utils';
+import { THREADS } from '../../lib/threads';
+import {
+  allThreadIds,
+  archiveOf,
+  caseUrl,
+  getRenderableCases,
+  headlineDate,
+  tidyTitle,
+} from '../../lib/case-utils';
+import { caseImage } from '../../lib/case-images';
 
 export async function getStaticPaths() {
   return THREADS.map((thread) => ({
@@ -12,221 +20,304 @@ export async function getStaticPaths() {
 
 const { thread } = Astro.props;
 const all = await getRenderableCases();
-const cases = all.filter((c) => c.data.thread === thread.id);
-
-const featured = cases.filter((c) => c.data.significance === 'high');
-const rest = cases.filter((c) => c.data.significance !== 'high');
+const cases = all.filter((c) => allThreadIds(c).includes(thread.id));
 
 cases.sort((a, b) => {
   const da = headlineDate(a) ?? '';
   const db = headlineDate(b) ?? '';
   return da.localeCompare(db);
 });
-rest.sort((a, b) => {
-  const da = headlineDate(a) ?? '';
-  const db = headlineDate(b) ?? '';
-  return da.localeCompare(db);
-});
+
+const totalSig = (sig: string) => cases.filter((c) => (c.data.significance ?? 'medium') === sig).length;
+const highCount = totalSig('high');
+
+// Find this thread's position in the canonical sequence for the eyebrow.
+const threadIdx = THREADS.findIndex((t) => t.id === thread.id);
+const prevThread = threadIdx > 0 ? THREADS[threadIdx - 1] : null;
+const nextThread = threadIdx >= 0 && threadIdx < THREADS.length - 1 ? THREADS[threadIdx + 1] : null;
+
+const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
+const archiveHref = thread.archive === 'pursue' ? '/thread/pursue-2026' : '/timeline';
 ---
 <Base
   title={thread.title}
   description={thread.blurb}
-  serial={thread.serial}
   section="THREAD"
 >
-  <header class="thread-hero">
-    <div class="thread-hero__breadcrumb">
-      <a href="/">Case board</a>
-      <span aria-hidden="true">/</span>
-      <span class="thread-hero__breadcrumb-current">{thread.title}</span>
-    </div>
-    <p class="thread-hero__eyebrow">{thread.archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-83894'} · Thread</p>
-    <h1 class="thread-hero__title">{thread.title}</h1>
-    <p class="thread-hero__span">{thread.span}</p>
-    <p class="thread-hero__blurb">{thread.blurb}</p>
-    <p class="thread-hero__count">{cases.length} case{cases.length === 1 ? '' : 's'} in this thread.</p>
-  </header>
+  <main class="thread-main" id="main">
 
-  {featured.length > 0 && (
-    <section class="thread-section" aria-labelledby="featured-h">
-      <header class="thread-section__head">
-        <h2 id="featured-h" class="thread-section__title">High-signal cases</h2>
-        <span class="thread-section__meta">Headline reads</span>
-      </header>
-      <ul class="case-list">
-        {featured.map((c) => (
-          <li class="case-list__item">
-            <a href={caseUrl(c)} class="case-list__link">
-              <div class="case-list__chrome">
-                <span class="case-list__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
-                <span class="case-list__date">{headlineDate(c) ?? '—'}</span>
-                <span class="case-list__sig case-list__sig--high">HIGH</span>
-              </div>
-              <span class="case-list__title">{tidyTitle(c.data.title)}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+    <a class="ufo-section-anchor thread-anchor" href="/threads">
+      <span class="ufo-section-anchor__num">{String(threadIdx + 1).padStart(2, '0')}</span>
+      <span class="ufo-section-anchor__body">
+        <span class="ufo-section-anchor__label">{archiveLabel} &nbsp;/&nbsp; Thread</span>
+        <span class="ufo-section-anchor__sublabel">{thread.serial}</span>
+      </span>
+      <span class="ufo-section-anchor__arrow">↗ All threads</span>
+    </a>
 
-  <section class="thread-section" aria-labelledby="all-h">
-    <header class="thread-section__head">
-      <h2 id="all-h" class="thread-section__title">All cases in this thread</h2>
-      <span class="thread-section__meta">Chronological</span>
+    <header class="thread-hero">
+      <h1 class="thread-hero__title">{thread.title}.</h1>
+      <p class="thread-hero__span">{thread.span}</p>
+      <p class="thread-hero__blurb">{thread.blurb}</p>
+      <p class="thread-hero__count">
+        <a href="/timeline">{cases.length} case{cases.length === 1 ? '' : 's'} in this thread</a>
+        {highCount > 0 && <> &nbsp;/&nbsp; {highCount} headline {highCount === 1 ? 'read' : 'reads'}</>}
+      </p>
     </header>
-    <ul class="case-list">
-      {rest.map((c) => {
-        const sig = c.data.significance ?? 'medium';
-        return (
-          <li class="case-list__item">
-            <a href={caseUrl(c)} class="case-list__link">
-              <div class="case-list__chrome">
-                <span class="case-list__archive">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
-                <span class="case-list__date">{headlineDate(c) ?? '—'}</span>
-                <span class={`case-list__sig case-list__sig--${sig}`}>{sig.toUpperCase()}</span>
-              </div>
-              <span class="case-list__title">{tidyTitle(c.data.title)}</span>
-            </a>
-          </li>
-        );
-      })}
-    </ul>
-  </section>
+
+    {cases.length === 0 ? (
+      <p class="thread-empty">
+        No cases sit in this thread yet. The
+        <a href="/timeline"> timeline </a>
+        shows everything that does.
+      </p>
+    ) : (
+      <ol class="thread-list">
+        {cases.map((c, i) => {
+          const img = caseImage(c.id);
+          const sig = String(c.data.significance ?? 'medium').toLowerCase();
+          return (
+            <li class="thread-row">
+              <a href={caseUrl(c)} class="thread-row__link ufo-row-link">
+                <span class="thread-row__num ufo-row-link__dim">{String(i + 1).padStart(2, '0')}</span>
+                <span class="thread-row__thumb">
+                  {img && <img src={img.src} alt="" width="80" height="56" loading="lazy" />}
+                </span>
+                <span class="thread-row__date ufo-row-link__mid">{headlineDate(c) ?? '----'}</span>
+                <span class="thread-row__title ufo-row-link__fg">{tidyTitle(c.data.title)}</span>
+                <span class={`thread-row__sig thread-row__sig--${sig} ufo-row-link__dim`}>{sig === 'high' ? 'HEADLINE' : sig.toUpperCase()}</span>
+                <span class="thread-row__agency ufo-row-link__dim">{archiveOf(c) === 'pursue' ? 'PURSUE' : 'FBI'}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    )}
+
+    <nav class="thread-nav" aria-label="Adjacent threads">
+      {prevThread ? (
+        <a class="thread-nav__link thread-nav__link--prev" href={`/thread/${prevThread.id}`}>
+          <span class="thread-nav__arrow">↩</span>
+          <span class="thread-nav__body">
+            <span class="thread-nav__eyebrow">PREVIOUS THREAD</span>
+            <span class="thread-nav__title">{prevThread.title}</span>
+          </span>
+        </a>
+      ) : <span></span>}
+      {nextThread ? (
+        <a class="thread-nav__link thread-nav__link--next" href={`/thread/${nextThread.id}`}>
+          <span class="thread-nav__body">
+            <span class="thread-nav__eyebrow">NEXT THREAD</span>
+            <span class="thread-nav__title">{nextThread.title}</span>
+          </span>
+          <span class="thread-nav__arrow">↪</span>
+        </a>
+      ) : <span></span>}
+    </nav>
+
+  </main>
 </Base>
 
 <style>
-  .thread-hero {
-    border-top: 1px solid var(--border);
-    padding: var(--sp-5) 0 var(--sp-7);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: var(--sp-7);
+  .thread-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
   }
-  .thread-hero__breadcrumb {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wide);
-    color: var(--fg-3);
-    display: flex; gap: var(--sp-2); align-items: center;
-    margin-bottom: var(--sp-5);
+  @media (max-width: 720px) {
+    .thread-main { padding: 48px 16px 80px; }
   }
-  .thread-hero__breadcrumb a { color: var(--fg-2); }
-  .thread-hero__breadcrumb-current { color: var(--fg-3); }
-  .thread-hero__eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    color: var(--fg-3);
-    margin: 0 0 var(--sp-3);
+
+  .thread-anchor { margin-bottom: 64px; }
+  @media (max-width: 720px) {
+    .thread-anchor { margin-bottom: 40px; }
   }
+
+  .thread-hero { margin: 0 0 64px; }
   .thread-hero__title {
     font-family: var(--font-display);
-    font-size: var(--fs-3xl);
-    line-height: var(--lh-tight);
-    letter-spacing: var(--tracking-tight);
-    color: var(--fg-1);
-    font-weight: 500;
-    margin: 0 0 var(--sp-3);
-    max-width: 22ch;
+    font-weight: 400;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin: 0 0 24px;
+    max-width: 18ch;
   }
-  @media (max-width: 640px) { .thread-hero__title { font-size: var(--fs-2xl); } }
   .thread-hero__span {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wide);
-    color: var(--fg-3);
-    margin: 0 0 var(--sp-5);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+    margin: 0 0 24px;
   }
   .thread-hero__blurb {
-    font-family: var(--font-ui);
-    font-size: var(--fs-md);
-    line-height: var(--lh-loose);
-    color: var(--fg-2);
-    max-width: 70ch;
-    margin: 0 0 var(--sp-5);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--fg-mid);
+    max-width: 60ch;
+    margin: 0 0 32px;
   }
   .thread-hero__count {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    color: var(--fg-3);
-    letter-spacing: var(--tracking-wide);
-    margin: 0;
-  }
-
-  .thread-section { margin-top: var(--sp-7); }
-  .thread-section__head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--sp-5);
-    margin-bottom: var(--sp-5);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: var(--sp-3);
-  }
-  .thread-section__title {
-    font-family: var(--font-display);
-    font-size: var(--fs-xl);
-    color: var(--fg-1);
-    margin: 0;
-    font-weight: 500;
-  }
-  .thread-section__meta {
-    font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
+    font-size: 11px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--fg-3);
+    color: var(--fg-dim);
+    margin: 0;
+  }
+  .thread-hero__count a {
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .thread-hero__count a:hover,
+  .thread-hero__count a:focus-visible {
+    border-bottom-color: var(--fg);
   }
 
-  .case-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .thread-empty {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--fg-mid);
+    max-width: 40ch;
+    margin: 32px 0 64px;
+  }
+  .thread-empty a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--fg-dim);
+    text-underline-offset: 4px;
+  }
+  .thread-empty a:hover { text-decoration-color: var(--fg); }
+
+  .thread-list { margin: 0; padding: 0; list-style: none; }
+  .thread-row { border-bottom: 1px solid var(--rule); }
+  .thread-row__link {
+    grid-template-columns: 40px 96px 110px 1fr 90px 60px;
+    gap: 18px;
+  }
+  .thread-row__num,
+  .thread-row__date,
+  .thread-row__sig,
+  .thread-row__agency {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .thread-row__date { color: var(--fg-mid); }
+  .thread-row__sig--high { color: var(--fg); font-weight: 500; }
+  .thread-row__sig--medium,
+  .thread-row__sig--low { color: var(--fg-dim); }
+  .thread-row__agency { text-align: right; }
+  .thread-row__title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.25;
+    color: var(--fg);
+  }
+  .thread-row__thumb {
+    display: block;
+    width: 96px;
+    height: 64px;
+    overflow: hidden;
+  }
+  .thread-row__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: grayscale(1) contrast(1.05);
+    display: block;
+  }
+  .thread-row__link:hover .thread-row__thumb img,
+  .thread-row__link:focus-visible .thread-row__thumb img {
+    filter: grayscale(1) contrast(1.05) invert(1);
+  }
+  @media (max-width: 720px) {
+    .thread-row__link {
+      grid-template-columns: 32px 64px 1fr;
+      gap: 12px;
+    }
+    .thread-row__date,
+    .thread-row__sig,
+    .thread-row__agency { display: none; }
+    .thread-row__thumb { width: 64px; height: 44px; }
+    .thread-row__title { font-size: 16px; }
+  }
+
+  .thread-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--fg);
+  }
+  @media (max-width: 720px) {
+    .thread-nav { grid-template-columns: 1fr; gap: 16px; }
+  }
+  .thread-nav__link {
+    display: grid;
+    gap: 14px;
+    text-decoration: none;
+    color: inherit;
+    padding: 14px 16px;
+    margin: 0 -16px;
+    transition: background-color var(--dur-quick) linear,
+                color var(--dur-quick) linear;
+  }
+  .thread-nav__link--prev {
+    grid-template-columns: auto 1fr;
+    text-align: left;
+  }
+  .thread-nav__link--next {
+    grid-template-columns: 1fr auto;
+    text-align: right;
+  }
+  .thread-nav__link:hover,
+  .thread-nav__link:focus-visible {
+    background: var(--fg);
+    color: var(--bg);
+    outline: none;
+  }
+  .thread-nav__link:hover .thread-nav__eyebrow,
+  .thread-nav__link:focus-visible .thread-nav__eyebrow {
+    color: var(--bg);
+  }
+  .thread-nav__arrow {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    color: var(--fg);
+    align-self: center;
+  }
+  .thread-nav__link:hover .thread-nav__arrow,
+  .thread-nav__link:focus-visible .thread-nav__arrow {
+    color: var(--bg);
+  }
+  .thread-nav__body {
     display: flex;
     flex-direction: column;
+    gap: 6px;
   }
-  .case-list__item { border-top: 1px solid var(--border-subtle); }
-  .case-list__item:last-child { border-bottom: 1px solid var(--border-subtle); }
-  .case-list__link {
-    display: grid;
-    grid-template-columns: minmax(220px, 280px) 1fr;
-    gap: var(--sp-4);
-    padding: var(--sp-3) 0;
-    text-decoration: none;
-    color: var(--fg-1);
-    transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
-  }
-  .case-list__link:hover {
-    color: var(--crt-glow);
-    background: rgba(199, 247, 255, 0.02);
-  }
-  @media (max-width: 640px) {
-    .case-list__link {
-      grid-template-columns: 1fr;
-      gap: var(--sp-2);
-    }
-  }
-  .case-list__chrome {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
+  .thread-nav__link--next .thread-nav__body { align-items: flex-end; }
+  .thread-nav__eyebrow {
     font-family: var(--font-mono);
-    font-size: var(--fs-xs);
-    letter-spacing: var(--tracking-wider);
+    font-size: 10px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--fg-3);
+    color: var(--fg-dim);
   }
-  .case-list__archive { color: var(--fg-2); min-width: 48px; }
-  .case-list__date { color: var(--fg-3); min-width: 88px; }
-  .case-list__sig { color: var(--fg-3); }
-  .case-list__sig--high { color: var(--crt-glow); }
-  .case-list__sig--medium { color: var(--fg-2); }
-  .case-list__sig--low { color: var(--fg-3); }
-  .case-list__title {
-    font-family: var(--font-ui);
-    font-size: var(--fs-md);
+  .thread-nav__title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.2;
     color: inherit;
-    line-height: var(--lh-snug);
   }
 </style>

@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import {
   archiveOf,
+  countCasesByThread,
   getRenderableCases,
   headlineDate,
   tidyTitle,
@@ -33,12 +34,7 @@ const featured = renderable.find((c) => c.id === 'kenneth-arnold-sighting-narrat
   ?? renderable.find((c) => c.id === 'guy-hottel-three-saucers-new-mexico-1950')
   ?? renderable[0];
 
-const countByThread = new Map<string, number>();
-for (const c of renderable) {
-  const t = c.data.threads?.[0] ?? c.data.thread;
-  if (!t) continue;
-  countByThread.set(String(t), (countByThread.get(String(t)) ?? 0) + 1);
-}
+const countByThread = countCasesByThread(renderable);
 
 // Specific dossier slugs for hero figures (linked from homepage).
 const HOTTEL_SLUG = 'guy-hottel-three-saucers-new-mexico-1950';

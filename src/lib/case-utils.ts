@@ -20,6 +20,44 @@ export function primaryThreadId(c: AnyCase): string | undefined {
   return t ? String(t) : undefined;
 }
 
+/**
+ * All thread ids a case belongs to. Cases tagged on multiple threads
+ * (e.g. PURSUE incident that also bridges the 1974-2025 silence)
+ * get counted under each. Returns string ids, deduped, in array
+ * order; falls back to the legacy single `thread` field if no array.
+ */
+export function allThreadIds(c: AnyCase): string[] {
+  const arr = Array.isArray(c.data.threads) ? c.data.threads : null;
+  const out: string[] = [];
+  const seen = new Set<string>();
+  if (arr && arr.length) {
+    for (const t of arr) {
+      if (!t) continue;
+      const s = String(t);
+      if (!seen.has(s)) { seen.add(s); out.push(s); }
+    }
+  }
+  if (c.data.thread) {
+    const s = String(c.data.thread);
+    if (!seen.has(s)) { seen.add(s); out.push(s); }
+  }
+  return out;
+}
+
+/**
+ * Per-thread case counts across the renderable corpus.
+ * A case counted under every thread it appears on.
+ */
+export function countCasesByThread(cases: AnyCase[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const c of cases) {
+    for (const t of allThreadIds(c)) {
+      counts.set(t, (counts.get(t) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
 export function archiveOf(c: AnyCase): 'fbi' | 'pursue' {
   return (c.collection as string) === 'pursueCases' ? 'pursue' : 'fbi';
 }
