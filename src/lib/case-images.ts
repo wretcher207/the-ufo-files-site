@@ -191,6 +191,16 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'Walter Winchell on the cover of Radio-TV Mirror, January 1951, two years after his collaboration with Ernest Cuneo and Bureau channels in the 1947-1949 flying-disc correspondence.',
     caption: 'Walter Winchell / Radio-TV Mirror / January 1951',
   },
+  'philadelphia-1950-soap-suds-disc': {
+    src: '/img/archive/philadelphia-sanborn-1950-plate1.jpg',
+    alt: 'Sanborn Fire Insurance Map of Philadelphia, 1950, Volume 1, Plate 1: Vine, Winter, Race, Quarry, and Cherry Streets between N. 12th and N. 14th. The municipal-scale documentation contemporaneous with the 1950 soap-suds disc report.',
+    caption: 'Sanborn Fire Insurance Map / Philadelphia / 1950 / Library of Congress',
+  },
+  'portland-police-department-september-1947': {
+    src: '/img/archive/portland-sanborn-1950-key.jpg',
+    alt: 'Sanborn Fire Insurance Map of Portland, Multnomah County, Oregon, 1950, Volume 1, Plate 0 — the index plate with key, symbols, and color-coded city blocks along the Willamette River. The same municipal grid Chief Leon Jenkins\'s officers dispatched across on the evening of 11 September 1947.',
+    caption: 'Sanborn Fire Insurance Map / Portland Oregon / 1950 / Library of Congress',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {
