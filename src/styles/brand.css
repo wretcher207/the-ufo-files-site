@@ -50,6 +50,10 @@
   --sp-8: 96px;
   --sp-9: 160px;
 
+  /* Fixed UI chrome height. OperatorChrome is anchored to this; full-bleed
+     pages (board, atlas, map) subtract it to fill the remaining viewport. */
+  --chrome-h: 48px;
+
   /* Motion. None by default. Animations cost taste points. */
   --dur-instant: 0ms;
   --dur-quick:   90ms;

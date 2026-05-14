@@ -119,20 +119,20 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
 
 <style>
   .thread-main {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .thread-main { padding: 48px 16px 80px; }
+    .thread-main { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
-  .thread-anchor { margin-bottom: 64px; }
+  .thread-anchor { margin-bottom: var(--sp-7); }
   @media (max-width: 720px) {
-    .thread-anchor { margin-bottom: 40px; }
+    .thread-anchor { margin-bottom: var(--sp-6); }
   }
 
-  .thread-hero { margin: 0 0 64px; }
+  .thread-hero { margin: 0 0 var(--sp-7); }
   .thread-hero__title {
     font-family: var(--font-display);
     font-weight: 400;
@@ -140,7 +140,7 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
     line-height: 1;
     letter-spacing: -0.025em;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     max-width: 18ch;
   }
   .thread-hero__span {
@@ -149,7 +149,7 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-mid);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
   }
   .thread-hero__blurb {
     font-family: var(--font-body);
@@ -157,7 +157,7 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
     line-height: 1.55;
     color: var(--fg-mid);
     max-width: 60ch;
-    margin: 0 0 32px;
+    margin: 0 0 var(--sp-6);
   }
   .thread-hero__count {
     font-family: var(--font-mono);
@@ -185,7 +185,7 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
     line-height: 1.4;
     color: var(--fg-mid);
     max-width: 40ch;
-    margin: 32px 0 64px;
+    margin: var(--sp-6) 0 var(--sp-7);
   }
   .thread-empty a {
     color: var(--fg);
@@ -198,8 +198,8 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
   .thread-list { margin: 0; padding: 0; list-style: none; }
   .thread-row { border-bottom: 1px solid var(--rule); }
   .thread-row__link {
-    grid-template-columns: 40px 96px 110px 1fr 90px 60px;
-    gap: 18px;
+    grid-template-columns: var(--sp-6) var(--sp-8) calc(var(--sp-8) + var(--sp-3)) 1fr var(--sp-8) var(--sp-7);
+    gap: var(--sp-5);
   }
   .thread-row__num,
   .thread-row__date,
@@ -223,8 +223,8 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
   }
   .thread-row__thumb {
     display: block;
-    width: 96px;
-    height: 64px;
+    width: var(--sp-8);
+    height: var(--sp-7);
     overflow: hidden;
   }
   .thread-row__thumb img {
@@ -241,34 +241,34 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
   }
   @media (max-width: 720px) {
     .thread-row__link {
-      grid-template-columns: 32px 64px 1fr;
-      gap: 12px;
+      grid-template-columns: var(--sp-6) var(--sp-7) 1fr;
+      gap: var(--sp-3);
     }
     .thread-row__date,
     .thread-row__sig,
     .thread-row__agency { display: none; }
-    .thread-row__thumb { width: 64px; height: 44px; }
+    .thread-row__thumb { width: var(--sp-7); height: var(--sp-6); }
     .thread-row__title { font-size: 16px; }
   }
 
   .thread-nav {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 80px;
-    padding-top: 32px;
+    gap: var(--sp-5);
+    margin-top: var(--sp-8);
+    padding-top: var(--sp-6);
     border-top: 1px solid var(--fg);
   }
   @media (max-width: 720px) {
-    .thread-nav { grid-template-columns: 1fr; gap: 16px; }
+    .thread-nav { grid-template-columns: 1fr; gap: var(--sp-4); }
   }
   .thread-nav__link {
     display: grid;
-    gap: 14px;
+    gap: var(--sp-4);
     text-decoration: none;
     color: inherit;
-    padding: 14px 16px;
-    margin: 0 -16px;
+    padding: var(--sp-4);
+    margin: 0 calc(-1 * var(--sp-4));
     transition: background-color var(--dur-quick) linear,
                 color var(--dur-quick) linear;
   }
@@ -303,7 +303,7 @@ const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
   .thread-nav__body {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--sp-2);
   }
   .thread-nav__link--next .thread-nav__body { align-items: flex-end; }
   .thread-nav__eyebrow {

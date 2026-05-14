@@ -66,8 +66,8 @@ const { nodes, edges } = await getGraph();
 <style>
   .atlas-page {
     position: relative;
-    /* OperatorChrome is 48px fixed; page-shell pads top by 48px. */
-    height: calc(100vh - 48px);
+    /* OperatorChrome is `--chrome-h` fixed; page-shell pads top by `--chrome-h`. */
+    height: calc(100vh - var(--chrome-h));
     width: 100%;
     overflow: hidden;
     background: var(--bg);

@@ -26,7 +26,7 @@ function dateKey(c: typeof renderable[number]) {
 }
 
 // Latest entries: just by date, most recent first.
-const latest = [...renderable].sort((a, b) => dateKey(b) - dateKey(a)).slice(0, 18);
+const latest = [...renderable].sort((a, b) => dateKey(b) - dateKey(a)).slice(0, 12);
 
 // Featured case for the pull. Kenneth Arnold's Cascade narrative,
 // the case that started the public record.
@@ -236,36 +236,39 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
 <style>
   main { width: 100%; }
 
-  /* All sections use the same vertical-rhythm container. */
-  .masthead, .pull, .index, .threads-section, .archivist {
+  /* All sections share a 1200px spine. Vertical rhythm is the
+     section paddings below, not these gutters. */
+  .masthead, .pull, .frontpage, .index, .threads-section, .archivist {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 32px;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
   }
   @media (max-width: 720px) {
-    .masthead, .pull, .index, .threads-section, .archivist {
-      padding: 0 16px;
+    .masthead, .pull, .frontpage, .index, .threads-section, .archivist {
+      padding-left: var(--sp-4);
+      padding-right: var(--sp-4);
     }
   }
 
   /* ── MASTHEAD ─────────────────────────────────────────── */
   .masthead {
-    padding-top: 80px;
-    padding-bottom: 96px;
+    padding-top: var(--sp-8);
+    padding-bottom: var(--sp-8);
   }
   @media (max-width: 720px) {
-    .masthead { padding-top: 40px; padding-bottom: 56px; }
+    .masthead { padding-top: var(--sp-6); padding-bottom: var(--sp-7); }
   }
   .masthead__grid {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: 48px;
+    gap: var(--sp-6);
     align-items: start;
   }
   @media (max-width: 900px) {
     .masthead__grid {
       grid-template-columns: 1fr;
-      gap: 32px;
+      gap: var(--sp-6);
     }
   }
   .masthead__figure-link { margin: 0; }
@@ -283,7 +286,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   }
   .masthead__text {
     position: sticky;
-    top: 64px;
+    top: var(--sp-7);
     align-self: start;
   }
   @media (max-width: 900px) {
@@ -294,10 +297,10 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     font-size: 11px;
     letter-spacing: 0.22em;
     color: var(--fg-dim);
-    margin: 0 0 40px;
+    margin: 0 0 var(--sp-6);
     display: flex;
     flex-wrap: wrap;
-    gap: 0 12px;
+    gap: 0 var(--sp-3);
     align-items: center;
     text-transform: uppercase;
   }
@@ -319,7 +322,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     font-size: clamp(56px, 9vw, 144px);
     line-height: 0.92;
     letter-spacing: -0.03em;
-    margin: 0 0 40px;
+    margin: 0 0 var(--sp-6);
     color: var(--fg);
   }
   .masthead__lede {
@@ -328,7 +331,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     line-height: 1.45;
     color: var(--fg-mid);
     max-width: 52ch;
-    margin: 0 0 48px;
+    margin: 0 0 var(--sp-6);
   }
   .masthead__links {
     font-family: var(--font-mono);
@@ -339,7 +342,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 18px;
+    gap: 0 var(--sp-5);
     align-items: center;
   }
   .masthead__links a {
@@ -352,25 +355,27 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   .masthead__sep { color: var(--fg-dim); }
 
   /* ── PULL (the one featured case) ─────────────────────── */
+  /* Full-bleed hairlines frame the featured pull. Inner content
+     stays on the 1200 spine via the shared container rules above. */
   .pull {
-    padding: 96px 32px;
+    padding-top: var(--sp-8);
+    padding-bottom: var(--sp-8);
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
-    margin-top: 0;
   }
   @media (max-width: 720px) {
-    .pull { padding: 56px 16px; }
+    .pull { padding-top: var(--sp-7); padding-bottom: var(--sp-7); }
   }
   .pull__grid {
     display: grid;
-    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-    gap: 56px;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--sp-7);
     align-items: center;
   }
   @media (max-width: 900px) {
     .pull__grid {
       grid-template-columns: 1fr;
-      gap: 32px;
+      gap: var(--sp-6);
     }
   }
   .pull__figure-link { max-width: 480px; }
@@ -392,7 +397,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin: 0 0 20px;
+    margin: 0 0 var(--sp-5);
   }
   .pull__case-id a {
     color: var(--fg-dim);
@@ -417,7 +422,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     line-height: 1.05;
     letter-spacing: -0.02em;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     max-width: 22ch;
   }
   .pull__title-link:hover .pull__title {
@@ -430,7 +435,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     font-size: 17px;
     line-height: 1.55;
     color: var(--fg-mid);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
   }
   .pull__meta {
     font-family: var(--font-mono);
@@ -441,7 +446,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 8px;
+    gap: 0 var(--sp-2);
     align-items: center;
   }
   .pull__meta a {
@@ -457,21 +462,22 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   }
 
   /* ── FRONT PAGE ───────────────────────────────────────── */
+  /* Stays on the 1200 spine. The figure is the wide gesture; the
+     italic note offsets to the right column for asymmetric weight. */
   .frontpage {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 96px 32px;
+    padding-top: var(--sp-8);
+    padding-bottom: var(--sp-8);
   }
   @media (max-width: 720px) {
-    .frontpage { padding: 56px 16px; }
+    .frontpage { padding-top: var(--sp-7); padding-bottom: var(--sp-7); }
   }
   .frontpage__eyebrow {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.22em;
     color: var(--fg-dim);
-    margin: 0 0 40px;
-    padding-bottom: 24px;
+    margin: 0 0 var(--sp-6);
+    padding-bottom: var(--sp-5);
     border-bottom: 1px solid var(--rule);
     text-transform: uppercase;
   }
@@ -485,7 +491,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   .frontpage__eyebrow a:focus-visible {
     border-bottom-color: var(--fg);
   }
-  .frontpage__figure-link { display: block; margin: 0 0 32px; }
+  .frontpage__figure-link { display: block; margin: 0 0 var(--sp-6); }
   .frontpage__figure { margin: 0; }
   .frontpage__figure img {
     width: 100%;
@@ -501,7 +507,10 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     line-height: 1.35;
     color: var(--fg);
     max-width: 40ch;
-    margin: 0;
+    margin: 0 0 0 auto;
+  }
+  @media (max-width: 900px) {
+    .frontpage__note { margin-left: 0; }
   }
   .frontpage__note a {
     color: var(--fg);
@@ -517,19 +526,19 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
 
   /* ── INDEX (latest list) ──────────────────────────────── */
   .index, .threads-section, .archivist {
-    padding-top: 96px;
+    padding-top: var(--sp-8);
     padding-bottom: 0;
   }
   @media (max-width: 720px) {
     .index, .threads-section, .archivist {
-      padding-top: 56px;
+      padding-top: var(--sp-7);
     }
   }
   .index__list { margin: 0; padding: 0; }
   .index-row { border-bottom: 1px solid var(--rule); }
   .index-row__link {
-    grid-template-columns: 48px 96px 110px 1fr 70px;
-    gap: 20px;
+    grid-template-columns: var(--sp-7) var(--sp-8) calc(var(--sp-8) + var(--sp-6)) 1fr var(--sp-8);
+    gap: var(--sp-5);
   }
   .index-row__num,
   .index-row__date,
@@ -550,8 +559,8 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   }
   .index-row__thumb {
     display: block;
-    width: 96px;
-    height: 64px;
+    width: var(--sp-8);
+    height: var(--sp-7);
     overflow: hidden;
     background: transparent;
   }
@@ -563,23 +572,22 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     filter: grayscale(1) contrast(1.05);
     display: block;
   }
-  /* Hover-invert handles its own contrast for the inner thumb. */
   .index-row__link:hover .index-row__thumb img,
   .index-row__link:focus-visible .index-row__thumb img {
     filter: grayscale(1) contrast(1.05) invert(1);
   }
   @media (max-width: 720px) {
     .index-row__link {
-      grid-template-columns: 32px 64px 1fr;
-      gap: 12px;
+      grid-template-columns: var(--sp-6) var(--sp-7) 1fr;
+      gap: var(--sp-3);
     }
     .index-row__date,
     .index-row__agency { display: none; }
-    .index-row__thumb { width: 64px; height: 44px; }
+    .index-row__thumb { width: var(--sp-7); height: var(--sp-6); }
     .index-row__title { font-size: 16px; }
   }
   .index__more {
-    margin: 32px 0 0;
+    margin: var(--sp-6) 0 0;
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.18em;
@@ -597,8 +605,8 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   .threads-section__list { margin: 0; padding: 0; }
   .threads-row { border-bottom: 1px solid var(--rule); }
   .threads-row__link {
-    grid-template-columns: 56px 1fr auto 60px;
-    gap: 20px;
+    grid-template-columns: var(--sp-7) 1fr auto var(--sp-7);
+    gap: var(--sp-5);
     align-items: baseline;
   }
   .threads-row__num {
@@ -629,8 +637,8 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
   }
   @media (max-width: 720px) {
     .threads-row__link {
-      grid-template-columns: 36px 1fr;
-      gap: 12px;
+      grid-template-columns: var(--sp-6) 1fr;
+      gap: var(--sp-3);
     }
     .threads-row__span,
     .threads-row__count { display: none; }
@@ -639,17 +647,17 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
 
   /* ── ARCHIVIST ────────────────────────────────────────── */
   .archivist {
-    padding-bottom: 120px;
+    padding-bottom: var(--sp-8);
   }
   @media (max-width: 720px) {
-    .archivist { padding-bottom: 64px; }
+    .archivist { padding-bottom: var(--sp-7); }
   }
   .archivist__eyebrow {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.22em;
-    margin: 0 0 32px;
-    padding-bottom: 24px;
+    margin: 0 0 var(--sp-6);
+    padding-bottom: var(--sp-5);
     border-bottom: 1px solid var(--rule);
     text-transform: uppercase;
   }
@@ -671,7 +679,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     letter-spacing: -0.005em;
     color: var(--fg);
     max-width: 32ch;
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
   }
   .archivist__body a {
     color: var(--fg);
@@ -690,7 +698,7 @@ const hasApollo = renderable.some((c) => c.id === APOLLO_SLUG);
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin: 48px 0 0;
+    margin: var(--sp-7) 0 0;
   }
   .archivist__sign a {
     color: var(--fg-dim);

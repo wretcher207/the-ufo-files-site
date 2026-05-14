@@ -133,20 +133,20 @@ for (let y = earliest; y <= latest; y++) {
 
 <style>
   .tl-main {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .tl-main { padding: 48px 16px 80px; }
+    .tl-main { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
-  .tl-anchor { margin-bottom: 56px; }
+  .tl-anchor { margin-bottom: var(--sp-7); }
   @media (max-width: 720px) {
-    .tl-anchor { margin-bottom: 40px; }
+    .tl-anchor { margin-bottom: var(--sp-6); }
   }
 
-  .tl-hero { margin: 0 0 64px; max-width: 70ch; }
+  .tl-hero { margin: 0 0 var(--sp-7); max-width: 70ch; }
   .tl-hero__title {
     font-family: var(--font-display);
     font-weight: 400;
@@ -154,7 +154,7 @@ for (let y = earliest; y <= latest; y++) {
     line-height: 1;
     letter-spacing: -0.025em;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     max-width: 18ch;
   }
   .tl-hero__lede {
@@ -169,15 +169,15 @@ for (let y = earliest; y <= latest; y++) {
     position: relative;
     overflow-x: auto;
     overflow-y: visible;
-    padding: 56px 0 64px;
+    padding: var(--sp-7) 0;
     border-top: 1px solid var(--fg);
     border-bottom: 1px solid var(--fg);
     background: var(--bg);
   }
   .tl-board__axis {
     position: relative;
-    height: 36px;
-    margin: 0 24px 32px;
+    height: var(--sp-6);
+    margin: 0 var(--sp-5) var(--sp-6);
     min-width: 1200px;
     border-bottom: 1px solid var(--rule);
   }
@@ -185,12 +185,12 @@ for (let y = earliest; y <= latest; y++) {
     position: absolute;
     top: 0;
     width: 1px;
-    height: 16px;
+    height: var(--sp-4);
     background: var(--fg);
   }
   .tl-tick__label {
     position: absolute;
-    top: 18px;
+    top: var(--sp-4);
     left: 0;
     transform: translateX(-50%);
     font-family: var(--font-mono);
@@ -200,8 +200,8 @@ for (let y = earliest; y <= latest; y++) {
   }
   .tl-board__marks {
     position: relative;
-    height: 160px;
-    margin: 0 24px;
+    height: var(--sp-9);
+    margin: 0 var(--sp-5);
     list-style: none;
     padding: 0;
     min-width: 1200px;
@@ -234,22 +234,24 @@ for (let y = earliest; y <= latest; y++) {
     background: var(--fg);
     box-shadow: none;
   }
+  /* Tooltip uses brand hover-invert: solid fg on bg, no border frame.
+     Same pattern as .ufo-row-link hover. */
   .tl-mark__tip {
     position: absolute;
-    bottom: 24px;
+    bottom: var(--sp-5);
     left: 50%;
     transform: translateX(-50%);
-    background: var(--bg);
-    border: 1px solid var(--fg);
-    padding: 10px 14px;
-    min-width: 240px;
+    background: var(--fg);
+    color: var(--bg);
+    padding: var(--sp-3) var(--sp-4);
+    min-width: clamp(220px, 22vw, 260px);
     max-width: 320px;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--dur-quick) linear;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--sp-1);
     z-index: 5;
   }
   .tl-mark a:hover .tl-mark__tip,
@@ -261,32 +263,33 @@ for (let y = earliest; y <= latest; y++) {
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.18em;
-    color: var(--fg-mid);
+    color: var(--bg);
+    opacity: 0.7;
   }
   .tl-mark__tip-archive {
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--fg);
+    color: var(--bg);
   }
   .tl-mark__tip-title {
     font-family: var(--font-display);
     font-size: 15px;
-    color: var(--fg);
+    color: var(--bg);
     line-height: 1.25;
   }
   .tl-help {
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--fg-dim);
-    margin: 24px 0 64px;
+    margin: var(--sp-5) 0 var(--sp-7);
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
   .tl-legend {
     border-top: 1px solid var(--rule);
-    padding-top: 32px;
+    padding-top: var(--sp-6);
   }
   .tl-legend__title {
     font-family: var(--font-mono);
@@ -294,7 +297,7 @@ for (let y = earliest; y <= latest; y++) {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     font-weight: 500;
   }
   .tl-legend__list {
@@ -303,21 +306,21 @@ for (let y = earliest; y <= latest; y++) {
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 24px;
+    gap: var(--sp-5);
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--fg-mid);
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
-  .tl-legend__list li { display: flex; align-items: center; gap: 8px; }
+  .tl-legend__list li { display: flex; align-items: center; gap: var(--sp-2); }
   .tl-legend__list .tl-mark__dot {
     position: relative;
     inset: auto;
-    width: 12px;
-    height: 12px;
+    width: var(--sp-3);
+    height: var(--sp-3);
     display: inline-block;
   }
-  .tl-legend__list .tl-mark--high.tl-mark__dot { width: 14px; height: 14px; }
+  .tl-legend__list .tl-mark--high.tl-mark__dot { width: var(--sp-4); height: var(--sp-4); }
   .tl-legend__list .tl-mark--low.tl-mark__dot { opacity: 0.6; }
 </style>

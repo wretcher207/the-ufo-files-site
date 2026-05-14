@@ -126,18 +126,18 @@ const caseCount = cases.length;
   .entity-main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .entity-main { padding: 48px 16px 80px; }
+    .entity-main { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
-  .entity-anchor { margin-bottom: 56px; }
+  .entity-anchor { margin-bottom: var(--sp-7); }
   @media (max-width: 720px) {
-    .entity-anchor { margin-bottom: 40px; }
+    .entity-anchor { margin-bottom: var(--sp-6); }
   }
 
-  .entity-hero { margin: 0 0 32px; max-width: 60ch; }
+  .entity-hero { margin: 0 0 var(--sp-6); max-width: 60ch; }
   .entity-hero__title {
     font-family: var(--font-display);
     font-weight: 400;
@@ -145,7 +145,7 @@ const caseCount = cases.length;
     line-height: 1;
     letter-spacing: -0.025em;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     max-width: 22ch;
   }
   .entity-hero__meta {
@@ -168,7 +168,7 @@ const caseCount = cases.length;
   }
 
   .entity-hero__figure-link {
-    margin: 0 0 56px;
+    margin: 0 0 var(--sp-7);
     max-width: 720px;
   }
   .entity-hero__figure { margin: 0; }
@@ -181,14 +181,16 @@ const caseCount = cases.length;
     filter: grayscale(1) contrast(1.05);
   }
 
+  /* Plate: prose body + cases rail. Rail width is content-sized
+     (numbered list with title + chrome row) and clamped for fluid breath. */
   .entity-plate {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
-    gap: 64px;
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 30vw, 380px);
+    gap: var(--sp-7);
     align-items: start;
   }
   @media (max-width: 960px) {
-    .entity-plate { grid-template-columns: 1fr; gap: 40px; }
+    .entity-plate { grid-template-columns: 1fr; gap: var(--sp-6); }
   }
 
   .entity-body {
@@ -205,10 +207,10 @@ const caseCount = cases.length;
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
-  .entity-body h2 { font-size: 36px; margin: 48px 0 16px; }
-  .entity-body h3 { font-size: 24px; margin: 32px 0 12px; }
+  .entity-body h2 { font-size: 36px; margin: var(--sp-7) 0 var(--sp-4); }
+  .entity-body h3 { font-size: 24px; margin: var(--sp-6) 0 var(--sp-3); }
   .entity-body h2:first-child, .entity-body h3:first-child { margin-top: 0; }
-  .entity-body p { margin: 12px 0 16px; }
+  .entity-body p { margin: var(--sp-3) 0 var(--sp-4); }
   .entity-body a {
     color: var(--fg);
     text-decoration: underline;
@@ -230,7 +232,7 @@ const caseCount = cases.length;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    padding-bottom: 16px;
+    padding-bottom: var(--sp-4);
     border-bottom: 1px solid var(--fg);
     margin-bottom: 0;
   }
@@ -256,14 +258,14 @@ const caseCount = cases.length;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin: 24px 0 0;
+    margin: var(--sp-5) 0 0;
   }
 
   .entity-cases { margin: 0; padding: 0; list-style: none; }
   .entity-case { border-bottom: 1px solid var(--rule); }
   .entity-case__link {
-    grid-template-columns: 40px 1fr;
-    gap: 16px;
+    grid-template-columns: var(--sp-6) 1fr;
+    gap: var(--sp-4);
     align-items: start;
   }
   .entity-case__num {
@@ -274,7 +276,7 @@ const caseCount = cases.length;
   .entity-case__body {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--sp-2);
   }
   .entity-case__title {
     font-family: var(--font-display);
@@ -288,7 +290,7 @@ const caseCount = cases.length;
     text-transform: uppercase;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 8px;
+    gap: 0 var(--sp-2);
   }
   .entity-case__sig { color: inherit; }
 </style>

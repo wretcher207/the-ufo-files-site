@@ -76,17 +76,17 @@ const path = Astro.url?.pathname ?? '';
 
 <style>
   .nf-main {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .nf-main { padding: 48px 16px 80px; }
+    .nf-main { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
-  .nf-anchor { margin-bottom: 64px; }
+  .nf-anchor { margin-bottom: var(--sp-7); }
   @media (max-width: 720px) {
-    .nf-anchor { margin-bottom: 40px; }
+    .nf-anchor { margin-bottom: var(--sp-6); }
   }
 
   .nf { max-width: 64ch; }
@@ -98,14 +98,14 @@ const path = Astro.url?.pathname ?? '';
     line-height: 1;
     letter-spacing: -0.025em;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
   }
   .nf__lede {
     font-family: var(--font-body);
     font-size: 18px;
     line-height: 1.55;
     color: var(--fg-mid);
-    margin: 0 0 32px;
+    margin: 0 0 var(--sp-6);
     max-width: 56ch;
   }
   .nf__path {
@@ -114,7 +114,7 @@ const path = Astro.url?.pathname ?? '';
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin: 0 0 48px;
+    margin: 0 0 var(--sp-7);
     word-break: break-all;
   }
   .nf__path code {
@@ -122,7 +122,7 @@ const path = Astro.url?.pathname ?? '';
     font-size: 11px;
     color: var(--fg);
     background: transparent;
-    padding: 2px 8px;
+    padding: 0 var(--sp-2);
     border: 1px solid var(--rule);
   }
 
@@ -134,12 +134,12 @@ const path = Astro.url?.pathname ?? '';
   }
   .nf__action {
     display: grid;
-    grid-template-columns: 32px 1fr;
-    gap: 18px;
+    grid-template-columns: var(--sp-6) 1fr;
+    gap: var(--sp-5);
     align-items: center;
     width: 100%;
-    padding: 18px 16px;
-    margin: 0 -16px;
+    padding: var(--sp-4);
+    margin: 0 calc(-1 * var(--sp-4));
     text-decoration: none;
     color: inherit;
     background: transparent;
@@ -181,7 +181,7 @@ const path = Astro.url?.pathname ?? '';
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin-top: 4px;
+    margin-top: var(--sp-1);
   }
   .nf__action:hover .nf__action-sub,
   .nf__action:focus-visible .nf__action-sub { color: var(--bg); }

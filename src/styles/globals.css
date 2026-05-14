@@ -22,7 +22,7 @@
   flex-direction: column;
   background: var(--bg);
   color: var(--fg);
-  padding-top: 48px;
+  padding-top: var(--chrome-h);
 }
 
 .page-main {
@@ -39,7 +39,7 @@
   left: 0;
   right: 0;
   z-index: 50;
-  height: 48px;
+  height: var(--chrome-h);
   background: var(--bg);
   border-bottom: 1px solid var(--rule);
 }
@@ -167,15 +167,15 @@
 }
 .operator-chrome__mobile-menu {
   position: fixed;
-  top: 48px;
+  top: var(--chrome-h);
   left: 0;
   right: 0;
   background: var(--bg);
   border-bottom: 1px solid var(--rule);
-  padding: 16px;
+  padding: var(--sp-4);
   display: none;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .operator-chrome[data-mobile-open="true"] .operator-chrome__mobile-menu {
   display: flex;

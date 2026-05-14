@@ -100,19 +100,19 @@ const archiveLabel = archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-838
   .ev-main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .ev-main { padding: 48px 16px 80px; }
+    .ev-main { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
-  .ev-anchor { margin-bottom: 48px; }
+  .ev-anchor { margin-bottom: var(--sp-7); }
   .ev-anchor .ufo-section-anchor__num {
     font-size: clamp(48px, 7vw, 96px);
   }
 
   .ev-hero {
-    margin: 0 0 48px;
+    margin: 0 0 var(--sp-7);
     max-width: 60ch;
   }
   .ev-title {
@@ -122,7 +122,7 @@ const archiveLabel = archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-838
     line-height: 1.05;
     letter-spacing: -0.025em;
     color: var(--fg);
-    margin: 0 0 16px;
+    margin: 0 0 var(--sp-4);
     max-width: 30ch;
   }
   .ev-meta {
@@ -134,7 +134,7 @@ const archiveLabel = archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-838
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 4px;
+    gap: 0 var(--sp-1);
     align-items: center;
   }
   .ev-meta a {
@@ -150,15 +150,15 @@ const archiveLabel = archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-838
   .ev-frame {
     border-top: 1px solid var(--fg);
     border-bottom: 1px solid var(--rule);
-    padding: 24px 0 32px;
-    margin: 0 0 56px;
+    padding: var(--sp-5) 0 var(--sp-6);
+    margin: 0 0 var(--sp-7);
   }
   .ev-frame__head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-5);
     flex-wrap: wrap;
   }
   .ev-frame__label {
@@ -186,7 +186,7 @@ const archiveLabel = archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-838
   }
   .ev-frame__body {
     position: relative;
-    min-height: 320px;
+    min-height: clamp(280px, 40vh, 480px);
     background: var(--bg);
     display: flex;
     align-items: center;
@@ -225,20 +225,20 @@ const archiveLabel = archive === 'pursue' ? 'PURSUE Release 01' : 'FBI 62-HQ-838
     text-decoration: underline;
     text-decoration-color: var(--fg-dim);
     text-underline-offset: 4px;
-    margin-left: 8px;
+    margin-left: var(--sp-2);
   }
   .ev-frame__fallback a:hover { text-decoration-color: var(--fg); }
 
   .ev-back {
     display: inline-block;
-    margin-top: 48px;
+    margin-top: var(--sp-7);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg);
-    padding: 12px 16px;
-    margin-left: -16px;
+    padding: var(--sp-3) var(--sp-4);
+    margin-left: calc(-1 * var(--sp-4));
     text-decoration: none;
     transition: background-color var(--dur-quick) linear,
                 color var(--dur-quick) linear;

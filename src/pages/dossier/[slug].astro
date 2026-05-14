@@ -102,21 +102,21 @@ const body: string = (entry as unknown as { body?: string }).body ?? '';
   .dossier {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .dossier { padding: 48px 16px 80px; }
+    .dossier { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
   /* MASTHEAD */
-  .dossier__masthead { margin-bottom: 48px; max-width: 60ch; }
+  .dossier__masthead { margin-bottom: var(--sp-7); max-width: 60ch; }
   .dossier__eyebrow {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
   }
   .dossier__title {
     font-family: var(--font-display);
@@ -124,7 +124,7 @@ const body: string = (entry as unknown as { body?: string }).body ?? '';
     font-size: clamp(40px, 5.5vw, 80px);
     line-height: 1;
     letter-spacing: -0.025em;
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     color: var(--fg);
   }
   .dossier__lede {
@@ -132,7 +132,7 @@ const body: string = (entry as unknown as { body?: string }).body ?? '';
     font-size: clamp(17px, 1.5vw, 20px);
     line-height: 1.5;
     color: var(--fg-mid);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     max-width: 56ch;
   }
   .dossier__meta {
@@ -148,10 +148,10 @@ const body: string = (entry as unknown as { body?: string }).body ?? '';
 
   /* HERO IMAGE */
   .dossier__hero {
-    margin: 0 0 56px;
+    margin: 0 0 var(--sp-7);
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
-    padding: 40px 0;
+    padding: var(--sp-6) 0;
   }
   .dossier__hero img {
     width: 100%;
@@ -169,26 +169,28 @@ const body: string = (entry as unknown as { body?: string }).body ?? '';
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--fg-dim);
-    margin-top: 14px;
+    margin-top: var(--sp-4);
   }
 
-  /* PLATE */
+  /* PLATE: prose body + sticky context rail.
+     Rail width is content-sized (entity links + chips), tokenized
+     via clamp() so it breathes between 220 and 280px. */
   .dossier__plate {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 260px;
-    gap: 64px;
+    grid-template-columns: minmax(0, 1fr) clamp(220px, 22vw, 280px);
+    gap: var(--sp-7);
     align-items: start;
-    margin-top: 48px;
+    margin-top: var(--sp-7);
   }
   @media (max-width: 960px) {
-    .dossier__plate { grid-template-columns: 1fr; gap: 40px; }
+    .dossier__plate { grid-template-columns: 1fr; gap: var(--sp-6); }
   }
   .dossier__rail {
     position: sticky;
-    top: 80px;
+    top: var(--sp-7);
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--sp-5);
   }
   @media (max-width: 960px) {
     .dossier__rail { position: static; }

@@ -181,20 +181,20 @@ const stats = await getArchiveStats();
 
 <style>
   .about-main {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 32px 120px;
+    padding: var(--sp-8) var(--sp-6) var(--sp-8);
   }
   @media (max-width: 720px) {
-    .about-main { padding: 48px 16px 80px; }
+    .about-main { padding: var(--sp-6) var(--sp-4) var(--sp-7); }
   }
 
-  .about-anchor { margin-bottom: 56px; }
+  .about-anchor { margin-bottom: var(--sp-7); }
   @media (max-width: 720px) {
-    .about-anchor { margin-bottom: 40px; }
+    .about-anchor { margin-bottom: var(--sp-6); }
   }
 
-  .about-head { max-width: 68ch; margin: 0 0 64px; }
+  .about-head { max-width: 68ch; margin: 0 0 var(--sp-7); }
   .about-title {
     font-family: var(--font-display);
     font-weight: 400;
@@ -202,7 +202,7 @@ const stats = await getArchiveStats();
     line-height: 1;
     letter-spacing: -0.025em;
     color: var(--fg);
-    margin: 0 0 24px;
+    margin: 0 0 var(--sp-5);
     max-width: 22ch;
   }
   .about-lede {
@@ -228,7 +228,7 @@ const stats = await getArchiveStats();
     line-height: 1.1;
     letter-spacing: -0.02em;
     color: var(--fg);
-    margin: 64px 0 16px;
+    margin: var(--sp-7) 0 var(--sp-4);
   }
   .about-body h2:first-child { margin-top: 0; }
   .about-body h3 {
@@ -237,15 +237,15 @@ const stats = await getArchiveStats();
     font-size: 24px;
     line-height: 1.2;
     color: var(--fg);
-    margin: 40px 0 12px;
+    margin: var(--sp-6) 0 var(--sp-3);
   }
-  .about-body p { margin: 0 0 16px; }
+  .about-body p { margin: 0 0 var(--sp-4); }
   .about-body ul {
-    padding-left: 24px;
-    margin: 12px 0 16px;
+    padding-left: var(--sp-5);
+    margin: var(--sp-3) 0 var(--sp-4);
     list-style: disc;
   }
-  .about-body li { margin: 6px 0; }
+  .about-body li { margin: var(--sp-2) 0; }
   .about-body a {
     color: var(--fg);
     text-decoration: underline;
@@ -261,29 +261,31 @@ const stats = await getArchiveStats();
     font-family: var(--font-mono);
     font-size: 0.92em;
     background: transparent;
-    padding: 0 4px;
+    padding: 0 var(--sp-1);
     border: 1px solid var(--rule);
     color: var(--fg);
   }
   .about-body em { font-style: italic; }
 
+  /* Stats strip: real archive data (counts of files/threads), each cell
+     links to its drill-in page. Hairline-divided, no card frames. */
   .about-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
-    margin: 80px 0;
-    padding: 32px 0;
+    margin: var(--sp-8) 0;
+    padding: var(--sp-6) 0;
     border-top: 1px solid var(--fg);
     border-bottom: 1px solid var(--fg);
   }
   @media (max-width: 720px) {
-    .about-stats { grid-template-columns: repeat(2, 1fr); margin: 48px 0; }
+    .about-stats { grid-template-columns: repeat(2, 1fr); margin: var(--sp-7) 0; }
   }
   .about-stats__cell {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 16px 20px;
+    gap: var(--sp-2);
+    padding: var(--sp-4) var(--sp-5);
     text-decoration: none;
     color: inherit;
     border-left: 1px solid var(--rule);
@@ -321,7 +323,7 @@ const stats = await getArchiveStats();
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--fg-mid);
-    margin-top: 4px;
+    margin-top: var(--sp-1);
   }
   .about-stats__sub {
     font-family: var(--font-mono);
