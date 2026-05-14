@@ -181,6 +181,16 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'Appendix I to Project Blue Book Status Report No. 8, NARA 595542: a hand-drawn chart of UFO report frequency, June through September 1952, annotated with the Washington D.C. incident, the Air Force press conference, and Life, Look, and New Yorker magazine articles. The institutional visualization of cumulative sighting data the OSI log was designed to capture.',
     caption: 'Frequency of UFO reports / June-September 1952 / Blue Book Status Report 8 / NARA',
   },
+  'd3-briefing-halfery-mister-x-may-1950': {
+    src: '/img/archive/mcminnville-trent-may-1950.png',
+    alt: 'Paul Trent\'s photograph of an unidentified disc-shaped object over McMinnville, Oregon, taken May 11, 1950, eight days before the Bureau\'s D-3 briefing on the Halfery "Mister X" photograph case. Published in LIFE Magazine, 26 June 1950, and the canonical single-attribution UFO photograph of the May 1950 wave the briefing was responding to.',
+    caption: 'Paul Trent / McMinnville Oregon / 11 May 1950 / LIFE Magazine',
+  },
+  'jones-winchell-cuneo-1947-1949': {
+    src: '/img/archive/winchell-portrait-1951.jpg',
+    alt: 'Walter Winchell on the cover of Radio-TV Mirror, January 1951, two years after his collaboration with Ernest Cuneo and Bureau channels in the 1947-1949 flying-disc correspondence.',
+    caption: 'Walter Winchell / Radio-TV Mirror / January 1951',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {
