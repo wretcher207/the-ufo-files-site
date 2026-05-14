@@ -8,6 +8,14 @@
   # the content/archive submodule on every build.
   GIT_SUBMODULE_STRATEGY = "recursive"
 
+# Disable Netlify's "Pretty URLs" trailing-slash redirect.
+# Astro is configured with trailingSlash: 'never' and outputs
+# directory-style pages (/route/index.html), which Netlify will
+# serve for both /route and /route/ when pretty_urls is off — no
+# 301 hop, no wasted crawl budget on internal clicks.
+[build.processing.html]
+  pretty_urls = false
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -15,6 +23,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 [[headers]]
   for = "/pagefind/*"

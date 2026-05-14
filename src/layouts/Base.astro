@@ -4,17 +4,45 @@ import OperatorChrome from '../components/OperatorChrome.astro';
 import { ClientRouter } from 'astro:transitions';
 import { getArchiveStats } from '../lib/archive-stats';
 
+interface ArticleSchema {
+  headline: string;
+  description?: string;
+  image?: string;
+  datePublished?: string;
+  dateModified?: string;
+  caseId?: string;
+}
+interface BreadcrumbSchema {
+  name: string;
+  item: string;
+}
+interface CollectionItem {
+  name: string;
+  url: string;
+  description?: string;
+}
+interface CollectionSchema {
+  name: string;
+  description?: string;
+  items: CollectionItem[];
+}
 interface Props {
   title: string;
   description?: string;
   section?: string;
   pathname?: string;
   ogImage?: string;
+  article?: ArticleSchema;
+  breadcrumbs?: BreadcrumbSchema[];
+  collection?: CollectionSchema;
 }
 const {
   title,
   description = 'An archive of the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
   ogImage,
+  article,
+  breadcrumbs,
+  collection,
 } = Astro.props;
 
 const fullTitle = title === 'The UFO Files' ? title : `${title} — The UFO Files`;
@@ -29,6 +57,101 @@ const isDefaultOgImage = ogImagePath === '/og-image.jpg';
 const stats = await getArchiveStats();
 const commitHref = `https://github.com/wretcher207/the-ufo-files-site/commit/${stats.commitHash}`;
 const branchHref = `https://github.com/wretcher207/the-ufo-files-site/tree/${stats.branch}`;
+
+const siteOrigin = Astro.site ? Astro.site.origin : 'https://the-ufo-files-site.netlify.app';
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'The UFO Files',
+  alternateName: 'The UFO Files Archive',
+  url: siteOrigin + '/',
+  description: 'An archive of the May 2026 PURSUE UFO file release and FBI 62-HQ-83894.',
+  inLanguage: 'en-US',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Dead Pixel Design',
+    url: 'https://deadpixeldesign.com',
+    founder: { '@type': 'Person', name: 'David Russell' },
+  },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: siteOrigin + '/?q={search_term_string}',
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'The UFO Files',
+  url: siteOrigin + '/',
+  logo: siteOrigin + '/favicon.svg',
+  founder: { '@type': 'Person', name: 'David Russell' },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Dead Pixel Design',
+    url: 'https://deadpixeldesign.com',
+  },
+};
+
+const articleSchema = article
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: article.headline,
+      description: article.description,
+      image: new URL(article.image ?? ogImagePath, siteOrigin).toString(),
+      datePublished: article.datePublished,
+      dateModified: article.dateModified ?? article.datePublished,
+      author: { '@type': 'Person', name: 'David Russell' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'The UFO Files',
+        logo: { '@type': 'ImageObject', url: siteOrigin + '/favicon.svg' },
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+      identifier: article.caseId,
+    }
+  : null;
+
+const breadcrumbSchema = breadcrumbs && breadcrumbs.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((b, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: b.name,
+        item: new URL(b.item, siteOrigin).toString(),
+      })),
+    }
+  : null;
+
+const collectionSchema = collection
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: collection.name,
+      description: collection.description,
+      url: canonical,
+      isPartOf: { '@type': 'WebSite', name: 'The UFO Files', url: siteOrigin + '/' },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: collection.items.length,
+        itemListElement: collection.items.map((it, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: it.name,
+          url: new URL(it.url, siteOrigin).toString(),
+          ...(it.description ? { description: it.description } : {}),
+        })),
+      },
+    }
+  : null;
 
 /**
  * Route to mode mapping.
@@ -60,13 +183,23 @@ const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
     <meta property="og:image" content={ogImageUrl} />
     {isDefaultOgImage && <meta property="og:image:width" content="1200" />}
     {isDefaultOgImage && <meta property="og:image:height" content="630" />}
+    {isDefaultOgImage && <meta property="og:image:type" content="image/jpeg" />}
     <meta property="og:image:alt" content="The UFO Files: an archive of the May 2026 PURSUE release and FBI 62-HQ-83894" />
     <meta property="og:site_name" content="The UFO Files" />
+    <meta property="og:locale" content="en_US" />
     <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <meta name="author" content="David Russell" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+    {articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+    {breadcrumbSchema && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />}
+    {collectionSchema && <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

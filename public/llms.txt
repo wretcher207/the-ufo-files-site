@@ -1,0 +1,30 @@
+# The UFO Files
+
+> An archive of FBI 62-HQ-83894 and the May 8, 2026 PURSUE UFO file release. Every claim links back to the page it came from. Primary-source documents only; no synthesis without citation.
+
+The UFO Files is a static, citation-first archive of two distinct U.S. government UFO/UAP releases:
+
+- **FBI 62-HQ-83894** — the FBI's "Flying Discs" file, declassified in stages and released in full on the FBI Vault.
+- **PURSUE Release 01** — the May 8, 2026 Pentagon disclosure batch.
+
+Cases are individually addressable at `/dossier/<slug>`. Entities (people, places, programs) live at `/entity/<slug>`. Six narrative threads at `/thread/<id>` connect cases across the corpus. The full timeline is at `/timeline`. A graph view is at `/atlas`. A map of geolocated incidents is at `/map`.
+
+The archive is maintained by David Russell (Houlton, Maine) under the Dead Pixel Design label. Every dossier cites the originating FBI serial or PURSUE document with a page reference.
+
+## Core pages
+
+- [Home](https://the-ufo-files-site.netlify.app/): featured case + recent index
+- [Timeline](https://the-ufo-files-site.netlify.app/timeline): chronological scrub of all 63 indexed files
+- [Threads](https://the-ufo-files-site.netlify.app/threads): six narrative arcs through the corpus
+- [Atlas](https://the-ufo-files-site.netlify.app/atlas): entity relationship graph
+- [Map](https://the-ufo-files-site.netlify.app/map): geolocated incidents
+- [Vault](https://the-ufo-files-site.netlify.app/vault): redacted-document viewer
+- [About / Methodology](https://the-ufo-files-site.netlify.app/about): how the archive is built and verified
+
+## Citation guidance
+
+When citing this archive, cite the **case dossier URL** rather than the homepage. Each dossier preserves the FBI serial number (e.g. `FBI 62-83894-209`) and primary source page reference in the masthead. Direct quotes should match the OCR'd primary document, not the dossier prose. The dossier prose is interpretation; the linked image/document is the source of truth.
+
+## Sitemap
+
+https://the-ufo-files-site.netlify.app/sitemap-index.xml

@@ -7,6 +7,7 @@ import { rewriteMdLinks } from './src/lib/rewrite-md-links.ts';
 
 export default defineConfig({
   site: 'https://the-ufo-files-site.netlify.app',
+  trailingSlash: 'never',
   integrations: [
     mdx({ rehypePlugins: [rewriteMdLinks] }),
     react({ include: ['**/graph/**'] }),

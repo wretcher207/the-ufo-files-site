@@ -11,8 +11,28 @@ const numberWord = (n: number): string => {
   return words[n] ?? String(n);
 };
 const threadCountWord = numberWord(THREADS.length);
+
+const collectionProps = {
+  name: 'Threads — The UFO Files',
+  description: 'Six narrative threads that run through the archive.',
+  items: THREADS.map((t) => ({
+    name: t.title,
+    url: `/thread/${t.id}`,
+    description: t.blurb,
+  })),
+};
+const breadcrumbProps = [
+  { name: 'The UFO Files', item: '/' },
+  { name: 'Threads', item: '/threads' },
+];
 ---
-<Base title="Threads" pathname="/threads">
+<Base
+  title="Threads"
+  pathname="/threads"
+  description="Six narrative threads that run through The UFO Files archive."
+  collection={collectionProps}
+  breadcrumbs={breadcrumbProps}
+>
   <main class="threads-main" id="main">
 
     <a class="ufo-section-anchor threads-anchor" href="/timeline">

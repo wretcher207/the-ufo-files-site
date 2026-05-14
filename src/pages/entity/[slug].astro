@@ -29,12 +29,30 @@ const cases = entity.cases.slice().sort((a, b) => {
 
 const img = entityImage(entity.slug);
 const caseCount = cases.length;
+
+const entityDescription = `${caseCount} case${caseCount === 1 ? '' : 's'} in the archive reference ${entity.display}.`;
+const collectionProps = {
+  name: `${entity.display} — cases in The UFO Files`,
+  description: entityDescription,
+  items: cases.map((c) => ({
+    name: tidyTitle(c.data.title),
+    url: caseUrl(c),
+    description: headlineDate(c) ?? undefined,
+  })),
+};
+const breadcrumbProps = [
+  { name: 'The UFO Files', item: '/' },
+  { name: 'Entities', item: '/atlas' },
+  { name: entity.display, item: `/entity/${entity.slug}` },
+];
 ---
 <Base
   title={entity.display}
-  description={`${caseCount} case${caseCount === 1 ? '' : 's'} in the archive reference ${entity.display}.`}
+  description={entityDescription}
   section={entity.display.toUpperCase()}
   ogImage={img?.src}
+  collection={collectionProps}
+  breadcrumbs={breadcrumbProps}
 >
   <main class="entity-main" id="main">
 

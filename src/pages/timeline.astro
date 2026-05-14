@@ -66,11 +66,27 @@ const decadeTicks: number[] = [];
 for (let y = earliest; y <= latest; y++) {
   if (y % 10 === 0) decadeTicks.push(y);
 }
+
+const collectionProps = {
+  name: 'Timeline — The UFO Files',
+  description: 'Every dated case in the archive, 1944 to 2026.',
+  items: marks.map((m) => ({
+    name: m.title,
+    url: `/dossier/${m.slug}`,
+    description: m.display,
+  })),
+};
+const breadcrumbProps = [
+  { name: 'The UFO Files', item: '/' },
+  { name: 'Timeline', item: '/timeline' },
+];
 ---
 <Base
   title="Timeline"
   description="Every dated case in the archive, 1944 to 2026."
   section="ALL THREADS"
+  collection={collectionProps}
+  breadcrumbs={breadcrumbProps}
 >
   <main class="tl-main" id="main">
 

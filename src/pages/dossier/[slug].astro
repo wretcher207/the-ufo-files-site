@@ -35,7 +35,23 @@ const agency =
 const classification =
   (typeof data.classification === 'string' && data.classification) || 'PUBLIC RELEASE';
 const confidence = String((data as any).confidence ?? 'low').toUpperCase();
-const excerpt = (data as any).excerpt ?? (data as any).summary ?? '';
+const summary = ((data as any).summary ?? '') as string;
+const rawExcerpt = ((data as any).excerpt ?? '') as string;
+const excerpt = rawExcerpt || summary;
+
+// Strip OCR/source-document leading punctuation (stray `"`, `'`, `«`, em-dash)
+// before using as meta description; otherwise Google/AI search snippets begin
+// with a floating quote mark from the original document.
+function sanitizeDescription(text: string): string {
+  return text
+    .replace(/^["'‘’“”«–—\s.,;:]+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+const cleanSummary = sanitizeDescription(summary);
+const cleanExcerpt = sanitizeDescription(rawExcerpt);
+const metaDescription =
+  cleanSummary || cleanExcerpt || `${caseId} — ${headline}`;
 
 const img = caseImage(entry.id);
 
@@ -44,12 +60,32 @@ const pageUrl = Astro.site
   : Astro.url.pathname;
 
 const body: string = (entry as unknown as { body?: string }).body ?? '';
+
+const dateModified = (data as any).date_ingested
+  ? new Date((data as any).date_ingested).toISOString().slice(0, 10)
+  : undefined;
+
+const articleProps = {
+  headline,
+  description: metaDescription,
+  image: img?.src,
+  datePublished: date || undefined,
+  dateModified,
+  caseId,
+};
+const breadcrumbProps = [
+  { name: 'The UFO Files', item: '/' },
+  { name: thread?.title ?? 'Dossier', item: thread ? `/thread/${thread.id}` : '/timeline' },
+  { name: headline, item: `/dossier/${entry.id}` },
+];
 ---
 <Base
   title={headline}
-  description={excerpt || `${caseId} — ${headline}`}
+  description={metaDescription}
   section={sectionLabel}
   ogImage={img?.src}
+  article={articleProps}
+  breadcrumbs={breadcrumbProps}
 >
   <article class="dossier" data-pagefind-body>
 

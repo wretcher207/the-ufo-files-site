@@ -37,11 +37,28 @@ const prevThread = threadIdx > 0 ? THREADS[threadIdx - 1] : null;
 const nextThread = threadIdx >= 0 && threadIdx < THREADS.length - 1 ? THREADS[threadIdx + 1] : null;
 
 const archiveLabel = thread.archive === 'pursue' ? 'PURSUE' : 'FBI 62-HQ-83894';
+
+const collectionProps = {
+  name: `${thread.title} — thread in The UFO Files`,
+  description: thread.blurb,
+  items: cases.map((c) => ({
+    name: tidyTitle(c.data.title),
+    url: caseUrl(c),
+    description: headlineDate(c) ?? undefined,
+  })),
+};
+const breadcrumbProps = [
+  { name: 'The UFO Files', item: '/' },
+  { name: 'Threads', item: '/threads' },
+  { name: thread.title, item: `/thread/${thread.id}` },
+];
 ---
 <Base
   title={thread.title}
   description={thread.blurb}
   section="THREAD"
+  collection={collectionProps}
+  breadcrumbs={breadcrumbProps}
 >
   <main class="thread-main" id="main">
 
