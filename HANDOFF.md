@@ -250,7 +250,7 @@ Mode is set per route on `<html data-mode="...">` by `resolveMode()` in
 
 ## Image system
 
-- All images live in `public/img/archive/` (22 files, ~16 MB total).
+- All images live in `public/img/archive/` (33 files, ~24 MB total).
 - All public-domain federal works or Wikimedia Commons.
 - Mapping is in `src/lib/case-images.ts`. `caseImage(slug)` returns
   `{ src, alt, caption }` or null. `entityImage(slug)` does the same
@@ -261,20 +261,33 @@ Mode is set per route on `<html data-mode="...">` by `resolveMode()` in
   3. Homepage index list, dossier hero, entity hero, and Open Graph
      `og:image` all pick it up automatically.
 
-### Currently mapped (26 cases, 3 entities)
+### Currently mapped (38 cases, 3 entities)
 
 Cases: Hottel, three Arnold variants, Maury Island, Brown-Davidson,
 Mantell (crash-site marker), Rhodes, Apollo 17 VM6, Hoover-Scully, two
-pre-Scully rumor cases, Project Grudge, Section 10 civilian cluster,
-Chesapeake abduction 1967, Kazakhstan 1994 (Boeing 747), USPER
-statement (Pentagon aerial), Oak Ridge gasser (X-10 reactor), Cabell
-AFOIC (USAF portrait), Muroc CIC affidavits (1947 P-80), Peyerl 1944
-German aircraft (Horten Ho 229 V3), Phoenix-Blythe 509th Bomb Group
+pre-Scully rumor cases, Section 10 civilian cluster, Chesapeake
+abduction 1967, Kazakhstan 1994 (Boeing 747), USPER statement
+(Pentagon aerial), Oak Ridge gasser (X-10 reactor), Cabell AFOIC (USAF
+portrait), Muroc CIC affidavits (1947 P-80), Peyerl 1944 German
+aircraft (Horten Ho 229 V3), Phoenix-Blythe 509th Bomb Group
 (Sacramento Bee Roswell coverage), Frank Scully communist teletype
 (Scully portrait), civilian-correspondence-hoover-pattern (Hoover
 portrait), Stanfield-La Paz Holloman (Alamogordo Post HQ),
 fbi-intelligence-coordination-ufo-protocol-1950 (J. Edgar Hoover
-Building).
+Building), Project Grudge (Grudge Status Report No. 1 cover, ATIC
+Wright-Patterson 1951), fitch-ladd institutional memo (Roswell Daily
+Record front page), Gowen Field Idaho sighting (411th Bomb Sq B-17Es
+1943), Belmont-Twinkle / OSI master memo (Ruppelt at Blue Book 1953),
+Stuart-Adcock Oak Ridge (K-25 plant aerial 1945), La Paz seventh
+report (Alamogordo Sub-Depot Hangar), Air Defense Command baseline
+policy (Twining memo 23 Sept 1947), Pervier Tulsa FBI corroboration
+(Tulsa World "SAUCERS OVER TULSA?" photograph 1947), OSI cumulative
+sighting log (Blue Book Status Report 8 Appendix I frequency chart
+1952), D-3 briefing / Halfery Mister X (Trent McMinnville photo
+1950), Jones-Winchell-Cuneo (Walter Winchell on Radio-TV Mirror Jan
+1951), Philadelphia 1950 soap-suds disc (Sanborn fire insurance map
+of Philadelphia 1950), Portland Police Sept 1947 (Sanborn map of
+Portland 1950 key plate).
 
 Entities: J. Edgar Hoover, Kenneth Arnold, Department of War (shares
 the Pentagon image with USPER).
@@ -448,22 +461,32 @@ content/archive/                    git submodule pinned to
 
 ## Recommended next-session work, in priority order
 
-1. **Source more archival images.** 37 of 63 cases still lack a hero.
-   Confirmed-good leads not yet pulled:
-   - Project Twinkle / green fireball documents (Sandia, Los Alamos era).
-   - Lincoln La Paz portrait if a PD copy surfaces.
-   - J. Allen Hynek portrait (the Project Blue Book consultant).
-   - NARA newspaper clippings for the 1947 wave (Portland, Hackensack,
-     Houston).
-   - Project Blue Book era hangar/lab photos for the Section 10
-     cluster cases.
-   - Walter Haut at higher resolution (the Roswell yearbook portrait
-     is on Commons but only 200×327, too small for a hero).
-   - Bockscar / 509th Bomb Group B-29 for other 509th-related cases.
-   - Wright-Patterson AFB Hangar (HABS Commons category exists).
+1. **Source more archival images.** 25 of 63 cases still lack a hero.
+   What's been tried and what worked:
+   - **Library of Congress Sanborn Fire Insurance Maps** are gold for
+     city-specific cases. Pulled Philadelphia 1950 and Portland 1950
+     this session. Many cities have 1940s-50s Sanborn coverage. Note:
+     Wichita Falls and Hackensack only have pre-1920 Sanborn; Houston
+     only has 1955.
+   - **NARA Blue Book / Project Sign documents** on Commons: pulled
+     Twining memo, Blue Book Status Report 8 Appendix chart, Grudge
+     Status Report 1 cover. More status report pages are available
+     inside the full Blue Book PDF on Commons.
+   - **NARA newspaper clippings**: Tulsa World 1947 worked great. The
+     Hackensack 1947 obituary clip on Commons is too small (631×238).
+     Houston, Portland, and Wichita Falls don't have great 1947 wave
+     paper coverage on Commons.
+   - Dead ends explored: Wright-Patterson hangar (HABS category is
+     1991-92 docs, 1920 aerial too small at 642×460), Kodiak NAS
+     (categories 404), Sheppard AFB (no 1940s on Commons), Lincoln
+     La Paz portrait (none on Commons), J. Allen Hynek (only 147×168
+     crop). Direct NARA search via archives.gov is the next vector.
+   - Set `User-Agent: the-ufo-files-archive/1.0 (drjr1021@gmail.com)`
+     on every Wikimedia request.
 
-   Use Wikimedia Commons + FBI Vault + NARA. Federal works = public
-   domain. Set the user agent on every Wikimedia request.
+   Still wanted: Hackensack 1947 wave coverage (full page), Houston
+   1948 newspaper, Kodiak naval base, Walter Haut higher res, Wright-
+   Patterson hangar via NARA direct, Sandia Base 1949-50 era.
 2. **Verify the Vite dev-server bug status.** Boot `npm run dev`,
    navigate `/board` and `/atlas` in a real browser via Playwright,
    and check the console for the
