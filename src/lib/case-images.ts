@@ -156,6 +156,16 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'Captain Edward J. Ruppelt at Project Blue Book, Wright-Patterson Air Force Base, March 1953. Blue Book absorbed the Project Twinkle file referenced in the Belmont master memo and OSI cumulative log.',
     caption: 'Edward J. Ruppelt / Blue Book Chief / Wright-Patterson 1953',
   },
+  'stuart-adcock-oak-ridge-march-1950': {
+    src: '/img/archive/k25-aerial-1945.jpg',
+    alt: 'Aerial view of the K-25 gaseous diffusion plant complex at Oak Ridge, Tennessee, 1945, including the early workforce housing tracts surrounding the site. The Stuart and Adcock reports place the March 1950 aerial phenomena directly over this installation.',
+    caption: 'K-25 plant aerial / Oak Ridge Tennessee / 1945 / Manhattan District',
+  },
+  'la-paz-seventh-report-cabell-directive-twinkle': {
+    src: '/img/archive/alamogordo-sub-depot-hangar.jpg',
+    alt: 'Sub-depot hangar at Alamogordo Army Airfield, New Mexico, the installation that became Holloman Air Force Base in January 1948 and hosted the Project Twinkle photographic stations La Paz coordinated for the Cabell directive.',
+    caption: 'Alamogordo AAF / Sub-Depot Hangar / pre-Holloman',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {
