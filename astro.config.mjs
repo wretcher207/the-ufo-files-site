@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { rewriteMdLinks } from './src/lib/rewrite-md-links.ts';
 
 export default defineConfig({
-  site: 'https://theufofiles.com',
+  site: 'https://the-ufo-files-site.netlify.app',
   integrations: [
     mdx({ rehypePlugins: [rewriteMdLinks] }),
     react({ include: ['**/graph/**'] }),

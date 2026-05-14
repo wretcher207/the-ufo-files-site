@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://theufofiles.com/sitemap-index.xml
+Sitemap: https://the-ufo-files-site.netlify.app/sitemap-index.xml
