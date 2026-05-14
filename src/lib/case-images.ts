@@ -72,9 +72,9 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     caption: 'Aztec crash hoax photograph / 1950',
   },
   'project-grudge-vital-installations-1948-1949': {
-    src: '/img/archive/ruppelt-bluebook.jpg',
-    alt: 'Captain Edward J. Ruppelt at Project Blue Book, the successor program to Grudge.',
-    caption: 'Edward J. Ruppelt / Blue Book Chief',
+    src: '/img/archive/grudge-status-report-1-1951.jpg',
+    alt: 'Title page of Project Grudge Status Report No. 1, 30 November 1951, Air Technical Intelligence Center, Wright-Patterson AFB. Classification cancelled 9 September 1960 by Major Robert J. Friend.',
+    caption: 'Project Grudge Status Report No. 1 / 30 November 1951 / ATIC Wright-Patterson',
   },
   'section-10-1966-1973-civilian-correspondent-cluster-post-blue-book': {
     src: '/img/archive/quintanilla-bluebook.jpg',
@@ -140,6 +140,21 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     src: '/img/archive/fbi-hq-building.jpg',
     alt: 'The J. Edgar Hoover FBI Building on Pennsylvania Avenue, Washington D.C., headquarters of the Federal Bureau of Investigation.',
     caption: 'J. Edgar Hoover FBI Building / Washington D.C.',
+  },
+  'fitch-ladd-institutional-memo-flying-discs-august-1947': {
+    src: '/img/archive/roswell-daily-record-july-8-1947.jpg',
+    alt: 'Roswell Daily Record, July 8, 1947, "RAAF Captures Flying Saucer On Ranch in Roswell Region," the public coverage that triggered the Bureau leadership debate over its investigative mandate.',
+    caption: 'Roswell Daily Record / 8 July 1947 / public domain',
+  },
+  'gowen-field-idaho-aircraft-sighting-1947': {
+    src: '/img/archive/gowen-field-b17e-1943.jpg',
+    alt: 'B-17E Flying Fortresses of the 411th Bombardment Squadron on the ramp at Gowen Field, Boise, Idaho, 1943, four years before the September 1947 unidentified aircraft sighting in the same airspace.',
+    caption: 'Gowen Field / 411th Bomb Sq B-17Es / 1943 / USAAF',
+  },
+  'belmont-twinkle-master-memo-osi-log-1949-1950': {
+    src: '/img/archive/ruppelt-bluebook.jpg',
+    alt: 'Captain Edward J. Ruppelt at Project Blue Book, Wright-Patterson Air Force Base, March 1953. Blue Book absorbed the Project Twinkle file referenced in the Belmont master memo and OSI cumulative log.',
+    caption: 'Edward J. Ruppelt / Blue Book Chief / Wright-Patterson 1953',
   },
 };
 
