@@ -166,6 +166,21 @@ const CASE_IMAGES: Record<string, ArchivalImage> = {
     alt: 'Sub-depot hangar at Alamogordo Army Airfield, New Mexico, the installation that became Holloman Air Force Base in January 1948 and hosted the Project Twinkle photographic stations La Paz coordinated for the Cabell directive.',
     caption: 'Alamogordo AAF / Sub-Depot Hangar / pre-Holloman',
   },
+  'air-defense-command-institutional-baseline-policy-february-1948': {
+    src: '/img/archive/twining-memo-1947-p1.jpg',
+    alt: 'Page one of the Twining memo, 23 September 1947, "AMC Opinion Concerning Flying Discs," from Headquarters Air Materiel Command at Wright Field to Brig. Gen. George Schulgen. The institutional precedent that shaped the February 1948 Air Defense Command baseline policy: "the phenomenon reported is something real and not visionary or fictitious."',
+    caption: 'Twining memo / 23 September 1947 / AMC Wright Field',
+  },
+  'pervier-tulsa-fbi-agent-corroboration-1950': {
+    src: '/img/archive/tulsa-saucers-july-12-1947.jpg',
+    alt: '"SAUCERS OVER TULSA?" — newspaper photograph by Enlo Gilmore showing multiple bright objects over Tulsa, Oklahoma, July 12, 1947. The same city where, three years later, FBI Special Agent Pervier corroborated continuing local sightings to the Bureau.',
+    caption: 'Tulsa World / 12 July 1947 / photo by Enlo Gilmore',
+  },
+  'osi-cumulative-sighting-log-full-read-1948-1950': {
+    src: '/img/archive/bluebook-status-8-appendix-1952.jpg',
+    alt: 'Appendix I to Project Blue Book Status Report No. 8, NARA 595542: a hand-drawn chart of UFO report frequency, June through September 1952, annotated with the Washington D.C. incident, the Air Force press conference, and Life, Look, and New Yorker magazine articles. The institutional visualization of cumulative sighting data the OSI log was designed to capture.',
+    caption: 'Frequency of UFO reports / June-September 1952 / Blue Book Status Report 8 / NARA',
+  },
 };
 
 const ENTITY_IMAGES: Record<string, ArchivalImage> = {
