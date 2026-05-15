@@ -158,14 +158,33 @@ interface NetworkAtlasProps {
   }>;
 }
 
+interface AtlasPing {
+  nodeId?: string;
+  x?: number;
+  y?: number;
+  t0: number;
+  life: number;
+  color: string;
+  maxR: number;
+  ringWidth: number;
+}
+
 export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters }: NetworkAtlasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const sigmaRef = useRef<Sigma | null>(null);
   const graphRef = useRef<Graph | null>(null);
   const layoutRef = useRef<FA2Layout | null>(null);
   const hoveredRef = useRef<string | null>(null);
   const searchMatchesRef = useRef<Set<string>>(new Set());
   const pulseUntilRef = useRef<number>(0);
+  const rafRef = useRef<number | null>(null);
+  const bootStartRef = useRef<number>(0);
+  const bootSchedRef = useRef<Map<string, { start: number; dur: number }>>(new Map());
+  const bootActiveRef = useRef<boolean>(false);
+  const pingsRef = useRef<AtlasPing[]>([]);
+  const isVisibleRef = useRef<(n: EvidenceNode) => boolean>(() => true);
+  const reducedMotionRef = useRef<boolean>(false);
 
   const selectedNodeId = useGraphStore((s) => s.selectedNodeId);
   const selectNode = useGraphStore((s) => s.selectNode);
@@ -236,6 +255,11 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
     }
   }, [yearRange]);
 
+  // Keep reducedMotion in a ref so the rAF loop (created once) sees fresh values.
+  useEffect(() => {
+    reducedMotionRef.current = reducedMotion;
+  }, [reducedMotion]);
+
   // Visibility predicate from filters + date range.
   const isVisible = (node: EvidenceNode): boolean => {
     if (filters.nodeTypes.size > 0 && !filters.nodeTypes.has(node.type)) return false;
@@ -254,6 +278,12 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
     }
     return true;
   };
+
+  // Mirror isVisible into a ref so the rAF loop (one-time closure) reads fresh
+  // filter state without being torn down on every change.
+  useEffect(() => {
+    isVisibleRef.current = isVisible;
+  });
 
   // Build Sigma + Graphology once.
   useEffect(() => {
@@ -297,6 +327,51 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
     // then hand off to the worker for further refinement.
     forceAtlas2.assign(graph, { iterations: 80, settings: forceAtlas2.inferSettings(graph) });
 
+    // Boot schedule: signal acquisition. Each node has its own fade-in window
+    // ordered by descending degree, so the densest signals materialize first
+    // and trace contacts follow. Skipped under reduced motion.
+    bootSchedRef.current.clear();
+    pingsRef.current = [];
+    bootActiveRef.current = false;
+    if (!reducedMotion) {
+      const ranked = nodes
+        .map((n) => ({ id: n.id, deg: degree.get(n.id) ?? 0 }))
+        .sort((a, b) => b.deg - a.deg);
+      const totalStagger = 700;
+      const perNodeDur = 520;
+      const now0 = performance.now();
+      bootStartRef.current = now0;
+      const denom = Math.max(1, ranked.length - 1);
+      for (let i = 0; i < ranked.length; i++) {
+        bootSchedRef.current.set(ranked[i].id, {
+          start: now0 + (i / denom) * totalStagger,
+          dur: perNodeDur,
+        });
+      }
+      bootActiveRef.current = true;
+
+      // Acquisition pings emanating from the densest node. A deliberate
+      // hero moment telegraphing "this is where the corpus is most entangled."
+      if (ranked.length > 0) {
+        pingsRef.current.push({
+          nodeId: ranked[0].id,
+          t0: now0 + 60,
+          life: 1100,
+          color: tokens.fg,
+          maxR: 96,
+          ringWidth: 1,
+        });
+        pingsRef.current.push({
+          nodeId: ranked[0].id,
+          t0: now0 + 320,
+          life: 900,
+          color: tokens.fg,
+          maxR: 64,
+          ringWidth: 1,
+        });
+      }
+    }
+
     const sigma = new Sigma(graph, containerRef.current, {
       renderEdgeLabels: false,
       defaultEdgeColor: tokens.rule,
@@ -324,6 +399,24 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
       const hovered = hoveredRef.current;
       const selected = selectedNodeId;
       const matches = searchMatchesRef.current;
+
+      // Boot acquisition fade: until each node's window ends it eases in via
+      // alpha + size scale. Applied first so hover/select can override below.
+      if (bootActiveRef.current) {
+        const sched = bootSchedRef.current.get(String(key));
+        if (sched) {
+          const now = performance.now();
+          let p = (now - sched.start) / sched.dur;
+          if (p < 0) p = 0;
+          if (p > 1) p = 1;
+          if (p < 1) {
+            const eased = 1 - Math.pow(1 - p, 4);
+            out.color = withAlpha(String(attrs.color ?? tokens.inkSecondary), eased);
+            out.size = (attrs.size ?? 4) * (0.35 + 0.65 * eased);
+            if (eased < 0.25) out.label = '';
+          }
+        }
+      }
 
       // Search-result pulse: nodes that match the query enlarge and turn
       // red for 1.5s after the search fires. Uses red because that's the
@@ -403,7 +496,133 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
       }, 4000);
     }
 
+    // FX overlay loop: draws contradiction halos and transient pings on a 2D
+    // canvas above the WebGL surface. While the boot fade is active we also
+    // refresh sigma each frame so the staggered alpha resolves. Once boot
+    // completes the loop only drives the cheap overlay paint.
+    const tick = (now: number) => {
+      const overlay = overlayRef.current;
+      const s = sigmaRef.current;
+      const g = graphRef.current;
+      if (!overlay || !s || !g) {
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+      const parent = overlay.parentElement;
+      const ctx = overlay.getContext('2d');
+      if (!parent || !ctx) {
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const rect = parent.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const targetW = Math.round(rect.width * dpr);
+      const targetH = Math.round(rect.height * dpr);
+      if (overlay.width !== targetW || overlay.height !== targetH) {
+        overlay.width = targetW;
+        overlay.height = targetH;
+        overlay.style.width = rect.width + 'px';
+        overlay.style.height = rect.height + 'px';
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      const tk = readTokens();
+      const reduced = reducedMotionRef.current;
+
+      // Contradiction halos: ambient breathing rings at each visible
+      // contradiction node. Red because contradictions own the red signal.
+      // Suppressed during boot so the entrance reads as a single gesture,
+      // and suppressed entirely under reduced motion.
+      if (!reduced && !bootActiveRef.current) {
+        const phase = (now / 3200) * Math.PI * 2;
+        const wave = 0.5 + 0.5 * Math.sin(phase);
+        const haloAlpha = 0.06 + 0.10 * wave;
+        const haloR = 16 + 8 * wave;
+        ctx.lineWidth = 1;
+        for (const n of nodes) {
+          if (n.type !== 'contradiction') continue;
+          if (!isVisibleRef.current(n)) continue;
+          if (!g.hasNode(n.id)) continue;
+          const gx = g.getNodeAttribute(n.id, 'x') as number;
+          const gy = g.getNodeAttribute(n.id, 'y') as number;
+          const sp = s.graphToViewport({ x: gx, y: gy });
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, haloR, 0, Math.PI * 2);
+          ctx.strokeStyle = withAlpha(tk.red, haloAlpha);
+          ctx.stroke();
+        }
+      }
+
+      // Pings: sonar-style expanding rings. Search matches (red), selection
+      // confirmations (white), and boot acquisition (white from densest node).
+      if (!reduced) {
+        const alive: AtlasPing[] = [];
+        for (const p of pingsRef.current) {
+          const t = (now - p.t0) / p.life;
+          if (t < 0) {
+            alive.push(p);
+            continue;
+          }
+          if (t >= 1) continue;
+          const eased = 1 - Math.pow(1 - t, 4);
+          const r = p.maxR * eased;
+          const alpha = 0.7 * Math.pow(1 - t, 1.7);
+          let sx: number | undefined;
+          let sy: number | undefined;
+          if (p.nodeId && g.hasNode(p.nodeId)) {
+            const gx = g.getNodeAttribute(p.nodeId, 'x') as number;
+            const gy = g.getNodeAttribute(p.nodeId, 'y') as number;
+            const sp = s.graphToViewport({ x: gx, y: gy });
+            sx = sp.x;
+            sy = sp.y;
+          } else {
+            sx = p.x;
+            sy = p.y;
+          }
+          if (sx == null || sy == null) {
+            alive.push(p);
+            continue;
+          }
+          ctx.beginPath();
+          ctx.arc(sx, sy, r, 0, Math.PI * 2);
+          ctx.strokeStyle = withAlpha(p.color, alpha);
+          ctx.lineWidth = p.ringWidth;
+          ctx.stroke();
+          alive.push(p);
+        }
+        pingsRef.current = alive;
+      } else {
+        pingsRef.current = [];
+      }
+
+      // Resolve boot lifecycle and drive sigma refresh while it's active.
+      if (bootActiveRef.current) {
+        let allDone = true;
+        for (const v of bootSchedRef.current.values()) {
+          if (now < v.start + v.dur) {
+            allDone = false;
+            break;
+          }
+        }
+        if (allDone) {
+          bootActiveRef.current = false;
+          s.refresh(); // one last refresh so reducer drops the override
+        } else {
+          s.refresh();
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
     return () => {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
       layoutRef.current?.kill();
       layoutRef.current = null;
       sigma.kill();
@@ -439,6 +658,23 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
     setCurrentMatchIndex(0);
     if (matches.size > 0 && !reducedMotion) {
       pulseUntilRef.current = Date.now() + 1500;
+      // Sonar ring per match, layered on top of the existing red color pulse.
+      // Tracks nodeId so rings follow if the FA2 worker is still drifting.
+      const tk = readTokens();
+      const t0 = performance.now();
+      let i = 0;
+      for (const id of matches) {
+        pingsRef.current.push({
+          nodeId: id,
+          // tiny cascade so a big match set doesn't smear into one flash
+          t0: t0 + i * 18,
+          life: 900,
+          color: tk.red,
+          maxR: 56,
+          ringWidth: 1,
+        });
+        i++;
+      }
       sigmaRef.current?.refresh();
       window.setTimeout(() => sigmaRef.current?.refresh(), 1500);
     } else {
@@ -457,6 +693,18 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
     const camera = s.getCamera();
     // Sigma camera animates in graph coordinates already.
     camera.animate({ x, y, ratio: 0.5 }, { duration: reducedMotion ? 0 : 400 });
+    if (!reducedMotion) {
+      // Selection ping. A quiet "acquired" confirmation that tracks the node
+      // as the camera pans.
+      pingsRef.current.push({
+        nodeId: selectedNodeId,
+        t0: performance.now(),
+        life: 620,
+        color: readTokens().fg,
+        maxR: 38,
+        ringWidth: 1,
+      });
+    }
   }, [selectedNodeId, reducedMotion]);
 
   // Resolve selected node + edges for the panel.
@@ -701,6 +949,7 @@ export default function NetworkAtlas({ nodes, edges, focusNodeId, initialFilters
         </div>
 
         <div ref={containerRef} className="atlas-canvas" aria-hidden="true" />
+        <canvas ref={overlayRef} className="atlas-fx" aria-hidden="true" />
 
         {selectedNode && (
           <DossierPanel

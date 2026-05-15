@@ -265,6 +265,20 @@
 }
 .atlas-canvas canvas { outline: none; }
 
+/* FX overlay: draws contradiction halos and sonar pings on top of the WebGL
+   surface. Sized in JS each frame to match parent and DPR. */
+.atlas-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-fx { display: none; }
+}
+
 /* ── Mobile variant. */
 .atlas-mobile {
   position: relative;
