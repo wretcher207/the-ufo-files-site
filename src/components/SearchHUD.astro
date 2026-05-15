@@ -229,8 +229,9 @@
             <span class="search-hud__result-excerpt">${d.excerpt ?? ''}</span>
           </a>
         `).join('');
-      } catch {
-        if (results) results.innerHTML = '<p class="search-hud__hint">Search index not available in dev. Run a build.</p>';
+      } catch (err) {
+        console.error('[search] pagefind failed', err);
+        if (results) results.innerHTML = '<p class="search-hud__hint">Search unavailable. In dev, run a build first.</p>';
       }
     }, 120);
   });
