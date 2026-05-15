@@ -57,6 +57,8 @@ export interface EvidenceNode {
   summary?: string;
   excerpt?: string;
   heroAsset?: EvidenceHeroAsset;
+  /** Canonical government/agency source URL if present in frontmatter. */
+  officialUrl?: string;
 }
 
 export interface EvidenceEdge {

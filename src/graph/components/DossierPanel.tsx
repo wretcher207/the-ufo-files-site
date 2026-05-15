@@ -1,10 +1,5 @@
 // Shared dossier panel for /board (Agent 4) and /atlas (Agent 5).
 // Contract: see DOSSIER_PANEL_CONTRACT.md at repo root.
-//
-// Renders the static Case Actions row at the bottom with `data-action` hooks.
-// Agent 6 wires Cite / Share / Export popovers via event delegation after
-// this lands. Save action wires to localStorage immediately as a toggle.
-// Open Original is a stub link target for now.
 
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -18,7 +13,10 @@ export interface DossierPanelProps {
   onClose: () => void;
 }
 
-const SAVED_KEY = 'saved-cases';
+// Matches the key used by CaseActions.astro and /saved page.
+const SAVED_KEY = 'the-ufo-files:saved-cases';
+
+type ActionFeedback = 'cite' | 'share' | 'export';
 
 function readSaved(): string[] {
   if (typeof window === 'undefined') return [];
@@ -153,6 +151,95 @@ export function DossierPanel({
     return `/dossier/${node.slug}`;
   }, [node.collection, node.slug]);
 
+  const absoluteUrl = useCallback(() => {
+    if (typeof window === 'undefined') return dossierHref;
+    return new URL(dossierHref, window.location.origin).toString();
+  }, [dossierHref]);
+
+  const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
+  const flashFeedback = useCallback((kind: ActionFeedback) => {
+    setFeedback(kind);
+    window.setTimeout(() => setFeedback((f) => (f === kind ? null : f)), 1400);
+  }, []);
+
+  const handleCite = useCallback(async () => {
+    const url = absoluteUrl();
+    const agency = node.agency ?? (node.collection === 'pursueCases'
+      ? 'Department of War, PURSUE release'
+      : node.collection === 'fbiCases'
+        ? 'Federal Bureau of Investigation'
+        : 'The UFO Files');
+    const year = node.date ? node.date.slice(0, 4) : '';
+    const citation = [
+      `"${node.title}."`,
+      `${agency}.`,
+      year ? `${year}.` : '',
+      `${url}.`,
+    ].filter(Boolean).join(' ');
+    try {
+      await navigator.clipboard.writeText(citation);
+      flashFeedback('cite');
+    } catch {
+      // Clipboard may be blocked; flash anyway to acknowledge the click.
+      flashFeedback('cite');
+    }
+  }, [absoluteUrl, flashFeedback, node.agency, node.collection, node.date, node.title]);
+
+  const handleShare = useCallback(async () => {
+    const url = absoluteUrl();
+    const shareData = { title: node.title, text: node.title, url };
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        await navigator.share(shareData);
+        flashFeedback('share');
+        return;
+      }
+    } catch {
+      // User cancelled or share unavailable; fall through to clipboard.
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Swallow; feedback below still confirms click.
+    }
+    flashFeedback('share');
+  }, [absoluteUrl, flashFeedback, node.title]);
+
+  const handleExport = useCallback(() => {
+    const payload = {
+      id: node.id,
+      title: node.title,
+      type: node.type,
+      collection: node.collection,
+      slug: node.slug,
+      date: node.date,
+      agency: node.agency,
+      classification: node.classification,
+      confidence: node.confidence,
+      threads: node.threads,
+      geo: node.geo,
+      summary: node.summary,
+      excerpt: node.excerpt,
+      url: absoluteUrl(),
+    };
+    try {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: 'application/json',
+      });
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = `${node.id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+      flashFeedback('export');
+    } catch {
+      flashFeedback('export');
+    }
+  }, [absoluteUrl, flashFeedback, node]);
+
   return (
     <>
       {mobile && (
@@ -270,17 +357,45 @@ export function DossierPanel({
             </svg>
             <span className="dossier-action__label">{isSaved ? 'Saved' : 'Save'}</span>
           </button>
-          <button type="button" data-action="open" className="dossier-action">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M9 2h5v5M14 2L7 9M12 9v4H3V4h4"
-                stroke="currentColor"
-                strokeWidth="1.25"
-              />
-            </svg>
-            <span className="dossier-action__label">Original</span>
-          </button>
-          <button type="button" data-action="cite" className="dossier-action">
+          {node.officialUrl ? (
+            <a
+              data-action="open"
+              className="dossier-action"
+              href={node.officialUrl}
+              target="_blank"
+              rel="noopener noreferrer external"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M9 2h5v5M14 2L7 9M12 9v4H3V4h4"
+                  stroke="currentColor"
+                  strokeWidth="1.25"
+                />
+              </svg>
+              <span className="dossier-action__label">Original</span>
+            </a>
+          ) : (
+            <button
+              type="button"
+              data-action="open"
+              className="dossier-action"
+              disabled
+              aria-disabled="true"
+              title="Pending May 8 2026 release"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.25" />
+                <path d="M8 5v3l2 1.5" stroke="currentColor" strokeWidth="1.25" />
+              </svg>
+              <span className="dossier-action__label">Pending</span>
+            </button>
+          )}
+          <button
+            type="button"
+            data-action="cite"
+            className="dossier-action"
+            onClick={handleCite}
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M3 4h4v4H3zM3 8c0 2 1 3 3 3M9 4h4v4H9zM9 8c0 2 1 3 3 3"
@@ -288,18 +403,32 @@ export function DossierPanel({
                 strokeWidth="1.25"
               />
             </svg>
-            <span className="dossier-action__label">Cite</span>
+            <span className="dossier-action__label">
+              {feedback === 'cite' ? 'Copied' : 'Cite'}
+            </span>
           </button>
-          <button type="button" data-action="share" className="dossier-action">
+          <button
+            type="button"
+            data-action="share"
+            className="dossier-action"
+            onClick={handleShare}
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="4" cy="8" r="2" stroke="currentColor" strokeWidth="1.25" />
               <circle cx="12" cy="3" r="2" stroke="currentColor" strokeWidth="1.25" />
               <circle cx="12" cy="13" r="2" stroke="currentColor" strokeWidth="1.25" />
               <path d="M6 7l4-3M6 9l4 3" stroke="currentColor" strokeWidth="1.25" />
             </svg>
-            <span className="dossier-action__label">Share</span>
+            <span className="dossier-action__label">
+              {feedback === 'share' ? 'Copied' : 'Share'}
+            </span>
           </button>
-          <button type="button" data-action="export" className="dossier-action">
+          <button
+            type="button"
+            data-action="export"
+            className="dossier-action"
+            onClick={handleExport}
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M8 2v8M4 7l4 3 4-3M3 13h10"
@@ -307,7 +436,9 @@ export function DossierPanel({
                 strokeWidth="1.25"
               />
             </svg>
-            <span className="dossier-action__label">Export</span>
+            <span className="dossier-action__label">
+              {feedback === 'export' ? 'Saved' : 'Export'}
+            </span>
           </button>
         </footer>
       </aside>

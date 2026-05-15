@@ -158,7 +158,20 @@ function entryToNode(entry: AnyEntry): EvidenceNode {
   else if (data.excerpt != null) node.excerpt = String(data.excerpt);
   const hero = resolveHeroAsset(data.heroAsset);
   if (hero) node.heroAsset = hero;
+  const officialUrl = resolveOfficialUrl(data);
+  if (officialUrl) node.officialUrl = officialUrl;
   return node;
+}
+
+function resolveOfficialUrl(data: Record<string, unknown>): string | undefined {
+  const src = data.source;
+  if (src && typeof src === 'object') {
+    const candidate = (src as { officialUrl?: unknown }).officialUrl;
+    if (typeof candidate === 'string' && candidate.length > 0) return candidate;
+  }
+  const origin = data.origin_url;
+  if (typeof origin === 'string' && origin.length > 0) return origin;
+  return undefined;
 }
 
 function collectEdges(
